@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -58,13 +60,13 @@ class AeroGlideActivity : ComponentActivity() {
                             actions = {
                                 IconButton(onClick = { /*TODO*/ }) {
                                     Icon(
-                                        imageVector = Icons.Default.FavoriteBorder,
+                                        imageVector = Icons.Default.PlayArrow,
                                         contentDescription = "Mark as favorite"
                                     )
                                 }
                                 IconButton(onClick = { /*TODO*/ }) {
                                     Icon(
-                                        imageVector = Icons.Default.Edit,
+                                        imageVector = Icons.Default.AddCircle,
                                         contentDescription = "Edit notes"
                                     )
                                 }
