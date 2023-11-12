@@ -10,7 +10,7 @@ import com.alpsfly.aeroglide.ui.screen.Screen2
 import com.alpsfly.aeroglide.ui.screen.Screen3
 
 @Composable
-fun SetupNavGraph(navController: NavHostController) {
+fun AeroGlideNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
         startDestination = Screen.Screen1.route
