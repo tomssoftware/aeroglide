@@ -4,14 +4,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -20,23 +17,18 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.alpsfly.aeroglide.ui.page.Page1
+import com.alpsfly.aeroglide.ui.page.Page2
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DetailScreen(navController: NavController) {
-    val pages = listOf(
-        "Page 1",
-        "Page 2",
-        "Page 3",
-        "Page 4"
-    )
 
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = {
@@ -110,13 +102,10 @@ fun DetailScreen(navController: NavController) {
                 .padding(it)
         ) {
             HorizontalPager(state = pagerState) { page ->
-                // Our page content
-                Text(
-                    text = "Page: $page",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxSize()
-                )
+                when (page) {
+                    0 -> Page1()
+                    1 -> Page2()
+                }
             }
         }
     }
