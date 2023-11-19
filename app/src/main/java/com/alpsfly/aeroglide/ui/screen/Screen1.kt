@@ -11,10 +11,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.alpsfly.aeroglide.viewmodel.SensorViewModel
+
 
 @Composable
-fun Screen1(navController: NavController) {
+fun Screen1(
+    navController: NavController,
+    sensorViewModel: SensorViewModel = viewModel()
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -26,7 +32,7 @@ fun Screen1(navController: NavController) {
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is ${Screen.Screen1.route}",
+            Text(text = "this is ${sensorViewModel.getData()}",
                 modifier = Modifier.clickable {
                     navController.navigate(route = Screen.Screen2.route)
                 }
