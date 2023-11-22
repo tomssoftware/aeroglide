@@ -1,20 +1,19 @@
 package com.alpsfly.aeroglide.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.data.repository.SensorRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.scopes.ViewScoped
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
 
 @HiltViewModel
 class SensorViewModel @Inject constructor(
-    private val sensorRepository: SensorRepository
+    sensorRepository: SensorRepository
 ) : ViewModel() {
-
-    init {
-        Log.d("SensorViewModel", "init")
-    }
-
-    fun getData() = sensorRepository.getData()
+    val accelDataSource = sensorRepository.accelDataSource.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000)
+    )
 }

@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
 
@@ -19,8 +21,9 @@ import com.alpsfly.aeroglide.viewmodel.SensorViewModel
 @Composable
 fun Screen1(
     navController: NavController,
-    sensorViewModel: SensorViewModel = viewModel()
+    sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
+    val accelData by sensorViewModel.accelDataSource.collectAsState(initial = floatArrayOf(0f, 0f, 0f))
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -32,7 +35,7 @@ fun Screen1(
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is ${sensorViewModel.getData()}",
+            Text(text = "this is x: ${accelData[0]} y: ${accelData[1]} z: ${accelData[2]}",
                 modifier = Modifier.clickable {
                     navController.navigate(route = Screen.Screen2.route)
                 }
