@@ -19,7 +19,25 @@ fun SensorManager.accelSensorDataFlow() = callbackFlow {
         }
     }
 
-    registerListener(callback, getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI)
+    registerListener(callback, getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
+    awaitClose {
+        unregisterListener(callback)
+    }
+}
+
+fun SensorManager.pressureSensorDataFlow() = callbackFlow {
+
+    val callback = object : SensorEventCallback() {
+        override fun onSensorChanged(event: SensorEvent?) {
+            event ?: return
+            if (event.sensor.type == Sensor.TYPE_PRESSURE) {
+                val data = event.values.clone()
+                this@callbackFlow.trySend(data[0]).isSuccess
+            }
+        }
+    }
+
+    registerListener(callback, getDefaultSensor(Sensor.TYPE_PRESSURE), SensorManager.SENSOR_DELAY_NORMAL)
     awaitClose {
         unregisterListener(callback)
     }
