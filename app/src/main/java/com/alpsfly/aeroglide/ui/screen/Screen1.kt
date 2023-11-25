@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.alpsfly.aeroglide.data.util.SensorValues
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
 
 
@@ -23,7 +24,7 @@ fun Screen1(
     navController: NavController,
     sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
-    val accelData by sensorViewModel.accelDataSource.collectAsState(initial = floatArrayOf(0f, 0f, 0f))
+    val accelData by sensorViewModel.accelDataSource.collectAsState(initial = listOf<SensorValues>())
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -35,7 +36,7 @@ fun Screen1(
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is x: ${accelData[0]} y: ${accelData[1]} z: ${accelData[2]}",
+            Text(text = "this is x: 0 y: 0 z: 0}",
                 modifier = Modifier.clickable {
                     navController.navigate(route = Screen.Screen2.route)
                 }

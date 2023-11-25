@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.alpsfly.aeroglide.data.util.SensorValues
 import com.alpsfly.aeroglide.ui.screen.Screen
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
@@ -25,7 +26,7 @@ import com.patrykandpatrick.vico.core.entry.entryModelOf
 
 @Composable
 fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
-    val avgPressure by sensorViewModel.avgPressureFlow.collectAsState(initial = 0f)
+    val avgPressure by sensorViewModel.avgPressureFlow.collectAsState(initial = SensorValues(0L, floatArrayOf(0f, 0f, 0f)))
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -37,7 +38,7 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is $avgPressure",
+            Text(text = "this is ${avgPressure.x}@${avgPressure.timestamp}",
                 modifier = Modifier.clickable {
                 }
             )
