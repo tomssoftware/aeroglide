@@ -26,8 +26,6 @@ import com.patrykandpatrick.vico.core.entry.entryModelOf
 @Composable
 fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
     val avgPressure by sensorViewModel.avgPressureFlow.collectAsState(initial = 0f)
-    val avgPressureList by sensorViewModel.avgPressureStateFlow.collectAsState(initial = 0f)
-    val chartEntryModel = entryModelOf(4f, 12f, 8f, 16f)
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -39,13 +37,13 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is $avgPressure, $avgPressureList",
+            Text(text = "this is $avgPressure",
                 modifier = Modifier.clickable {
                 }
             )
             Chart(
                 chart = lineChart(),
-                model = chartEntryModel,
+                chartModelProducer  = sensorViewModel.chartEntryModelProducer,
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
             )
