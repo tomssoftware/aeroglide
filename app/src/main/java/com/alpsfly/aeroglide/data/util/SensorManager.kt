@@ -13,8 +13,7 @@ fun SensorManager.accelSensorDataFlow() = callbackFlow {
         override fun onSensorChanged(event: SensorEvent?) {
             event ?: return
             if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-                val data = event.values.clone()
-                this@callbackFlow.trySend(data).isSuccess
+                this@callbackFlow.trySend(SensorValues(System.currentTimeMillis(), event.values.clone())).isSuccess
             }
         }
     }
@@ -31,8 +30,7 @@ fun SensorManager.pressureSensorDataFlow() = callbackFlow {
         override fun onSensorChanged(event: SensorEvent?) {
             event ?: return
             if (event.sensor.type == Sensor.TYPE_PRESSURE) {
-                val data = event.values.clone()
-                this@callbackFlow.trySend(data[0]).isSuccess
+                this@callbackFlow.trySend(SensorValues(System.currentTimeMillis(), event.values.clone())).isSuccess
             }
         }
     }
