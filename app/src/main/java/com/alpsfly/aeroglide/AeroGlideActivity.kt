@@ -23,12 +23,14 @@ import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.ui.theme.AeroGlideTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class AeroGlideActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Timber.i("CREATE MAIN ACTIVITY")
         setContent {
             AeroGlideTheme {
                 val navController = rememberNavController()
