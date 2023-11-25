@@ -27,15 +27,18 @@ class SensorViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000)
     )
-
+    private var x = 0
     private val queue = ArrayDeque<FloatEntry>()
     val chartEntryModelProducer = ChartEntryModelProducer(queue)
     val avgPressureFlow = sensorRepository.avgPressureFlow.map {
         if (queue.size == 10) {
             queue.removeFirst()
+            x++
+        } else {
+            x = queue.size
         }
-        queue.addLast(FloatEntry(queue.size.toFloat(), it))
-        Timber.d("Size ${queue.size}")
+        queue.addLast(FloatEntry(x.toFloat(), it.x))
+        Timber.d("Size ${queue.size}, $queue")
         chartEntryModelProducer.setEntries(queue)
         it
     }.shareIn(
