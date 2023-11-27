@@ -26,7 +26,7 @@ import com.patrykandpatrick.vico.core.entry.entryModelOf
 
 @Composable
 fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
-    val avgPressure by sensorViewModel.avgPressureFlow.collectAsState(initial = SensorValues(0L, floatArrayOf(0f, 0f, 0f)))
+    val avgPressure by sensorViewModel.getPressureSenorData().collectAsState(initial = SensorValues(0L, floatArrayOf(0f, 0f, 0f)))
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -38,7 +38,7 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is ${avgPressure.x}@${avgPressure.timestamp}",
+            Text(text = "this is${avgPressure.x}@${avgPressure.timestamp}",
                 modifier = Modifier.clickable {
                 }
             )
