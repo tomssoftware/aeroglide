@@ -24,7 +24,7 @@ fun Screen1(
     navController: NavController,
     sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
-    val accelData by sensorViewModel.accelDataSource.collectAsState(initial = listOf<SensorValues>())
+    val accelData by sensorViewModel.getAccelSenorData().collectAsState(initial = SensorValues(0L, floatArrayOf(0f, 0f, 0f)))
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -36,7 +36,7 @@ fun Screen1(
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is x: 0 y: 0 z: 0}",
+            Text(text = "this is x: ${accelData.x} y: ${accelData.y} z: ${accelData.z}}",
                 modifier = Modifier.clickable {
                     navController.navigate(route = Screen.Screen2.route)
                 }
