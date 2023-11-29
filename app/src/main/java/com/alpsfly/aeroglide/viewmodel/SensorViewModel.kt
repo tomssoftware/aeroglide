@@ -9,10 +9,8 @@ import com.patrykandpatrick.vico.core.entry.FloatEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,8 +40,6 @@ class SensorViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000)
         )
     }
-
-
 
     private val queue = ArrayDeque<FloatEntry>()
     val chartEntryModelProducer = ChartEntryModelProducer(queue)
