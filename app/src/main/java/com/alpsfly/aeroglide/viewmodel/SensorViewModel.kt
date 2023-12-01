@@ -1,7 +1,9 @@
 package com.alpsfly.aeroglide.viewmodel
 
+import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alpsfly.aeroglide.data.repository.LocationRepository
 import com.alpsfly.aeroglide.data.repository.SensorRepository
 import com.alpsfly.aeroglide.data.util.SensorValues
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
@@ -15,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SensorViewModel @Inject constructor(
-    private val sensorRepository: SensorRepository
+    sensorRepository: SensorRepository,
+    locationRepository: LocationRepository,
 ) : ViewModel() {
     private val accelDataSource = sensorRepository.accelDataSource.shareIn(
         scope = viewModelScope,
@@ -23,6 +26,11 @@ class SensorViewModel @Inject constructor(
     )
 
     private val sharedPressureSensorDataFlow = sensorRepository.pressureDataFlow.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000)
+    )
+
+    private val locationDataFlow = locationRepository.locationDataSource.shareIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000)
     )
@@ -38,6 +46,13 @@ class SensorViewModel @Inject constructor(
         return sharedPressureSensorDataFlow.shareIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000)
+        )
+    }
+
+    fun getLocationData(): SharedFlow<Location> {
+        return locationDataFlow.shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed( 5000 )
         )
     }
 
