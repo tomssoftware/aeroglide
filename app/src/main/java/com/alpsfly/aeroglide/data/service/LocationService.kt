@@ -4,11 +4,11 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.location.Location
+import android.location.LocationManager
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.alpsfly.aeroglide.R
-import com.google.android.gms.location.LocationServices
+import com.alpsfly.aeroglide.data.util.locationDataFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,18 +20,9 @@ import kotlinx.coroutines.flow.onEach
 class LocationService : Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private lateinit var locationClient: LocationClient
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
-    }
-
-    override fun onCreate() {
-        super.onCreate()
-        locationClient = FusedLocationClient(
-            applicationContext,
-            LocationServices.getFusedLocationProviderClient(applicationContext)
-        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -50,9 +41,9 @@ class LocationService : Service() {
             .setOngoing(true)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-        locationClient
-            .getLocationUpdates(10000L)
+        locationManager.locationDataFlow(applicationContext, 1000L)
             .catch { e -> e.printStackTrace() }
             .onEach { location ->
                 val lat = location.latitude.toString().takeLast(3)
