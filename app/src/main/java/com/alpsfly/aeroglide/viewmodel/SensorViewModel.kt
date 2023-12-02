@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
 @HiltViewModel
 class SensorViewModel @Inject constructor(
@@ -89,6 +91,7 @@ class SensorViewModel @Inject constructor(
     }
 
     init {
+        Timber.d("init ${queue.size}")
         viewModelScope.launch {
             updatePressureGraph()
         }

@@ -9,6 +9,7 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import timber.log.Timber
@@ -29,12 +30,14 @@ fun LocationManager.locationDataFlow(context: Context, interval: Long) = callbac
         throw LocationException("GPS is disabled")
     }
 
-    val request = LocationRequest.Builder(interval).build()
+    val request = LocationRequest.Builder(interval)
+        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+        .build()
     val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             super.onLocationResult(result)
             result.locations.lastOrNull()?.let { location ->
-                Timber.v("Try to send location data.")
+                Timber.v("Try to send location data. ${location.longitude},${location.latitude}@${location.time}")
                 this@callbackFlow.trySend(location)
             }
         }

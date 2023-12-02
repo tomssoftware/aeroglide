@@ -3,28 +3,28 @@ package com.alpsfly.aeroglide.data.repository
 import android.content.Context
 import android.content.Context.SENSOR_SERVICE
 import android.hardware.SensorManager
-import android.location.Location
-import android.location.LocationManager
 import com.alpsfly.aeroglide.data.util.SensorValues
 import com.alpsfly.aeroglide.data.util.accelSensorDataFlow
 import com.alpsfly.aeroglide.data.util.chunked
-import com.alpsfly.aeroglide.data.util.locationDataFlow
 import com.alpsfly.aeroglide.data.util.pressureSensorDataFlow
+import com.patrykandpatrick.vico.core.entry.FloatEntry
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
 interface SensorRepository {
     val accelDataSource: Flow<SensorValues>
     val pressureDataFlow: Flow<SensorValues>
     val avgPressureFlow: Flow<SensorValues>
+    val queue: ArrayDeque<FloatEntry>
 }
 
+@Singleton
 class SensorRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : SensorRepository {
     private val sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
-    private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     override val accelDataSource = sensorManager.accelSensorDataFlow()
     override val pressureDataFlow = sensorManager.pressureSensorDataFlow()
     override val avgPressureFlow: Flow<SensorValues>
@@ -37,6 +37,7 @@ class SensorRepositoryImpl @Inject constructor(
                 SensorValues(at, floatArrayOf(ax, ay, az) )
             }
         }
+    override val queue = ArrayDeque<FloatEntry>()
 }
 
 

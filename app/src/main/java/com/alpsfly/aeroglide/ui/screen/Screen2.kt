@@ -34,7 +34,7 @@ fun Screen2(
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is $locationData",
+            Text(text = "this is ${locationData.longitude},${locationData.latitude}@${locationData.time}",
                 modifier = Modifier.clickable {
                     navController.navigate(route = Screen.Screen3.route)
                 }
