@@ -14,22 +14,20 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import timber.log.Timber
 
-class LocationException(message: String): Exception(message)
+class LocationException(message: String) : Exception(message)
 
 @SuppressLint("MissingPermission")
 fun LocationManager.locationDataFlow(context: Context, interval: Long) = callbackFlow {
     val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
-    if(!context.hasLocationPermission()) {
+    if (!context.hasLocationPermission()) {
         throw LocationException("Missing location permission")
     }
-
     val isGpsEnabled = isProviderEnabled(LocationManager.GPS_PROVIDER)
     val isNetworkEnabled = isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    if(!isGpsEnabled && !isNetworkEnabled) {
+    if (!isGpsEnabled && !isNetworkEnabled) {
         throw LocationException("GPS is disabled")
     }
-
     val request = LocationRequest.Builder(interval)
         .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
         .build()
@@ -37,7 +35,7 @@ fun LocationManager.locationDataFlow(context: Context, interval: Long) = callbac
         override fun onLocationResult(result: LocationResult) {
             super.onLocationResult(result)
             result.locations.lastOrNull()?.let { location ->
-                Timber.v("Try to send location data. ${location.longitude},${location.latitude}@${location.time}")
+                Timber.v("Try to send location data: ${location.longitude},${location.latitude}@${location.time}")
                 this@callbackFlow.trySend(location)
             }
         }
