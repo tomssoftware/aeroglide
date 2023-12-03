@@ -23,12 +23,10 @@ import com.alpsfly.aeroglide.ui.util.MenuItem
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DetailScreen(navController: NavController) {
-
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = {
-        3
-    })
-
+    val pagerState = rememberPagerState(
+        pageCount = { 3 }
+    )
     val items: List<MenuItem> = listOf(
         MenuItem(
             id = "home",

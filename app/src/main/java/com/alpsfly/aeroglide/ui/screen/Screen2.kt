@@ -21,8 +21,9 @@ import com.alpsfly.aeroglide.viewmodel.SensorViewModel
 @Composable
 fun Screen2(
     navController: NavController,
-    sensorViewModel: SensorViewModel = hiltViewModel()) {
-    val locationData by sensorViewModel.getLocationData().collectAsState(initial = Location(""))
+    sensorViewModel: SensorViewModel = hiltViewModel()
+) {
+    val locationData by sensorViewModel.getLocation().collectAsState(initial = Location(""))
     Box(
         modifier = Modifier
             .fillMaxSize()
