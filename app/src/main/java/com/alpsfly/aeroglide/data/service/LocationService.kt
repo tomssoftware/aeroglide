@@ -1,17 +1,48 @@
 package com.alpsfly.aeroglide.data.service
 
+import android.Manifest
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventCallback
+import android.hardware.SensorManager
+import android.location.LocationManager
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
+import android.os.Looper
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.alpsfly.aeroglide.R
+import com.alpsfly.aeroglide.data.repository.SensorRepository
+import com.alpsfly.aeroglide.data.util.SensorData
+import com.alpsfly.aeroglide.data.util.SensorType
+import com.alpsfly.aeroglide.data.util.accelSensorDataFlow
+import com.alpsfly.aeroglide.data.util.locationDataFlow
+import com.alpsfly.aeroglide.data.util.pressureSensorDataFlow
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import timber.log.Timber
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class LocationService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    @Inject
+    lateinit var sensorRepository: SensorRepository
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
@@ -23,6 +54,30 @@ class LocationService : Service() {
             ACTION_STOP -> stop()
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        serviceScope.launch {
+            sensorManager.accelSensorDataFlow().collect {
+                sensorRepository.updateAcceleration(it)
+            }
+        }
+
+        serviceScope.launch {
+            sensorManager.pressureSensorDataFlow().collect {
+                sensorRepository.updatePressure(it)
+            }
+        }
+
+        serviceScope.launch {
+            locationManager.locationDataFlow(this@LocationService, 1000L).collect {
+                sensorRepository.updateLocation(it)
+            }
+        }
     }
 
     private fun start() {

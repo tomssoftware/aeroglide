@@ -38,7 +38,7 @@ fun Screen3(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "this is $altitude",
+                text = "this is ${altitude}",
                 modifier = Modifier
                     .clickable {
                         navController.navigate(route = Screen.Screen1.route)

@@ -15,21 +15,12 @@ fun SensorManager.accelSensorDataFlow() = callbackFlow {
         var startTime = 0L;
         var count = 0L;
         override fun onSensorChanged(event: SensorEvent?) {
-            event ?: return
-
-            if (startTime == 0L) {
-                startTime = System.nanoTime()
-            }
-            val timestamp = System.nanoTime()
-            val frequency = (count++ / ((timestamp - startTime) / 1000000000.0f))
-
-            if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-                val values = event.values.clone()
-                Timber.v("Try to send accelerometer data: ${values[0]} @ $frequency")
-                this@callbackFlow.trySend(SensorData(System.currentTimeMillis(), values, event.sensor.type)).isSuccess
+            event?.let {
+                this@callbackFlow.trySend(getSensorData(it, startTime, count)).isSuccess
             }
         }
     }
+
     Timber.d("Register accelerometer sensor")
     registerListener(callback, getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SENSOR_DELAY_NORMAL)
     awaitClose {
@@ -43,24 +34,30 @@ fun SensorManager.pressureSensorDataFlow() = callbackFlow {
         var startTime = 0L;
         var count = 0L;
         override fun onSensorChanged(event: SensorEvent?) {
-            event ?: return
-
-            if (startTime == 0L) {
-                startTime = System.nanoTime()
-            }
-            val timestamp = System.nanoTime()
-            val frequency = (count++ / ((timestamp - startTime) / 1000000000.0f))
-
-            if (event.sensor.type == Sensor.TYPE_PRESSURE) {
-                val values = event.values.clone()
-                Timber.v("Try to send pressure data: ${values[0]} @ $frequency")
-                this@callbackFlow.trySend(SensorData(System.currentTimeMillis(), values, event.sensor.type)).isSuccess
+            event?.let {
+                this@callbackFlow.trySend(getSensorData(it, startTime, count)).isSuccess
             }
         }
     }
+
     Timber.d("Register pressure sensor")
     registerListener(callback, getDefaultSensor(Sensor.TYPE_PRESSURE), SENSOR_DELAY_NORMAL)
     awaitClose {
         unregisterListener(callback)
     }
+}
+
+private fun getSensorData(event: SensorEvent, startTime: Long, count: Long): SensorData {
+    val frequency = getFrequency(startTime, count)
+    val sensorType = when (event.sensor.type) {
+        Sensor.TYPE_ACCELEROMETER -> SensorType.Acceleration
+        Sensor.TYPE_PRESSURE -> SensorType.Pressure
+        else -> SensorType.Unknown
+    }
+    return SensorData(type = sensorType, frequency = frequency, values = event.values.clone())
+}
+
+private fun getFrequency(startTime: Long, count: Long): Float {
+    val now = System.nanoTime()
+    return (count / ((now - startTime) / 1000000000.0f))
 }

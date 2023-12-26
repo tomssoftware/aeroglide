@@ -1,6 +1,5 @@
 package com.alpsfly.aeroglide.ui.page
 
-import android.hardware.Sensor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +23,8 @@ import com.patrykandpatrick.vico.compose.chart.line.lineChart
 
 @Composable
 fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
-    val avgPressure by sensorViewModel.getPressureSenorData().collectAsState(initial = SensorData(0L, floatArrayOf(0f), Sensor.TYPE_PRESSURE))
+    val pressure by sensorViewModel.getPressure().collectAsState(initial = SensorData())
+    val altitude by sensorViewModel.getAltitude().collectAsState(initial = SensorData())
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -36,7 +36,7 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is${avgPressure.values[0]}@${avgPressure.timestamp}",
+            Text(text = "this is${pressure.values[0]}@${pressure.frequency}",
                 modifier = Modifier.clickable {
                 }
             )
@@ -45,6 +45,10 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
                 chartModelProducer = sensorViewModel.chartEntryModelProducer,
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
+            )
+            Text(text = "this is${altitude.values[0]}@${altitude.frequency}",
+                modifier = Modifier.clickable {
+                }
             )
             Chart(
                 chart = lineChart(),

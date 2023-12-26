@@ -1,64 +1,58 @@
 package com.alpsfly.aeroglide.viewmodel
 
-import android.hardware.Sensor
 import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.data.repository.SensorRepository
 import com.alpsfly.aeroglide.data.util.Limits
 import com.alpsfly.aeroglide.data.util.SensorData
+import com.alpsfly.aeroglide.data.util.SensorType
+import com.alpsfly.aeroglide.data.util.chunked
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.pow
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class SensorViewModel @Inject constructor(
     private val sensorRepository: SensorRepository,
 ) : ViewModel() {
-    /** Shared flow each 200ms */
-    private val accelerometerSharedFlow = sensorRepository.accelerometerDataFlow.shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000)
-    )
-
-    /** Shared flow each 200ms */
-    private val pressureSharedFlow = sensorRepository.pressureDataFlow.shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000)
-    )
-
-    /** Shared flow each 1000ms */
-    private val locationSharedFlow = sensorRepository.locationDataFlow.shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000)
-    )
-
-    fun getAccelSenorData(): SharedFlow<SensorData> {
-        return accelerometerSharedFlow
+    fun getAcceleration(): Flow<SensorData> {
+        return sensorRepository.accelerometerStateFlow
     }
 
-    fun getPressureSenorData(): SharedFlow<SensorData> {
-        return pressureSharedFlow
+    fun getLocation(): Flow<Location> {
+        return sensorRepository.locationStateFlow
     }
 
-    fun getLocation(): SharedFlow<Location> {
-        return locationSharedFlow
+    @OptIn(FlowPreview::class)
+    fun getAltitude(): Flow<SensorData> {
+        return altitudeFlow
+            .sample(1000.milliseconds)
     }
 
-    fun getAltitude(): Flow<Float> {
-        return altitudeFlow.transform {
-            it.values[0]
+    @OptIn(FlowPreview::class)
+    fun getPressure(): Flow<SensorData> {
+        return getPressure(5)
+            .sample(1000.milliseconds)
+    }
+
+    private fun getPressure(size: Int): Flow<SensorData> {
+        return sensorRepository.pressureStateFlow.chunked(size) { list ->
+            val timestamp = list.fold(0L) { sum, item -> sum + item.timestamp } / list.size
+            val frequency = list.fold(0f) { sum, item -> sum + item.frequency } / list.size / size
+            val pressure = list.fold(0f) { sum, item -> sum + item.values[0] } / list.size.toFloat()
+            Timber.v("Send pressure data: $pressure @ $timestamp")
+            SensorData(timestamp = timestamp, frequency = frequency, values = floatArrayOf(pressure), type = list[0].type)
         }
     }
 
@@ -66,7 +60,7 @@ class SensorViewModel @Inject constructor(
         get() {
             var altitude0 = 0f
             var pressure0 = 0f
-            return combine(pressureSharedFlow, locationSharedFlow) { p, l ->
+            return combine(getPressure(5), sensorRepository.locationStateFlow) { p, l ->
                 val pressure = p.values[0] * 100f
                 var altitude = l.altitude.toFloat()
                 if (l.hasAccuracy() && l.hasVerticalAccuracy() && pressure != 0f) {
@@ -77,9 +71,8 @@ class SensorViewModel @Inject constructor(
                     altitude = calcAltitude(pressure, pressure0, altitude0)
                 }
                 Timber.v("Default altitude: ${l.altitude.toFloat()}, ${p.values[0]} -> $altitude")
-                SensorData(p.timestamp, floatArrayOf(altitude), Sensor.TYPE_PRESSURE)
+                SensorData(timestamp = p.timestamp, values = floatArrayOf(altitude), type = SensorType.Altitude)
             }
-            //return flowOf(SensorData(0, floatArrayOf(0f), 0))
         }
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
@@ -109,7 +102,7 @@ class SensorViewModel @Inject constructor(
     val chartEntryModelProducer = ChartEntryModelProducer(queue)
     private suspend fun updatePressureGraph() {
         var counter = 1L
-        pressureSharedFlow.collect { sensorData ->
+        getPressure().collect { sensorData ->
             if (queue.size == 10) {
                 queue.removeFirst()
             }
@@ -123,11 +116,11 @@ class SensorViewModel @Inject constructor(
     val altitudeChartEntryModelProducer = ChartEntryModelProducer(altitudeQueue)
     private suspend fun updateAltitudeGraph() {
         var counter = 1L
-        altitudeFlow.collect { sensorData ->
+        getAltitude().collect { altitude ->
             if (altitudeQueue.size == 10) {
                 altitudeQueue.removeFirst()
             }
-            altitudeQueue.addLast(FloatEntry(counter.toFloat(), sensorData.values[0]))
+            altitudeQueue.addLast(FloatEntry(counter.toFloat(), altitude.values[0]))
             altitudeChartEntryModelProducer.setEntries(altitudeQueue)
             counter++
         }
