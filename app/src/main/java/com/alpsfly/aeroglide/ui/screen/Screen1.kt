@@ -1,6 +1,5 @@
 package com.alpsfly.aeroglide.ui.screen
 
-import android.hardware.Sensor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +23,7 @@ fun Screen1(
     navController: NavController,
     sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
-    val accelData by sensorViewModel.getAccelSenorData().collectAsState(initial = SensorData(0L, floatArrayOf(0f, 0f, 0f), Sensor.TYPE_ACCELEROMETER))
+    val accelData by sensorViewModel.getAcceleration().collectAsState(initial = SensorData())
     Box(
         modifier = Modifier
             .fillMaxSize()
