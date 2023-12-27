@@ -23,7 +23,7 @@ fun Screen2(
     navController: NavController,
     sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
-    val locationData by sensorViewModel.getLocation().collectAsState(initial = Location(""))
+    val locationData = Location("none") // by sensorViewModel.getLocation().collectAsState(initial = Location(""))
     Box(
         modifier = Modifier
             .fillMaxSize()

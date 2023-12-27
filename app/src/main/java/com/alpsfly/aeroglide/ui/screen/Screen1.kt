@@ -1,5 +1,6 @@
 package com.alpsfly.aeroglide.ui.screen
 
+import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +24,12 @@ fun Screen1(
     navController: NavController,
     sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
-    val accelData by sensorViewModel.getAcceleration().collectAsState(initial = SensorData())
+    val acceleration by sensorViewModel.acceleration.collectAsState(initial = SensorData())
+    val verticalAccel by sensorViewModel.verticalAcceleration.collectAsState(initial = SensorData())
+    val altitude by sensorViewModel.altitude.collectAsState(initial = SensorData())
+    val climbrate by sensorViewModel.climbrate.collectAsState(initial = SensorData())
+    val pressure by sensorViewModel.pressure.collectAsState(initial = SensorData())
+    val location by sensorViewModel.location.collectAsState(initial = Location("none"))
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -35,11 +41,20 @@ fun Screen1(
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is x: ${accelData.values[0]} y: ${accelData.values[1]}: ${accelData.values[2]}}",
+            Text(text = "Accel:  x:${acceleration.values[0]}@${acceleration.frequency}Hz",
                 modifier = Modifier.clickable {
                     navController.navigate(route = Screen.Screen2.route)
                 }
             )
+            Text(text = "Vert. accel:  x:${verticalAccel.values[0]}@${verticalAccel.frequency}Hz",
+                modifier = Modifier.clickable {
+                    navController.navigate(route = Screen.Screen2.route)
+                }
+            )
+            Text(text = "Altitude: ${altitude.values[0]}@${altitude.frequency}Hz")
+            Text(text = "Climbrate: ${climbrate.values[0]}@${climbrate.frequency}Hz")
+            Text(text = "Pressure: ${pressure.values[0]}@${pressure.frequency}Hz")
+            Text(text = "Location: ${location.altitude}")
         }
     }
 }
