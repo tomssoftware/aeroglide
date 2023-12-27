@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.alpsfly.aeroglide.data.util.SensorData
+import com.alpsfly.aeroglide.data.util.SensorType
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
 
 @Composable
@@ -26,7 +28,7 @@ fun Screen3(
     navController: NavController,
     sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
-    val altitude by sensorViewModel.getAltitude().collectAsState(initial = 0f)
+    val altitude = SensorData() //by sensorViewModel.getAltitude().collectAsState(initial = SensorData(type = SensorType.Altitude))
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -38,7 +40,7 @@ fun Screen3(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "this is ${altitude}",
+                text = "this is $altitude",
                 modifier = Modifier
                     .clickable {
                         navController.navigate(route = Screen.Screen1.route)
