@@ -35,7 +35,6 @@ fun LocationManager.locationDataFlow(context: Context, interval: Long) = callbac
         override fun onLocationResult(result: LocationResult) {
             super.onLocationResult(result)
             result.locations.lastOrNull()?.let { location ->
-                Timber.v("Try to send location data: ${location.longitude},${location.latitude}@${location.time}")
                 this@callbackFlow.trySend(location)
             }
         }

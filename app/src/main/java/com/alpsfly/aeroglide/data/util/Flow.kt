@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.flow
  *
  * https://stackoverflow.com/questions/70901974/how-can-i-design-a-flow-which-is-a-average-value-of-every-latest-5-data-of-anoth
  */
-fun <T, R> Flow<T>.chunked(size: Int, transform: suspend (List<T>)-> R): Flow<R> = flow {
+fun <T, R> Flow<T>.chunked(size: Int, transform: suspend (List<T>) -> R): Flow<R> = flow {
     val cache = ArrayList<T>(size)
     collect {
         cache.add(it)

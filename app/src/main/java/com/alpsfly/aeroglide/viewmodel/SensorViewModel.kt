@@ -1,113 +1,50 @@
 package com.alpsfly.aeroglide.viewmodel
 
-import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.data.repository.SensorRepository
-import com.alpsfly.aeroglide.data.util.Limits
-import com.alpsfly.aeroglide.data.util.SensorData
-import com.alpsfly.aeroglide.data.util.SensorType
-import com.alpsfly.aeroglide.data.util.chunked
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
-import kotlin.math.pow
 import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class SensorViewModel @Inject constructor(
     private val sensorRepository: SensorRepository,
 ) : ViewModel() {
-    fun getAcceleration(): Flow<SensorData> {
-        return sensorRepository.accelerometerStateFlow
-    }
-
-    fun getLocation(): Flow<Location> {
-        return sensorRepository.locationStateFlow
-    }
+    @OptIn(FlowPreview::class)
+    val acceleration = sensorRepository.accelerometerDataSource.sample(1000.milliseconds)
 
     @OptIn(FlowPreview::class)
-    fun getAltitude(): Flow<SensorData> {
-        return altitudeFlow
-            .sample(1000.milliseconds)
-    }
+    val pressure = sensorRepository.pressureDataSource.sample(1000.milliseconds)
+
+    // location
+    val location = sensorRepository.locationDataSource
 
     @OptIn(FlowPreview::class)
-    fun getPressure(): Flow<SensorData> {
-        return getPressure(5)
-            .sample(1000.milliseconds)
-    }
+    val verticalAcceleration = sensorRepository.verticalAccelerationFlow.sample(1000.milliseconds)
 
-    private fun getPressure(size: Int): Flow<SensorData> {
-        return sensorRepository.pressureStateFlow.chunked(size) { list ->
-            val timestamp = list.fold(0L) { sum, item -> sum + item.timestamp } / list.size
-            val frequency = list.fold(0f) { sum, item -> sum + item.frequency } / list.size / size
-            val pressure = list.fold(0f) { sum, item -> sum + item.values[0] } / list.size.toFloat()
-            Timber.v("Send pressure data: $pressure @ $timestamp")
-            SensorData(timestamp = timestamp, frequency = frequency, values = floatArrayOf(pressure), type = list[0].type)
-        }
-    }
+    @OptIn(FlowPreview::class)
+    val altitude = sensorRepository.altitudeFlow.sample(1000.milliseconds)
 
-    private val altitudeFlow: Flow<SensorData>
-        get() {
-            var altitude0 = 0f
-            var pressure0 = 0f
-            return combine(getPressure(5), sensorRepository.locationStateFlow) { p, l ->
-                val pressure = p.values[0] * 100f
-                var altitude = l.altitude.toFloat()
-                if (l.hasAccuracy() && l.hasVerticalAccuracy() && pressure != 0f) {
-                    pressure0 = pressure
-                    altitude0 = altitude
-                }
-                if (altitude0 != 0f && pressure0 != 0f && pressure != 0f) {
-                    altitude = calcAltitude(pressure, pressure0, altitude0)
-                }
-                Timber.v("Default altitude: ${l.altitude.toFloat()}, ${p.values[0]} -> $altitude")
-                SensorData(timestamp = p.timestamp, values = floatArrayOf(altitude), type = SensorType.Altitude)
-            }
-        }
+    @OptIn(FlowPreview::class)
+    val climbrate = sensorRepository.climbRateFlow.sample(1000.milliseconds)
 
-    private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
-        if (altitude0 in Limits.minAltitude..Limits.maxAltitude &&
-            pressure0 in Limits.minPressure..Limits.maxPressure &&
-            pressure in Limits.minPressure..Limits.maxPressure
-        ) {
-            val h0 = altitude0.toDouble() // meter
-            val ph = pressure.toDouble() // pascal
-            val p0 = pressure0.toDouble() // pascal
-
-            /**
-             * https://de.wikipedia.org/wiki/Barometrische_Höhenformel
-             * Th = 288.15f (15°C)
-             * h = (Th/0.0065) * (1.0 - (ph/p0)^(1/5.255))
-             **/
-            val e = 0.1902949571836346 /* 1 / 5.255 */
-            val h = 44330.769 * (1.0 - (ph / p0).pow(e))
-
-            return (h0 + h).toFloat()
-        } else {
-            return 0f
-        }
-    }
-
-    private val queue = ArrayDeque<FloatEntry>()
-    val chartEntryModelProducer = ChartEntryModelProducer(queue)
+    // Update charts
+    private val pressureQueue = ArrayDeque<FloatEntry>()
+    val pressureChartEntryModelProducer = ChartEntryModelProducer(pressureQueue)
     private suspend fun updatePressureGraph() {
         var counter = 1L
-        getPressure().collect { sensorData ->
-            if (queue.size == 10) {
-                queue.removeFirst()
+        pressure.collect { sensorData ->
+            if (pressureQueue.size == 10) {
+                pressureQueue.removeFirst()
             }
-            queue.addLast(FloatEntry(counter.toFloat(), sensorData.values[0]))
-            chartEntryModelProducer.setEntries(queue)
+            pressureQueue.addLast(FloatEntry(counter.toFloat(), sensorData.values[0]))
+            pressureChartEntryModelProducer.setEntries(pressureQueue)
             counter++
         }
     }
@@ -116,7 +53,7 @@ class SensorViewModel @Inject constructor(
     val altitudeChartEntryModelProducer = ChartEntryModelProducer(altitudeQueue)
     private suspend fun updateAltitudeGraph() {
         var counter = 1L
-        getAltitude().collect { altitude ->
+        altitude.collect { altitude ->
             if (altitudeQueue.size == 10) {
                 altitudeQueue.removeFirst()
             }
@@ -126,13 +63,29 @@ class SensorViewModel @Inject constructor(
         }
     }
 
+    private val climbrateQueue = ArrayDeque<FloatEntry>()
+    val climbrateChartEntryModelProducer = ChartEntryModelProducer(climbrateQueue)
+    private suspend fun updateClimbrateGraph() {
+        var counter = 1L
+        climbrate.collect { climbrate ->
+            if (climbrateQueue.size == 10) {
+                climbrateQueue.removeFirst()
+            }
+            climbrateQueue.addLast(FloatEntry(counter.toFloat(), climbrate.values[0]))
+            climbrateChartEntryModelProducer.setEntries(climbrateQueue)
+            counter++
+        }
+    }
+
     init {
-        Timber.d("init ${queue.size}")
         viewModelScope.launch {
             updatePressureGraph()
         }
         viewModelScope.launch {
             updateAltitudeGraph()
+        }
+        viewModelScope.launch {
+            updateClimbrateGraph()
         }
     }
 }
