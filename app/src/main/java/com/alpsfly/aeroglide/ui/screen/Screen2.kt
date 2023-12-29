@@ -16,18 +16,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.alpsfly.aeroglide.data.util.SensorData
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
+import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
+import com.patrykandpatrick.vico.compose.chart.Chart
+import com.patrykandpatrick.vico.compose.chart.line.lineChart
 
 @Composable
-fun Screen2(
-    navController: NavController,
-    sensorViewModel: SensorViewModel = hiltViewModel()
-) {
-    val locationData = Location("none") // by sensorViewModel.getLocation().collectAsState(initial = Location(""))
+fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hiltViewModel()) {
+    val altitude by sensorViewModel.altitude.collectAsState(initial = SensorData())
+    val climbrate by sensorViewModel.climbrate.collectAsState(initial = SensorData())
+    val pressure by sensorViewModel.pressure.collectAsState(initial = SensorData())
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Green)
+            .background(Color.White)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -35,10 +40,39 @@ fun Screen2(
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is ${locationData.longitude},${locationData.latitude}@${locationData.time}",
+            Text(text = "climbrate: ${climbrate.values[0]}@${climbrate.frequency}",
                 modifier = Modifier.clickable {
-                    navController.navigate(route = Screen.Screen3.route)
                 }
+            )
+            Chart(
+                chart = lineChart(),
+                chartModelProducer = sensorViewModel.climbrateChartEntryModelProducer,
+                startAxis = rememberStartAxis(),
+                bottomAxis = rememberBottomAxis(),
+            )
+            Text(text = "pressure: ${pressure.values[0]}@${pressure.frequency}",
+                modifier = Modifier.clickable {
+                }
+            )
+            Chart(
+                chart = lineChart(
+                    axisValuesOverrider = sensorViewModel.pressureAxisValuesOverrider
+                ),
+                chartModelProducer = sensorViewModel.pressureChartEntryModelProducer,
+                startAxis = rememberStartAxis(),
+                bottomAxis = rememberBottomAxis(),
+            )
+            Text(text = "altitude ${altitude.values[0]}@${altitude.frequency}",
+                modifier = Modifier.clickable {
+                }
+            )
+            Chart(
+                chart = lineChart(
+                    axisValuesOverrider = sensorViewModel.altitudeAxisValuesOverrider
+                ),
+                chartModelProducer = sensorViewModel.altitudeChartEntryModelProducer,
+                startAxis = rememberStartAxis(),
+                bottomAxis = rememberBottomAxis(),
             )
         }
     }

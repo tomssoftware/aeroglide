@@ -21,12 +21,15 @@ import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
+import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
+import com.patrykandpatrick.vico.core.entry.ChartEntryModel
 
 @Composable
 fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
     val altitude by sensorViewModel.altitude.collectAsState(initial = SensorData())
     val climbrate by sensorViewModel.climbrate.collectAsState(initial = SensorData())
     val pressure by sensorViewModel.pressure.collectAsState(initial = SensorData())
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -53,7 +56,9 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
                 }
             )
             Chart(
-                chart = lineChart(),
+                chart = lineChart(
+                    axisValuesOverrider = sensorViewModel.pressureAxisValuesOverrider
+                ),
                 chartModelProducer = sensorViewModel.pressureChartEntryModelProducer,
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
@@ -63,7 +68,9 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
                 }
             )
             Chart(
-                chart = lineChart(),
+                chart = lineChart(
+                    axisValuesOverrider = sensorViewModel.altitudeAxisValuesOverrider
+                ),
                 chartModelProducer = sensorViewModel.altitudeChartEntryModelProducer,
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
