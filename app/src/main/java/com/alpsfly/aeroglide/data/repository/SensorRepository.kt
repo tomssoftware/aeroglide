@@ -149,25 +149,23 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * Altitude flow
      */
+    private var calibrated = false
+    private var altitude0 = 0f
+    private var pressure0 = 0f
     override val altitudeFlow: Flow<SensorData>
         get() {
-            var altitude0 = 0f
-            var pressure0 = 0f
             return combine(sensorManager.pressureSensorDataFlow(), locationManager.locationDataFlow(context, 1000)) { p, l ->
                 val pressure = p.values[0] * 100f
                 var altitude = l.altitude.toFloat()
-                if (l.hasAccuracy() && l.hasVerticalAccuracy() && pressure != 0f) {
+                if (l.hasAccuracy() && l.hasVerticalAccuracy() && pressure != 0f && !calibrated) {
                     pressure0 = pressure
                     altitude0 = altitude
+                    calibrated = true
                 }
                 if (altitude0 != 0f && pressure0 != 0f && pressure != 0f) {
                     altitude = calcAltitude(pressure, pressure0, altitude0)
                 }
-                SensorData(
-                    type = SensorType.Altitude,
-                    values = floatArrayOf(altitude),
-                    frequency = (p.frequency + 1) / 2
-                )
+                SensorData(type = SensorType.Altitude, values = floatArrayOf(altitude), frequency = 0f)
             }.shareIn(
                 scope = repositoryScope,
                 started = SharingStarted.WhileSubscribed(5000),

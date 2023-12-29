@@ -3,6 +3,8 @@ package com.alpsfly.aeroglide.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.data.repository.SensorRepository
+import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
+import com.patrykandpatrick.vico.core.entry.ChartEntryModel
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,6 +36,9 @@ class SensorViewModel @Inject constructor(
     @OptIn(FlowPreview::class)
     val climbrate = sensorRepository.climbRateFlow.sample(1000.milliseconds)
 
+    // Chart axis
+    var pressureAxisValuesOverrider: AxisValuesOverrider<ChartEntryModel> = AxisValuesOverrider.fixed()
+
     // Update charts
     private val pressureQueue = ArrayDeque<FloatEntry>()
     val pressureChartEntryModelProducer = ChartEntryModelProducer(pressureQueue)
@@ -46,9 +51,16 @@ class SensorViewModel @Inject constructor(
             pressureQueue.addLast(FloatEntry(counter.toFloat(), sensorData.values[0]))
             pressureChartEntryModelProducer.setEntries(pressureQueue)
             counter++
+            val yAxis = (pressureQueue.sumOf { it.y.toInt() } / pressureQueue.size)
+            pressureAxisValuesOverrider = AxisValuesOverrider.fixed(
+                minY = (yAxis - 2).toFloat(),
+                maxY = (yAxis + 2).toFloat()
+            )
         }
     }
 
+    // Chart axis
+    var altitudeAxisValuesOverrider: AxisValuesOverrider<ChartEntryModel> = AxisValuesOverrider.fixed()
     private val altitudeQueue = ArrayDeque<FloatEntry>()
     val altitudeChartEntryModelProducer = ChartEntryModelProducer(altitudeQueue)
     private suspend fun updateAltitudeGraph() {
@@ -60,6 +72,11 @@ class SensorViewModel @Inject constructor(
             altitudeQueue.addLast(FloatEntry(counter.toFloat(), altitude.values[0]))
             altitudeChartEntryModelProducer.setEntries(altitudeQueue)
             counter++
+            val yAxis = (altitudeQueue.sumOf { it.y.toInt() } / altitudeQueue.size)
+            altitudeAxisValuesOverrider = AxisValuesOverrider.fixed(
+                minY = (yAxis - 2).toFloat(),
+                maxY = (yAxis + 2).toFloat()
+            )
         }
     }
 
