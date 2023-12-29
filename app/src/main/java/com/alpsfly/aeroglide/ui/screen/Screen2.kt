@@ -22,6 +22,7 @@ import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
+import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 
 @Composable
 fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hiltViewModel()) {
@@ -56,7 +57,7 @@ fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hil
             )
             Chart(
                 chart = lineChart(
-                    axisValuesOverrider = sensorViewModel.pressureAxisValuesOverrider
+                    axisValuesOverrider = AxisValuesOverrider.adaptiveYValues(1.01f, true)
                 ),
                 chartModelProducer = sensorViewModel.pressureChartEntryModelProducer,
                 startAxis = rememberStartAxis(),
@@ -68,7 +69,7 @@ fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hil
             )
             Chart(
                 chart = lineChart(
-                    axisValuesOverrider = sensorViewModel.altitudeAxisValuesOverrider
+                    axisValuesOverrider = AxisValuesOverrider.adaptiveYValues(1.01f, true)
                 ),
                 chartModelProducer = sensorViewModel.altitudeChartEntryModelProducer,
                 startAxis = rememberStartAxis(),
