@@ -56,9 +56,7 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
                 }
             )
             Chart(
-                chart = lineChart(
-                    axisValuesOverrider = sensorViewModel.pressureAxisValuesOverrider
-                ),
+                chart = lineChart(),
                 chartModelProducer = sensorViewModel.pressureChartEntryModelProducer,
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
@@ -68,9 +66,7 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
                 }
             )
             Chart(
-                chart = lineChart(
-                    axisValuesOverrider = sensorViewModel.altitudeAxisValuesOverrider
-                ),
+                chart = lineChart(),
                 chartModelProducer = sensorViewModel.altitudeChartEntryModelProducer,
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),

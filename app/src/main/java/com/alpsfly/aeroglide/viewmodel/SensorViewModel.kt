@@ -3,6 +3,9 @@ package com.alpsfly.aeroglide.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.data.repository.SensorRepository
+import com.alpsfly.aeroglide.data.util.SensorData
+import com.alpsfly.aeroglide.data.util.SensorType
+import com.alpsfly.aeroglide.data.util.accumulate
 import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.entry.ChartEntryModel
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
@@ -18,28 +21,45 @@ import kotlin.time.Duration.Companion.milliseconds
 class SensorViewModel @Inject constructor(
     private val sensorRepository: SensorRepository,
 ) : ViewModel() {
-    @OptIn(FlowPreview::class)
-    val acceleration = sensorRepository.accelerometerDataSource.sample(1000.milliseconds)
+    // Physical acceleration sensor
+    val acceleration = sensorRepository.accelerometerDataSource.accumulate(1000.milliseconds) { list ->
+        val size = list.size.toFloat()
+        val values = floatArrayOf(
+            list.sumOf { it.values[0].toDouble() }.toFloat() / size,
+            list.sumOf { it.values[1].toDouble() }.toFloat() / size,
+            list.sumOf { it.values[2].toDouble() }.toFloat() / size
+        )
+        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = values, type = SensorType.Acceleration)
+    }
 
-    @OptIn(FlowPreview::class)
-    val pressure = sensorRepository.pressureDataSource.sample(1000.milliseconds)
+    // Physical pressure sensor
+    val pressure = sensorRepository.pressureDataSource.accumulate(1000.milliseconds) { list ->
+        val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
+        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = floatArrayOf(value), type = SensorType.Pressure)
+    }
 
-    // location
+    // Physical location sensor
     val location = sensorRepository.locationDataSource
 
-    @OptIn(FlowPreview::class)
-    val verticalAcceleration = sensorRepository.verticalAccelerationFlow.sample(1000.milliseconds)
+    // Fused vertical acceleration sensor
+    val verticalAcceleration = sensorRepository.verticalAccelerationFlow.accumulate(1000.milliseconds) { list ->
+        val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
+        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = floatArrayOf(value), type = SensorType.VerticalAcceleration)
+    }
 
-    @OptIn(FlowPreview::class)
-    val altitude = sensorRepository.altitudeFlow.sample(1000.milliseconds)
+    // Fused altitude sensor
+    val altitude = sensorRepository.altitudeFlow.accumulate(1000.milliseconds) { list ->
+        val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
+        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = floatArrayOf(value), type = SensorType.Altitude)
+    }
 
-    @OptIn(FlowPreview::class)
-    val climbrate = sensorRepository.climbRateFlow.sample(1000.milliseconds)
+    // Fused climbrate sensor
+    val climbrate = sensorRepository.climbRateFlow.accumulate(1000.milliseconds) { list ->
+        val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
+        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = floatArrayOf(value), type = SensorType.Climbrate)
+    }
 
-    // Chart axis
-    var pressureAxisValuesOverrider: AxisValuesOverrider<ChartEntryModel> = AxisValuesOverrider.fixed()
-
-    // Update charts
+    // Update pressure chart
     private val pressureQueue = ArrayDeque<FloatEntry>()
     val pressureChartEntryModelProducer = ChartEntryModelProducer(pressureQueue)
     private suspend fun updatePressureGraph() {
@@ -51,16 +71,10 @@ class SensorViewModel @Inject constructor(
             pressureQueue.addLast(FloatEntry(counter.toFloat(), sensorData.values[0]))
             pressureChartEntryModelProducer.setEntries(pressureQueue)
             counter++
-            val yAxis = (pressureQueue.sumOf { it.y.toInt() } / pressureQueue.size)
-            pressureAxisValuesOverrider = AxisValuesOverrider.fixed(
-                minY = (yAxis - 2).toFloat(),
-                maxY = (yAxis + 2).toFloat()
-            )
         }
     }
 
-    // Chart axis
-    var altitudeAxisValuesOverrider: AxisValuesOverrider<ChartEntryModel> = AxisValuesOverrider.fixed()
+    // Update altitude chart
     private val altitudeQueue = ArrayDeque<FloatEntry>()
     val altitudeChartEntryModelProducer = ChartEntryModelProducer(altitudeQueue)
     private suspend fun updateAltitudeGraph() {
@@ -72,14 +86,10 @@ class SensorViewModel @Inject constructor(
             altitudeQueue.addLast(FloatEntry(counter.toFloat(), altitude.values[0]))
             altitudeChartEntryModelProducer.setEntries(altitudeQueue)
             counter++
-            val yAxis = (altitudeQueue.sumOf { it.y.toInt() } / altitudeQueue.size)
-            altitudeAxisValuesOverrider = AxisValuesOverrider.fixed(
-                minY = (yAxis - 2).toFloat(),
-                maxY = (yAxis + 2).toFloat()
-            )
         }
     }
 
+    // update climbrate chart
     private val climbrateQueue = ArrayDeque<FloatEntry>()
     val climbrateChartEntryModelProducer = ChartEntryModelProducer(climbrateQueue)
     private suspend fun updateClimbrateGraph() {

@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -65,7 +66,7 @@ interface SensorRepository {
 class SensorRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : SensorRepository, SensorEventCallback() {
-    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO) // todo: inject
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     private val kalmanFilter: IKalmanFilter = KalmanFilter(Q_ACCELERATION, R_ALTITUDE)
@@ -136,15 +137,6 @@ class SensorRepositoryImpl @Inject constructor(
                 replay = 1
             )
         }
-
-    private fun getPressure(size: Int): Flow<SensorData> {
-        return sensorManager.pressureSensorDataFlow().chunked(size) { list ->
-            val timestamp = list.fold(0L) { sum, item -> sum + item.timestamp } / list.size
-            val frequency = list.fold(0f) { sum, item -> sum + item.frequency } / list.size / size
-            val pressure = list.fold(0f) { sum, item -> sum + item.values[0] } / list.size.toFloat()
-            SensorData(timestamp = timestamp, frequency = frequency, values = floatArrayOf(pressure), type = list[0].type)
-        }
-    }
 
     /**
      * Altitude flow
