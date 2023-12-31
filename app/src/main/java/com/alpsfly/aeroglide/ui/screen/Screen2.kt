@@ -1,6 +1,5 @@
 package com.alpsfly.aeroglide.ui.screen
 
-import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.data.util.SensorData
+import com.alpsfly.aeroglide.core.model.SensorData
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
@@ -26,9 +25,9 @@ import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 
 @Composable
 fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hiltViewModel()) {
-    val altitude by sensorViewModel.altitude.collectAsState(initial = SensorData())
-    val climbrate by sensorViewModel.climbrate.collectAsState(initial = SensorData())
-    val pressure by sensorViewModel.pressure.collectAsState(initial = SensorData())
+    val altitude by sensorViewModel.altitude.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData())
+    val climbrate by sensorViewModel.climbrate.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData())
+    val pressure by sensorViewModel.pressure.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData())
 
     Box(
         modifier = Modifier

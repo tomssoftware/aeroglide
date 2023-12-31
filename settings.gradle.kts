@@ -15,4 +15,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "AeroGlide"
 include(":app")
- 
+include(":core:common")
+include(":core:data")
+include(":core:model")

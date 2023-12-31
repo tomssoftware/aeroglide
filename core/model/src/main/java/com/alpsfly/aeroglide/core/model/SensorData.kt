@@ -1,18 +1,11 @@
-package com.alpsfly.aeroglide.data.util
-
-import timber.log.Timber
+package com.alpsfly.aeroglide.core.model
 
 data class SensorData(
     val type: SensorType = SensorType.Unknown,
-    val timestamp: Long = timestamp(),
+    val timestamp: Long = System.currentTimeMillis(), //timestamp(),
     val frequency: Float = 0f,
     val values: FloatArray = floatArrayOf(0f, 0f, 0f)
 ) {
-    init {
-        //assert(type != SensorType.Unknown)
-        //Timber.v("$timestamp ${type.name.substring(0, 4)} ${values.contentToString()}@$frequency Hz")
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -47,7 +40,4 @@ enum class SensorType {
     Climbrate
 }
 
-fun logSensorData(sensorData: SensorData) {
-    Timber.v("${sensorData.timestamp} ${sensorData.type.name.substring(0, 4)} ${sensorData.values.contentToString()}@${sensorData.frequency} Hz")
-}
 

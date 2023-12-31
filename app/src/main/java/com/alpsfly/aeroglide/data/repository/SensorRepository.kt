@@ -10,10 +10,9 @@ import com.alpsfly.aeroglide.data.util.KalmanFilter
 import com.alpsfly.aeroglide.data.util.Limits
 import com.alpsfly.aeroglide.data.util.Q_ACCELERATION
 import com.alpsfly.aeroglide.data.util.R_ALTITUDE
-import com.alpsfly.aeroglide.data.util.SensorData
-import com.alpsfly.aeroglide.data.util.SensorType
+import com.alpsfly.aeroglide.core.model.SensorData
+import com.alpsfly.aeroglide.core.model.SensorType
 import com.alpsfly.aeroglide.data.util.accelerometerSensorDataFlow
-import com.alpsfly.aeroglide.data.util.chunked
 import com.alpsfly.aeroglide.data.util.getVerticalAcceleration
 import com.alpsfly.aeroglide.data.util.linearAccelerationSensorDataFlow
 import com.alpsfly.aeroglide.data.util.locationDataFlow
@@ -30,7 +29,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -157,7 +155,11 @@ class SensorRepositoryImpl @Inject constructor(
                 if (altitude0 != 0f && pressure0 != 0f && pressure != 0f) {
                     altitude = calcAltitude(pressure, pressure0, altitude0)
                 }
-                SensorData(type = SensorType.Altitude, values = floatArrayOf(altitude), frequency = 0f)
+                SensorData(
+                    type = SensorType.Altitude,
+                    values = floatArrayOf(altitude),
+                    frequency = 0f
+                )
             }.shareIn(
                 scope = repositoryScope,
                 started = SharingStarted.WhileSubscribed(5000),
@@ -182,7 +184,11 @@ class SensorRepositoryImpl @Inject constructor(
                     }
                 }.map {
                     Timber.v("cr: ${kalmanFilter.climbrate}")
-                    SensorData(type = SensorType.Climbrate, values = floatArrayOf(kalmanFilter.climbrate), frequency = it.frequency)
+                    SensorData(
+                        type = SensorType.Climbrate,
+                        values = floatArrayOf(kalmanFilter.climbrate),
+                        frequency = it.frequency
+                    )
                 } // already a shared flow
         }
 

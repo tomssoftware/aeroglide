@@ -3,16 +3,10 @@ package com.alpsfly.aeroglide.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.data.repository.SensorRepository
-import com.alpsfly.aeroglide.data.util.SensorData
-import com.alpsfly.aeroglide.data.util.SensorType
-import com.alpsfly.aeroglide.data.util.accumulate
-import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
-import com.patrykandpatrick.vico.core.entry.ChartEntryModel
+import com.alpsfly.aeroglide.core.common.accumulate
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -29,13 +23,23 @@ class SensorViewModel @Inject constructor(
             list.sumOf { it.values[1].toDouble() }.toFloat() / size,
             list.sumOf { it.values[2].toDouble() }.toFloat() / size
         )
-        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = values, type = SensorType.Acceleration)
+        com.alpsfly.aeroglide.core.model.SensorData(
+            timestamp = System.currentTimeMillis(),
+            frequency = 1f,
+            values = values,
+            type = com.alpsfly.aeroglide.core.model.SensorType.Acceleration
+        )
     }
 
     // Physical pressure sensor
     val pressure = sensorRepository.pressureDataSource.accumulate(1000.milliseconds) { list ->
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
-        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = floatArrayOf(value), type = SensorType.Pressure)
+        com.alpsfly.aeroglide.core.model.SensorData(
+            timestamp = System.currentTimeMillis(),
+            frequency = 1f,
+            values = floatArrayOf(value),
+            type = com.alpsfly.aeroglide.core.model.SensorType.Pressure
+        )
     }
 
     // Physical location sensor
@@ -44,19 +48,34 @@ class SensorViewModel @Inject constructor(
     // Fused vertical acceleration sensor
     val verticalAcceleration = sensorRepository.verticalAccelerationFlow.accumulate(1000.milliseconds) { list ->
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
-        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = floatArrayOf(value), type = SensorType.VerticalAcceleration)
+        com.alpsfly.aeroglide.core.model.SensorData(
+            timestamp = System.currentTimeMillis(),
+            frequency = 1f,
+            values = floatArrayOf(value),
+            type = com.alpsfly.aeroglide.core.model.SensorType.VerticalAcceleration
+        )
     }
 
     // Fused altitude sensor
     val altitude = sensorRepository.altitudeFlow.accumulate(1000.milliseconds) { list ->
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
-        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = floatArrayOf(value), type = SensorType.Altitude)
+        com.alpsfly.aeroglide.core.model.SensorData(
+            timestamp = System.currentTimeMillis(),
+            frequency = 1f,
+            values = floatArrayOf(value),
+            type = com.alpsfly.aeroglide.core.model.SensorType.Altitude
+        )
     }
 
     // Fused climbrate sensor
     val climbrate = sensorRepository.climbRateFlow.accumulate(1000.milliseconds) { list ->
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
-        SensorData(timestamp = System.currentTimeMillis(), frequency = 1f, values = floatArrayOf(value), type = SensorType.Climbrate)
+        com.alpsfly.aeroglide.core.model.SensorData(
+            timestamp = System.currentTimeMillis(),
+            frequency = 1f,
+            values = floatArrayOf(value),
+            type = com.alpsfly.aeroglide.core.model.SensorType.Climbrate
+        )
     }
 
     // Update pressure chart

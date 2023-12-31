@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.data.util.SensorData
-import com.alpsfly.aeroglide.data.util.SensorType
+import com.alpsfly.aeroglide.core.model.SensorData
+import com.alpsfly.aeroglide.core.model.SensorType
 import com.alpsfly.aeroglide.ui.module.AltitudeGraph
 import com.alpsfly.aeroglide.ui.module.AnalogVario
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
@@ -25,8 +25,10 @@ fun Screen3(
     navController: NavController,
     sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
-    val altitude = sensorViewModel.altitude.collectAsState(initial = SensorData(type = SensorType.Altitude))
-    val climbrate = sensorViewModel.climbrate.collectAsState(initial = SensorData(type = SensorType.Climbrate))
+    val altitude =
+        sensorViewModel.altitude.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData(type = com.alpsfly.aeroglide.core.model.SensorType.Altitude))
+    val climbrate =
+        sensorViewModel.climbrate.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData(type = com.alpsfly.aeroglide.core.model.SensorType.Climbrate))
     Box(
         modifier = Modifier
             .fillMaxSize()

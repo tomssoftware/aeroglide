@@ -2,7 +2,10 @@ package com.alpsfly.aeroglide.data.util
 
 import kotlin.math.sqrt
 
-fun getVerticalAcceleration(linearAcceleration: SensorData, rotationVector: SensorData): Float {
+fun getVerticalAcceleration(
+    linearAcceleration: com.alpsfly.aeroglide.core.model.SensorData,
+    rotationVector: com.alpsfly.aeroglide.core.model.SensorData
+): Float {
     // Based on http://stackoverflow.com/questions/31268852/measuring-vertical-movement-of-non-fixed-android-device
     val rotationMatrix = FloatArray(9) // Both 9 and 16 works, depending on what you're doing with it
     getRotationMatrixFromVector(rotationMatrix, rotationVector.values)

@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.data.util
+package com.alpsfly.aeroglide.core.common
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

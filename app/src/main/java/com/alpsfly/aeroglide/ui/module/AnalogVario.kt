@@ -23,16 +23,14 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.alpsfly.aeroglide.data.util.SensorData
+import com.alpsfly.aeroglide.core.model.SensorData
 import kotlin.math.min
 
 @Composable
-fun AnalogVario(climbrateState: State<SensorData>) {
+fun AnalogVario(climbrateState: State<com.alpsfly.aeroglide.core.model.SensorData>) {
     val textMeasurer = rememberTextMeasurer()
     val colorPrimary = MaterialTheme.colorScheme.primary
     val typographyBodyMedium = MaterialTheme.typography.titleLarge
