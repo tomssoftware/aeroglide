@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.data.util
+package com.alpsfly.aeroglide.core.common.hardware
 
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -14,8 +14,8 @@ fun SensorManager.accelerometerSensorDataFlow() = callbackFlow {
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = com.alpsfly.aeroglide.core.model.SensorData(
-                    type = com.alpsfly.aeroglide.core.model.SensorType.Acceleration,
+                val sensorData = SensorData(
+                    type = SensorType.Acceleration,
                     frequency = frequency.get(),
                     values = event.values.clone()
                 )
@@ -35,8 +35,8 @@ fun SensorManager.linearAccelerationSensorDataFlow() = callbackFlow {
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = com.alpsfly.aeroglide.core.model.SensorData(
-                    type = com.alpsfly.aeroglide.core.model.SensorType.LinearAcceleration,
+                val sensorData = SensorData(
+                    type = SensorType.LinearAcceleration,
                     frequency = frequency.get(),
                     values = event.values.clone()
                 )
@@ -56,8 +56,8 @@ fun SensorManager.pressureSensorDataFlow() = callbackFlow {
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = com.alpsfly.aeroglide.core.model.SensorData(
-                    type = com.alpsfly.aeroglide.core.model.SensorType.Pressure,
+                val sensorData = SensorData(
+                    type = SensorType.Pressure,
                     frequency = frequency.get(),
                     values = event.values.clone()
                 )
@@ -77,8 +77,8 @@ fun SensorManager.rotationVectorSensorDataFlow() = callbackFlow {
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = com.alpsfly.aeroglide.core.model.SensorData(
-                    type = com.alpsfly.aeroglide.core.model.SensorType.RotationVector,
+                val sensorData = SensorData(
+                    type = SensorType.RotationVector,
                     frequency = frequency.get(),
                     values = event.values.clone()
                 )

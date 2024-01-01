@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.data.service
+package com.alpsfly.aeroglide.core.common.location
 
 import android.content.Context
 import android.content.pm.PackageManager

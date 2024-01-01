@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.data.util
+package com.alpsfly.aeroglide.core.common.hardware
 
 import timber.log.Timber
 

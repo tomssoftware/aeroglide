@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.data.util
+package com.alpsfly.aeroglide.core.common
 
 class Limits {
     companion object {
@@ -12,8 +12,6 @@ class Limits {
         const val minSpeed = 0f // km/h
         private const val minVerticalAcceleration = -100f // ms2
         private const val maxVerticalAcceleration = 100f // ms2
-
-
         const val invalidAltitude = Float.NEGATIVE_INFINITY
         const val invalidSpeed = Float.NEGATIVE_INFINITY
         const val invalidPressure = Float.NEGATIVE_INFINITY

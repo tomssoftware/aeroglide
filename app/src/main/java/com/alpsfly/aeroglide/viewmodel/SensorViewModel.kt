@@ -2,8 +2,10 @@ package com.alpsfly.aeroglide.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alpsfly.aeroglide.data.repository.SensorRepository
+import com.alpsfly.aeroglide.core.data.repository.SensorRepository
 import com.alpsfly.aeroglide.core.common.accumulate
+import com.alpsfly.aeroglide.core.common.hardware.SensorData
+import com.alpsfly.aeroglide.core.common.hardware.SensorType
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,22 +25,22 @@ class SensorViewModel @Inject constructor(
             list.sumOf { it.values[1].toDouble() }.toFloat() / size,
             list.sumOf { it.values[2].toDouble() }.toFloat() / size
         )
-        com.alpsfly.aeroglide.core.model.SensorData(
+        SensorData(
             timestamp = System.currentTimeMillis(),
             frequency = 1f,
             values = values,
-            type = com.alpsfly.aeroglide.core.model.SensorType.Acceleration
+            type = SensorType.Acceleration
         )
     }
 
     // Physical pressure sensor
     val pressure = sensorRepository.pressureDataSource.accumulate(1000.milliseconds) { list ->
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
-        com.alpsfly.aeroglide.core.model.SensorData(
+        SensorData(
             timestamp = System.currentTimeMillis(),
             frequency = 1f,
             values = floatArrayOf(value),
-            type = com.alpsfly.aeroglide.core.model.SensorType.Pressure
+            type = SensorType.Pressure
         )
     }
 
@@ -48,33 +50,33 @@ class SensorViewModel @Inject constructor(
     // Fused vertical acceleration sensor
     val verticalAcceleration = sensorRepository.verticalAccelerationFlow.accumulate(1000.milliseconds) { list ->
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
-        com.alpsfly.aeroglide.core.model.SensorData(
+        SensorData(
             timestamp = System.currentTimeMillis(),
             frequency = 1f,
             values = floatArrayOf(value),
-            type = com.alpsfly.aeroglide.core.model.SensorType.VerticalAcceleration
+            type = SensorType.VerticalAcceleration
         )
     }
 
     // Fused altitude sensor
     val altitude = sensorRepository.altitudeFlow.accumulate(1000.milliseconds) { list ->
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
-        com.alpsfly.aeroglide.core.model.SensorData(
+        SensorData(
             timestamp = System.currentTimeMillis(),
             frequency = 1f,
             values = floatArrayOf(value),
-            type = com.alpsfly.aeroglide.core.model.SensorType.Altitude
+            type = SensorType.Altitude
         )
     }
 
     // Fused climbrate sensor
     val climbrate = sensorRepository.climbRateFlow.accumulate(1000.milliseconds) { list ->
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
-        com.alpsfly.aeroglide.core.model.SensorData(
+        SensorData(
             timestamp = System.currentTimeMillis(),
             frequency = 1f,
             values = floatArrayOf(value),
-            type = com.alpsfly.aeroglide.core.model.SensorType.Climbrate
+            type = SensorType.Climbrate
         )
     }
 

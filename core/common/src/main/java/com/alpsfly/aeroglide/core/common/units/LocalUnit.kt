@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.units
+package com.alpsfly.aeroglide.core.common.units
 
 class LocalUnit internal constructor( // todo: make template
     private val value: Float, // value

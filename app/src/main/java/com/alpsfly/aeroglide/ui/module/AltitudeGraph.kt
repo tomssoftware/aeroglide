@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.core.model.SensorData
+import com.alpsfly.aeroglide.core.common.hardware.SensorData
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
@@ -25,7 +25,7 @@ import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 
 @Composable
 fun AltitudeGraph(navController: NavController, sensorViewModel: SensorViewModel = hiltViewModel()) {
-    val altitude by sensorViewModel.altitude.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData())
+    val altitude by sensorViewModel.altitude.collectAsState(initial = SensorData())
 
     Box(
         modifier = Modifier

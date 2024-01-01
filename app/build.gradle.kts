@@ -70,6 +70,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.48.1")
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation(project(mapOf("path" to ":core:common")))
+    implementation(project(mapOf("path" to ":core:data")))
     implementation(project(mapOf("path" to ":core:model")))
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
     // vico charts

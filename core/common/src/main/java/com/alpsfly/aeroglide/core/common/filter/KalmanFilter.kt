@@ -1,6 +1,4 @@
-package com.alpsfly.aeroglide.data.util
-
-import timber.log.Timber
+package com.alpsfly.aeroglide.core.common.filter
 
 const val Q_ACCELERATION = 0.9f
 const val R_ALTITUDE = 0.1f

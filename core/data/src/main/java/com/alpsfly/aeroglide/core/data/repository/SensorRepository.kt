@@ -1,23 +1,22 @@
-package com.alpsfly.aeroglide.data.repository
+package com.alpsfly.aeroglide.core.data.repository
 
 import android.content.Context
 import android.hardware.SensorEventCallback
 import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
-import com.alpsfly.aeroglide.data.util.IKalmanFilter
-import com.alpsfly.aeroglide.data.util.KalmanFilter
-import com.alpsfly.aeroglide.data.util.Limits
-import com.alpsfly.aeroglide.data.util.Q_ACCELERATION
-import com.alpsfly.aeroglide.data.util.R_ALTITUDE
-import com.alpsfly.aeroglide.core.model.SensorData
-import com.alpsfly.aeroglide.core.model.SensorType
-import com.alpsfly.aeroglide.data.util.accelerometerSensorDataFlow
-import com.alpsfly.aeroglide.data.util.getVerticalAcceleration
-import com.alpsfly.aeroglide.data.util.linearAccelerationSensorDataFlow
-import com.alpsfly.aeroglide.data.util.locationDataFlow
-import com.alpsfly.aeroglide.data.util.pressureSensorDataFlow
-import com.alpsfly.aeroglide.data.util.rotationVectorSensorDataFlow
+import com.alpsfly.aeroglide.core.common.filter.IKalmanFilter
+import com.alpsfly.aeroglide.core.common.filter.KalmanFilter
+import com.alpsfly.aeroglide.core.common.Limits
+import com.alpsfly.aeroglide.core.common.filter.Q_ACCELERATION
+import com.alpsfly.aeroglide.core.common.filter.R_ALTITUDE
+import com.alpsfly.aeroglide.core.common.hardware.SensorData
+import com.alpsfly.aeroglide.core.common.hardware.SensorType
+import com.alpsfly.aeroglide.core.common.hardware.accelerometerSensorDataFlow
+import com.alpsfly.aeroglide.core.common.hardware.linearAccelerationSensorDataFlow
+import com.alpsfly.aeroglide.core.common.location.locationDataFlow
+import com.alpsfly.aeroglide.core.common.hardware.pressureSensorDataFlow
+import com.alpsfly.aeroglide.core.common.hardware.rotationVectorSensorDataFlow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -127,7 +126,7 @@ class SensorRepositoryImpl @Inject constructor(
                 SensorData(
                     type = SensorType.VerticalAcceleration,
                     frequency = (a.frequency + r.frequency) / 2f,
-                    values = floatArrayOf(getVerticalAcceleration(a, r))
+                    values = floatArrayOf(com.alpsfly.aeroglide.core.data.repository.getVerticalAcceleration(a, r))
                 )
             }.shareIn(
                 scope = repositoryScope,

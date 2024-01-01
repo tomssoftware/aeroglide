@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.core.model.SensorData
+import com.alpsfly.aeroglide.core.common.hardware.SensorData
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
 
 @Composable
@@ -24,11 +24,11 @@ fun Screen1(
     navController: NavController,
     sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
-    val acceleration by sensorViewModel.acceleration.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData())
-    val verticalAccel by sensorViewModel.verticalAcceleration.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData())
-    val altitude by sensorViewModel.altitude.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData())
-    val climbrate by sensorViewModel.climbrate.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData())
-    val pressure by sensorViewModel.pressure.collectAsState(initial = com.alpsfly.aeroglide.core.model.SensorData())
+    val acceleration by sensorViewModel.acceleration.collectAsState(initial = SensorData())
+    val verticalAccel by sensorViewModel.verticalAcceleration.collectAsState(initial = SensorData())
+    val altitude by sensorViewModel.altitude.collectAsState(initial = SensorData())
+    val climbrate by sensorViewModel.climbrate.collectAsState(initial = SensorData())
+    val pressure by sensorViewModel.pressure.collectAsState(initial = SensorData())
     val location by sensorViewModel.location.collectAsState(initial = Location("none"))
     Box(
         modifier = Modifier

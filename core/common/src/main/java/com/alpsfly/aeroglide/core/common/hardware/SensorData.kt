@@ -1,8 +1,10 @@
-package com.alpsfly.aeroglide.core.model
+package com.alpsfly.aeroglide.core.common.hardware
+
+import com.alpsfly.aeroglide.core.common.timestamp
 
 data class SensorData(
     val type: SensorType = SensorType.Unknown,
-    val timestamp: Long = System.currentTimeMillis(), //timestamp(),
+    val timestamp: Long = timestamp(),
     val frequency: Float = 0f,
     val values: FloatArray = floatArrayOf(0f, 0f, 0f)
 ) {
