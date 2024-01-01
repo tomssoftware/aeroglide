@@ -4,6 +4,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventCallback
 import android.hardware.SensorManager
+import android.hardware.SensorManager.SENSOR_DELAY_FASTEST
 import android.hardware.SensorManager.SENSOR_DELAY_NORMAL
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -23,7 +24,7 @@ fun SensorManager.accelerometerSensorDataFlow() = callbackFlow {
             }
         }
     }
-    registerListener(callback, getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SENSOR_DELAY_NORMAL)
+    registerListener(callback, getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SENSOR_DELAY_FASTEST)
     awaitClose {
         unregisterListener(callback)
     }
@@ -44,7 +45,7 @@ fun SensorManager.linearAccelerationSensorDataFlow() = callbackFlow {
             }
         }
     }
-    registerListener(callback, getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SENSOR_DELAY_NORMAL)
+    registerListener(callback, getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SENSOR_DELAY_FASTEST)
     awaitClose {
         unregisterListener(callback)
     }
@@ -86,7 +87,7 @@ fun SensorManager.rotationVectorSensorDataFlow() = callbackFlow {
             }
         }
     }
-    registerListener(callback, getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SENSOR_DELAY_NORMAL)
+    registerListener(callback, getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SENSOR_DELAY_FASTEST)
     awaitClose {
         unregisterListener(callback)
     }

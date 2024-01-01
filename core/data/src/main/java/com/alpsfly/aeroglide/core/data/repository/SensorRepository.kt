@@ -11,6 +11,7 @@ import com.alpsfly.aeroglide.core.common.Limits
 import com.alpsfly.aeroglide.core.common.filter.Q_ACCELERATION
 import com.alpsfly.aeroglide.core.common.filter.R_ALTITUDE
 import com.alpsfly.aeroglide.core.common.hardware.SensorData
+import com.alpsfly.aeroglide.core.common.hardware.DeltaTime
 import com.alpsfly.aeroglide.core.common.hardware.SensorType
 import com.alpsfly.aeroglide.core.common.hardware.accelerometerSensorDataFlow
 import com.alpsfly.aeroglide.core.common.hardware.linearAccelerationSensorDataFlow
@@ -24,11 +25,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.pow
@@ -169,27 +170,21 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * Climbrate flow
      */
-    override val climbRateFlow: Flow<SensorData>
-        get() {
-            return merge(altitudeFlow, verticalAccelerationFlow)
-                .onEach {
-                    if (it.type == SensorType.Altitude) {
-                        kalmanFilter.update(it.values[0])
-                    }
-                    if (it.type == SensorType.VerticalAcceleration) {
-                        if (it.frequency > 0) {
-                            kalmanFilter.predict(it.values[0], 1f / it.frequency)
-                        }
-                    }
-                }.map {
-                    Timber.v("cr: ${kalmanFilter.climbrate}")
-                    SensorData(
-                        type = SensorType.Climbrate,
-                        values = floatArrayOf(kalmanFilter.climbrate),
-                        frequency = it.frequency
-                    )
-                } // already a shared flow
-        }
+    override val climbRateFlow = flow {
+        val deltaTime = AtomicReference(DeltaTime())
+        merge(altitudeFlow, verticalAccelerationFlow).collect {
+            if (it.type == SensorType.Altitude) {
+                kalmanFilter.update(it.values[0])
+            }
+            if (it.type == SensorType.VerticalAcceleration) {
+                if (deltaTime.get().isValid()) {
+                    kalmanFilter.predict(it.values[0], deltaTime.get().delta())
+                }
+                deltaTime.get().update(System.nanoTime())
+            }
+            emit(SensorData(type = SensorType.Climbrate, values = floatArrayOf(kalmanFilter.climbrate), frequency = 1f / deltaTime.get().delta()))
+        } // already a shared flow
+    }
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
         if (altitude0 in Limits.minAltitude..Limits.maxAltitude &&

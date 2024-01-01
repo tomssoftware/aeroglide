@@ -72,6 +72,8 @@ dependencies {
     implementation(project(mapOf("path" to ":core:common")))
     implementation(project(mapOf("path" to ":core:data")))
     implementation(project(mapOf("path" to ":core:model")))
+    implementation(project(mapOf("path" to ":feature:analogvario")))
+    
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
     // vico charts
     implementation("com.patrykandpatrick.vico:compose:1.13.0")

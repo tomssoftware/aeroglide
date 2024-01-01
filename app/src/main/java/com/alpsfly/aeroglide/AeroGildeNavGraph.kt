@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.alpsfly.aeroglide.feature.analogvario.AnalogVarioScreen
 import com.alpsfly.aeroglide.ui.screen.DetailScreen
 import com.alpsfly.aeroglide.ui.screen.Screen
 import com.alpsfly.aeroglide.ui.screen.Screen1
 import com.alpsfly.aeroglide.ui.screen.Screen2
-import com.alpsfly.aeroglide.ui.screen.Screen3
 
 @Composable
 fun AeroGlideNavGraph(navController: NavHostController) {
@@ -29,7 +29,7 @@ fun AeroGlideNavGraph(navController: NavHostController) {
         composable(
             route = Screen.Screen3.route
         ) {
-            Screen3(navController = navController)
+            AnalogVarioScreen(navController = navController)
         }
         composable(
             route = Screen.DetailScreen.route

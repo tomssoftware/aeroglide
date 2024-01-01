@@ -1,20 +1,21 @@
-package com.alpsfly.aeroglide.ui.module
+package com.alpsfly.aeroglide.feature.analogvario
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -26,15 +27,55 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.common.hardware.SensorData
+import com.alpsfly.aeroglide.core.common.hardware.SensorType
+import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
+import com.patrykandpatrick.vico.compose.chart.Chart
+import com.patrykandpatrick.vico.compose.chart.line.lineChart
+import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import kotlin.math.min
+
+@Composable
+fun AnalogVarioScreen(
+    navController: NavController,
+    sensorViewModel: AnalogVarioViewModel = hiltViewModel()
+) {
+    val altitude =
+        sensorViewModel.altitude.collectAsState(initial = SensorData(type = SensorType.Altitude))
+    val climbrate =
+        sensorViewModel.climbrate.collectAsState(initial = SensorData(type = SensorType.Climbrate))
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "this is ${altitude.value.values[0]}",
+                modifier = Modifier
+                    .clickable {
+                        //navController.navigate(route = Screen.Screen1.route)
+                    }
+            )
+
+            AnalogVario(climbrate)
+            AltitudeGraph(navController = navController, sensorViewModel)
+        }
+    }
+}
 
 @Composable
 fun AnalogVario(climbrateState: State<SensorData>) {
     val textMeasurer = rememberTextMeasurer()
     val colorPrimary = MaterialTheme.colorScheme.primary
     val typographyBodyMedium = MaterialTheme.typography.titleLarge
-
 
     Box(
         modifier = Modifier
@@ -46,6 +87,9 @@ fun AnalogVario(climbrateState: State<SensorData>) {
                 .fillMaxWidth()
                 .aspectRatio(1f)
         ) {
+            /**
+             * Draw the vario scale
+             */
             /**
              * Draw the vario scale
              */
@@ -96,6 +140,9 @@ fun AnalogVario(climbrateState: State<SensorData>) {
                 /**
                  * Draw the vario climbrate text
                  */
+                /**
+                 * Draw the vario climbrate text
+                 */
                 val measuredText = textMeasurer.measure(
                     AnnotatedString(climbrateState.value.timestamp.toString())
                 )
@@ -113,26 +160,41 @@ fun AnalogVario(climbrateState: State<SensorData>) {
                 /**
                  * Draw the vario units text
                  */
+                /**
+                 * Draw the vario units text
+                 */
             }
         }
     }
 }
 
 @Composable
-fun RememberTest() {
-    var cnt by remember {
-        mutableIntStateOf(0)
-    }
+fun AltitudeGraph(navController: NavController, sensorViewModel: AnalogVarioViewModel = hiltViewModel()) {
+    val altitude by sensorViewModel.altitude.collectAsState(initial = SensorData())
 
-    Column {
-        Button(
-            onClick = { cnt += 1 }) {
-            Text("Button")
-        }
-        Text(
-            text = "Pressed $cnt times",
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.bodyMedium
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         )
+        {
+            Text(text = "altitude ${altitude.values[0]}@${altitude.frequency}",
+                modifier = Modifier.clickable {
+                }
+            )
+            Chart(
+                chart = lineChart(
+                    axisValuesOverrider = AxisValuesOverrider.adaptiveYValues(1.01f, true)
+                ),
+                chartModelProducer = sensorViewModel.altitudeChartEntryModelProducer,
+                startAxis = rememberStartAxis(),
+                bottomAxis = rememberBottomAxis(),
+            )
+        }
     }
 }

@@ -17,3 +17,15 @@ class SensorFrequency(private val startTime: Long = System.nanoTime(), private v
         return (count / ((now - startTime) / 1000000000.0f))
     }
 }
+
+class DeltaTime(private var time: Long = 0L) {
+    fun isValid(): Boolean = (time > 0)
+
+    fun delta(): Float {
+        return (System.nanoTime() - time) / 1000000000.0f
+    }
+
+    fun update(emissionTime: Long) {
+        time = emissionTime
+    }
+}
