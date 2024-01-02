@@ -11,7 +11,6 @@ import com.alpsfly.aeroglide.core.common.Limits
 import com.alpsfly.aeroglide.core.common.filter.Q_ACCELERATION
 import com.alpsfly.aeroglide.core.common.filter.R_ALTITUDE
 import com.alpsfly.aeroglide.core.common.hardware.SensorData
-import com.alpsfly.aeroglide.core.common.hardware.DeltaTime
 import com.alpsfly.aeroglide.core.common.hardware.SensorType
 import com.alpsfly.aeroglide.core.common.hardware.accelerometerSensorDataFlow
 import com.alpsfly.aeroglide.core.common.hardware.linearAccelerationSensorDataFlow
@@ -126,7 +125,6 @@ class SensorRepositoryImpl @Inject constructor(
             return combine(sensorManager.linearAccelerationSensorDataFlow(), sensorManager.rotationVectorSensorDataFlow()) { a, r ->
                 SensorData(
                     type = SensorType.VerticalAcceleration,
-                    frequency = (a.frequency + r.frequency) / 2f,
                     values = floatArrayOf(com.alpsfly.aeroglide.core.data.repository.getVerticalAcceleration(a, r))
                 )
             }.shareIn(
@@ -158,7 +156,6 @@ class SensorRepositoryImpl @Inject constructor(
                 SensorData(
                     type = SensorType.Altitude,
                     values = floatArrayOf(altitude),
-                    frequency = 0f
                 )
             }.shareIn(
                 scope = repositoryScope,
@@ -171,18 +168,16 @@ class SensorRepositoryImpl @Inject constructor(
      * Climbrate flow
      */
     override val climbRateFlow = flow {
-        val deltaTime = AtomicReference(DeltaTime())
         merge(altitudeFlow, verticalAccelerationFlow).collect {
-            if (it.type == SensorType.Altitude) {
-                kalmanFilter.update(it.values[0])
-            }
-            if (it.type == SensorType.VerticalAcceleration) {
-                if (deltaTime.get().isValid()) {
-                    kalmanFilter.predict(it.values[0], deltaTime.get().delta())
+            when (it.type) {
+                SensorType.Altitude -> kalmanFilter.update(it.values[0])
+                SensorType.VerticalAcceleration -> kalmanFilter.predict(it.values[0], System.nanoTime())
+                else -> {
+                    assert(false)
+                    return@collect
                 }
-                deltaTime.get().update(System.nanoTime())
             }
-            emit(SensorData(type = SensorType.Climbrate, values = floatArrayOf(kalmanFilter.climbrate), frequency = 1f / deltaTime.get().delta()))
+            emit(SensorData(type = SensorType.Climbrate, values = floatArrayOf(kalmanFilter.climbrate)))
         } // already a shared flow
     }
 

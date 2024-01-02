@@ -40,7 +40,7 @@ fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hil
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "climbrate: ${climbrate.values[0]}@${climbrate.frequency}",
+            Text(text = "climbrate: ${climbrate.values[0]}",
                 modifier = Modifier.clickable {
                 }
             )
@@ -50,7 +50,7 @@ fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hil
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
             )
-            Text(text = "pressure: ${pressure.values[0]}@${pressure.frequency}",
+            Text(text = "pressure: ${pressure.values[0]}",
                 modifier = Modifier.clickable {
                 }
             )
@@ -62,7 +62,7 @@ fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hil
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
             )
-            Text(text = "altitude ${altitude.values[0]}@${altitude.frequency}",
+            Text(text = "altitude ${altitude.values[0]}",
                 modifier = Modifier.clickable {
                 }
             )

@@ -1,6 +1,7 @@
 package com.alpsfly.aeroglide.feature.analogvario
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.common.accumulate
 import com.alpsfly.aeroglide.core.common.hardware.SensorData
 import com.alpsfly.aeroglide.core.common.hardware.SensorType
@@ -26,7 +27,6 @@ class AnalogVarioViewModel @Inject constructor(
         )
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = values,
             type = SensorType.Acceleration
         )
@@ -37,7 +37,6 @@ class AnalogVarioViewModel @Inject constructor(
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = floatArrayOf(value),
             type = SensorType.Pressure
         )
@@ -51,7 +50,6 @@ class AnalogVarioViewModel @Inject constructor(
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = floatArrayOf(value),
             type = SensorType.VerticalAcceleration
         )
@@ -62,7 +60,6 @@ class AnalogVarioViewModel @Inject constructor(
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = floatArrayOf(value),
             type = SensorType.Altitude
         )
@@ -73,7 +70,6 @@ class AnalogVarioViewModel @Inject constructor(
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = floatArrayOf(value),
             type = SensorType.Climbrate
         )
@@ -125,14 +121,14 @@ class AnalogVarioViewModel @Inject constructor(
     }
 
     init {
-//        viewModelScope.launch {
-//            updatePressureGraph()
-//        }
-//        viewModelScope.launch {
-//            updateAltitudeGraph()
-//        }
-//        viewModelScope.launch {
-//            updateClimbrateGraph()
-//        }
+        viewModelScope.launch {
+            updatePressureGraph()
+        }
+        viewModelScope.launch {
+            updateAltitudeGraph()
+        }
+        viewModelScope.launch {
+            updateClimbrateGraph()
+        }
     }
 }

@@ -151,10 +151,6 @@ fun AnalogVario(climbrateState: State<SensorData>) {
                     textMeasurer = textMeasurer,
                     text = climbrateState.value.values[0].toString(),
                     style = typographyBodyMedium,
-//                    style = TextStyle(
-//                        textAlign = TextAlign.Center,
-//                        color = colorPrimary,
-//                    ),
                     topLeft = Offset(-measuredText.size.width.toFloat() / 2f, -measuredText.size.height.toFloat() / 2f)
                 )
                 /**
@@ -183,7 +179,7 @@ fun AltitudeGraph(navController: NavController, sensorViewModel: AnalogVarioView
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "altitude ${altitude.values[0]}@${altitude.frequency}",
+            Text(text = "altitude ${altitude.values[0]}",
                 modifier = Modifier.clickable {
                 }
             )

@@ -27,7 +27,6 @@ class SensorViewModel @Inject constructor(
         )
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = values,
             type = SensorType.Acceleration
         )
@@ -38,7 +37,6 @@ class SensorViewModel @Inject constructor(
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = floatArrayOf(value),
             type = SensorType.Pressure
         )
@@ -52,7 +50,6 @@ class SensorViewModel @Inject constructor(
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = floatArrayOf(value),
             type = SensorType.VerticalAcceleration
         )
@@ -63,7 +60,6 @@ class SensorViewModel @Inject constructor(
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = floatArrayOf(value),
             type = SensorType.Altitude
         )
@@ -74,7 +70,6 @@ class SensorViewModel @Inject constructor(
         val value = list.sumOf { it.values[0].toDouble() }.toFloat() / list.size.toFloat()
         SensorData(
             timestamp = System.currentTimeMillis(),
-            frequency = 1f,
             values = floatArrayOf(value),
             type = SensorType.Climbrate
         )

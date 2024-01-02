@@ -5,20 +5,21 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventCallback
 import android.hardware.SensorManager
 import android.hardware.SensorManager.SENSOR_DELAY_FASTEST
-import android.hardware.SensorManager.SENSOR_DELAY_NORMAL
+import android.hardware.SensorManager.SENSOR_DELAY_GAME
+import com.alpsfly.aeroglide.core.common.filter.LowPassFilter
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 
 /** Accelerometer sensor callback flow with SENSOR_DELAY_NORMAl, 200ms  */
 fun SensorManager.accelerometerSensorDataFlow() = callbackFlow {
     val callback = object : SensorEventCallback() {
-        val frequency = SensorFrequency()
+        val filter = LowPassFilter(0.72f)
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
+                val filteredValues = filter.filter(it.values.clone(), System.nanoTime())
                 val sensorData = SensorData(
                     type = SensorType.Acceleration,
-                    frequency = frequency.get(),
-                    values = event.values.clone()
+                    values = filteredValues
                 )
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
@@ -33,13 +34,13 @@ fun SensorManager.accelerometerSensorDataFlow() = callbackFlow {
 /** Linear Acceleration sensor callback flow with SENSOR_DELAY_NORMAl, 200ms  */
 fun SensorManager.linearAccelerationSensorDataFlow() = callbackFlow {
     val callback = object : SensorEventCallback() {
-        val frequency = SensorFrequency()
+        val filter = LowPassFilter(0.72f)
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
+                val filteredValues = filter.filter(it.values.clone(), System.nanoTime())
                 val sensorData = SensorData(
                     type = SensorType.LinearAcceleration,
-                    frequency = frequency.get(),
-                    values = event.values.clone()
+                    values = filteredValues
                 )
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
@@ -54,19 +55,19 @@ fun SensorManager.linearAccelerationSensorDataFlow() = callbackFlow {
 /** Pressure sensor callback flow with SENSOR_DELAY_NORMAl, 200ms  */
 fun SensorManager.pressureSensorDataFlow() = callbackFlow {
     val callback = object : SensorEventCallback() {
-        val frequency = SensorFrequency()
+        val filter = LowPassFilter(0.2f)
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
+                val filteredValues = filter.filter(it.values.clone(), System.nanoTime())
                 val sensorData = SensorData(
                     type = SensorType.Pressure,
-                    frequency = frequency.get(),
-                    values = event.values.clone()
+                    values = filteredValues
                 )
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
         }
     }
-    registerListener(callback, getDefaultSensor(Sensor.TYPE_PRESSURE), SENSOR_DELAY_NORMAL)
+    registerListener(callback, getDefaultSensor(Sensor.TYPE_PRESSURE), SENSOR_DELAY_GAME)
     awaitClose {
         unregisterListener(callback)
     }
@@ -75,13 +76,13 @@ fun SensorManager.pressureSensorDataFlow() = callbackFlow {
 /** Rotation vector callback flow with SENSOR_DELAY_NORMAl, 200ms  */
 fun SensorManager.rotationVectorSensorDataFlow() = callbackFlow {
     val callback = object : SensorEventCallback() {
-        val frequency = SensorFrequency()
+        val filter = LowPassFilter(0.72f)
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
+                val filteredValues = filter.filter(it.values.clone(), System.nanoTime())
                 val sensorData = SensorData(
                     type = SensorType.RotationVector,
-                    frequency = frequency.get(),
-                    values = event.values.clone()
+                    values = filteredValues
                 )
                 this@callbackFlow.trySend(sensorData).isSuccess
             }

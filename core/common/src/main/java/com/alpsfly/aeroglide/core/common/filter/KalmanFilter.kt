@@ -10,6 +10,7 @@ interface IKalmanFilter {
 
     fun update(h: Float)
     fun predict(a: Float, dt: Float)
+    fun predict(a: Float, t: Long)
 
     val altitude: Float
     val climbrate: Float
@@ -26,6 +27,7 @@ interface IKalmanFilter {
  * @date 23 Jul 2015
  */
 class KalmanFilter(private var qAccel: Float, private var rAltitude: Float) : IKalmanFilter {
+    private var t: Long = 0L
     private val q: Array<FloatArray> = arrayOf(
         floatArrayOf(0f, 0f),
         floatArrayOf(0f, 0f)
@@ -52,6 +54,14 @@ class KalmanFilter(private var qAccel: Float, private var rAltitude: Float) : IK
 
     override fun reset(h: Float) {
         this.h = h
+    }
+
+    override fun predict(a: Float, t: Long) {
+        if (this.t > 0L) {
+            val dt = (t - this.t) / 1000000000.0f
+            predict(a, dt)
+        }
+        this.t = t
     }
 
     override fun predict(a: Float, dt: Float) {

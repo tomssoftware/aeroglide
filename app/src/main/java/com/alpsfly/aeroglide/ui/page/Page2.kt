@@ -38,7 +38,7 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "climbrate: ${climbrate.values[0]}@${climbrate.frequency}",
+            Text(text = "climbrate: ${climbrate.values[0]}",
                 modifier = Modifier.clickable {
                 }
             )
@@ -48,7 +48,7 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
             )
-            Text(text = "pressure: ${pressure.values[0]}@${pressure.frequency}",
+            Text(text = "pressure: ${pressure.values[0]}",
                 modifier = Modifier.clickable {
                 }
             )
@@ -58,7 +58,7 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
             )
-            Text(text = "altitude ${altitude.values[0]}@${altitude.frequency}",
+            Text(text = "altitude ${altitude.values[0]}",
                 modifier = Modifier.clickable {
                 }
             )

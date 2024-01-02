@@ -41,19 +41,19 @@ fun Screen1(
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "Accel:  x:${acceleration.values[0]}@${acceleration.frequency}Hz",
+            Text(text = "Accel:  x:${acceleration.values[0]}",
                 modifier = Modifier.clickable {
                     navController.navigate(route = Screen.Screen2.route)
                 }
             )
-            Text(text = "Vert. accel:  x:${verticalAccel.values[0]}@${verticalAccel.frequency}Hz",
+            Text(text = "Vert. accel:  x:${verticalAccel.values[0]}",
                 modifier = Modifier.clickable {
                     navController.navigate(route = Screen.Screen2.route)
                 }
             )
-            Text(text = "Altitude: ${altitude.values[0]}@${altitude.frequency}Hz")
-            Text(text = "Climbrate: ${climbrate.values[0]}@${climbrate.frequency}Hz")
-            Text(text = "Pressure: ${pressure.values[0]}@${pressure.frequency}Hz")
+            Text(text = "Altitude: ${altitude.values[0]}")
+            Text(text = "Climbrate: ${climbrate.values[0]}")
+            Text(text = "Pressure: ${pressure.values[0]}@")
             Text(text = "Location: ${location.altitude}")
         }
     }
