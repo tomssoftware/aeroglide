@@ -2,13 +2,16 @@ package com.alpsfly.aeroglide.data.util
 
 import timber.log.Timber
 
-class SensorFrequency(private val startTime: Long = System.nanoTime(), private var count: Long = 0L) {
+class SensorFrequency(private var startTime: Long = 0, private var count: Long = 0L) {
 
     init {
         Timber.v("SensorFrequency init")
     }
 
     fun get(): Float {
+        if (startTime == 0L) {
+            startTime = System.nanoTime();
+        }
         return getFrequency(startTime, count++)
     }
 
