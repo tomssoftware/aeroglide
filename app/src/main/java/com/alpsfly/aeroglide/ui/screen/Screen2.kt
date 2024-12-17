@@ -22,6 +22,7 @@ import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
+import com.patrykandpatrick.vico.core.axis.horizontal.HorizontalAxis
 
 @Composable
 fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hiltViewModel()) {

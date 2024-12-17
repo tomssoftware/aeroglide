@@ -11,6 +11,7 @@ import com.alpsfly.aeroglide.data.util.Limits
 import com.alpsfly.aeroglide.data.util.Q_ACCELERATION
 import com.alpsfly.aeroglide.data.util.R_ALTITUDE
 import com.alpsfly.aeroglide.data.util.SensorData
+import com.alpsfly.aeroglide.data.util.SensorFrequency
 import com.alpsfly.aeroglide.data.util.SensorType
 import com.alpsfly.aeroglide.data.util.accelerometerSensorDataFlow
 import com.alpsfly.aeroglide.data.util.chunked
@@ -23,11 +24,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import timber.log.Timber
@@ -77,64 +77,43 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * acceleration state flow
      */
-    override val accelerometerDataSource = sensorManager.accelerometerSensorDataFlow().shareIn(
-        scope = repositoryScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        replay = 1
-    )
+    override val accelerometerDataSource = sensorManager.accelerometerSensorDataFlow().shareSensorData()
 
     /**
      * Linear acceleration state flow
      */
-    override val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow().shareIn(
-        scope = repositoryScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        replay = 1
-    )
+    override val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow().shareSensorData()
 
     /**
      * pressure state flow
      */
-    override val pressureDataSource = sensorManager.pressureSensorDataFlow().shareIn(
-        scope = repositoryScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        replay = 1
-    )
+    override val pressureDataSource = sensorManager.pressureSensorDataFlow().shareSensorData()
 
     /**
      * Rotation vector state flow
      */
-    override val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow().shareIn(
-        scope = repositoryScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        replay = 1
-    )
+    override val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow().shareSensorData()
 
     /**
      * Location state flow
      */
-    override val locationDataSource = locationManager.locationDataFlow(context, 1000).shareIn(
-        scope = repositoryScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        replay = 1
-    )
+    override val locationDataSource = locationManager.locationDataFlow(context, 1000).shareSensorData()
 
     /**
      * Vertical acceleration flow
      */
+    private val verticalAccelerationFlowFrequency = SensorFrequency()
     override val verticalAccelerationFlow: Flow<SensorData>
         get() {
             return combine(sensorManager.linearAccelerationSensorDataFlow(), sensorManager.rotationVectorSensorDataFlow()) { a, r ->
                 SensorData(
                     type = SensorType.VerticalAcceleration,
-                    frequency = (a.frequency + r.frequency) / 2f,
+                    frequency = verticalAccelerationFlowFrequency.get(),
                     values = floatArrayOf(getVerticalAcceleration(a, r))
                 )
-            }.shareIn(
-                scope = repositoryScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                replay = 1
-            )
+            }.onEach {
+                delay(100) // Delay for 100 milliseconds (10 Hz)
+            }.shareSensorData()
         }
 
     private fun getPressure(size: Int): Flow<SensorData> {
@@ -152,6 +131,7 @@ class SensorRepositoryImpl @Inject constructor(
     private var calibrated = false
     private var altitude0 = 0f
     private var pressure0 = 0f
+    private val altitudeFlowFrequency = SensorFrequency()
     override val altitudeFlow: Flow<SensorData>
         get() {
             return combine(sensorManager.pressureSensorDataFlow(), locationManager.locationDataFlow(context, 1000)) { p, l ->
@@ -165,12 +145,8 @@ class SensorRepositoryImpl @Inject constructor(
                 if (altitude0 != 0f && pressure0 != 0f && pressure != 0f) {
                     altitude = calcAltitude(pressure, pressure0, altitude0)
                 }
-                SensorData(type = SensorType.Altitude, values = floatArrayOf(altitude), frequency = 0f)
-            }.shareIn(
-                scope = repositoryScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                replay = 1
-            )
+                SensorData(type = SensorType.Altitude, values = floatArrayOf(altitude), frequency = altitudeFlowFrequency.get())
+            }.shareSensorData()
         }
 
     /**
@@ -178,20 +154,19 @@ class SensorRepositoryImpl @Inject constructor(
      */
     override val climbRateFlow: Flow<SensorData>
         get() {
-            return merge(altitudeFlow, verticalAccelerationFlow)
-                .onEach {
-                    if (it.type == SensorType.Altitude) {
-                        kalmanFilter.update(it.values[0])
-                    }
-                    if (it.type == SensorType.VerticalAcceleration) {
-                        if (it.frequency > 0) {
-                            kalmanFilter.predict(it.values[0], 1f / it.frequency)
-                        }
-                    }
-                }.map {
-                    Timber.v("cr: ${kalmanFilter.climbrate}")
-                    SensorData(type = SensorType.Climbrate, values = floatArrayOf(kalmanFilter.climbrate), frequency = it.frequency)
-                } // already a shared flow
+            return altitudeFlow.combine(verticalAccelerationFlow) { altitudeData, accelerationData ->
+                if (accelerationData.frequency > 0) {
+                    kalmanFilter.predict(accelerationData.values[0], 1f / accelerationData.frequency)
+                }
+                if (altitudeData.frequency > 0) {
+                    kalmanFilter.update(altitudeData.values[0])
+                }
+                SensorData(
+                    type = SensorType.Climbrate,
+                    values = floatArrayOf(kalmanFilter.climbrate),
+                    frequency = accelerationData.frequency
+                )
+            }.shareSensorData()
         }
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
@@ -216,6 +191,12 @@ class SensorRepositoryImpl @Inject constructor(
             return 0f
         }
     }
+
+    private fun <T> Flow<T>.shareSensorData(stopTimeoutMillis: Long = 5000): Flow<T> = shareIn(
+        scope = repositoryScope,
+        started = SharingStarted.WhileSubscribed(stopTimeoutMillis),
+        replay = 1
+    )
 }
 
 
