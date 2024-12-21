@@ -56,6 +56,7 @@ android {
     buildToolsVersion = "35.0.0"
 }
 
+val vicoVersion = "2.0.0-beta.3"
 dependencies {
 
     implementation("androidx.core:core-ktx:1.15.0")
@@ -74,9 +75,9 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.51.1")
 
     // vico charts
-    implementation("com.patrykandpatrick.vico:compose:1.16.0")
-    implementation("com.patrykandpatrick.vico:compose-m3:1.16.0")
-    implementation("com.patrykandpatrick.vico:core:1.16.0")
+    implementation("com.patrykandpatrick.vico:compose:$vicoVersion")
+    implementation("com.patrykandpatrick.vico:compose-m3:$vicoVersion")
+    implementation("com.patrykandpatrick.vico:core:$vicoVersion")
 
     // timber logger
     implementation ("com.jakewharton.timber:timber:5.0.1")

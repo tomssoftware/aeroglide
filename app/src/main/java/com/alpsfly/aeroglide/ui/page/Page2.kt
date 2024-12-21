@@ -15,14 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.alpsfly.aeroglide.data.util.SensorData
-import com.alpsfly.aeroglide.data.util.SensorType
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
-import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
-import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
-import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.compose.chart.line.lineChart
-import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
-import com.patrykandpatrick.vico.core.entry.ChartEntryModel
 
 @Composable
 fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
@@ -45,36 +38,17 @@ fun Page2(sensorViewModel: SensorViewModel = hiltViewModel()) {
                 modifier = Modifier.clickable {
                 }
             )
-            Chart(
-                chart = lineChart(),
-                chartModelProducer = sensorViewModel.climbrateChartEntryModelProducer,
-                startAxis = rememberStartAxis(),
-                bottomAxis = rememberBottomAxis(),
-            )
+
             Text(text = "pressure: ${pressure.values[0]}@${pressure.frequency}",
                 modifier = Modifier.clickable {
                 }
             )
-            Chart(
-                chart = lineChart(
-                    axisValuesOverrider = sensorViewModel.pressureAxisValuesOverrider
-                ),
-                chartModelProducer = sensorViewModel.pressureChartEntryModelProducer,
-                startAxis = rememberStartAxis(),
-                bottomAxis = rememberBottomAxis(),
-            )
+
             Text(text = "altitude ${altitude.values[0]}@${altitude.frequency}",
                 modifier = Modifier.clickable {
                 }
             )
-            Chart(
-                chart = lineChart(
-                    axisValuesOverrider = sensorViewModel.altitudeAxisValuesOverrider
-                ),
-                chartModelProducer = sensorViewModel.altitudeChartEntryModelProducer,
-                startAxis = rememberStartAxis(),
-                bottomAxis = rememberBottomAxis(),
-            )
+
         }
     }
 }
