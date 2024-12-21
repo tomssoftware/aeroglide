@@ -1,0 +1,87 @@
+package com.alpsfly.aeroglide.viewmodel
+
+import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.alpsfly.aeroglide.data.repository.SensorRepository
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
+
+@HiltViewModel
+class VicoChartViewModel @Inject constructor(
+    sensorRepository: SensorRepository,
+) : ViewModel() {
+
+    private val altitudeFlow = sensorRepository.altitudeFlow
+    private val climbrateFlow = sensorRepository.climbRateFlow
+    private val pressureFlow = sensorRepository.pressureDataSource
+
+    init {
+        viewModelScope.launch {
+            collectAltitude()
+        }
+        viewModelScope.launch {
+            collectclimbrate()
+        }
+        viewModelScope.launch {
+            collectPressure()
+        }
+    }
+
+    val pressureModelProducer = CartesianChartModelProducer()
+    private val pressurePoints = mutableStateListOf<Pair<Int, Float>>()
+    @OptIn(FlowPreview::class)
+    private suspend fun collectPressure() {
+        pressureFlow.sample(1000.milliseconds).collect { pressure ->
+            pressurePoints.add(Pair(pressurePoints.size, pressure.values[0]))
+            pressureModelProducer.runTransaction {
+                lineSeries {
+                    series(
+                        x = pressurePoints.map { it.first },
+                        y = pressurePoints.map { it.second }
+                    )
+                }
+            }
+        }
+    }
+
+    val altitudeModelProducer = CartesianChartModelProducer()
+    private val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
+    @OptIn(FlowPreview::class)
+    private suspend fun collectAltitude() {
+        altitudeFlow.sample(1000.milliseconds).collect { altitude ->
+            altitudePoints.add(Pair(altitudePoints.size, altitude.values[0]))
+            altitudeModelProducer.runTransaction {
+                lineSeries {
+                    series(
+                        x = altitudePoints.map { it.first },
+                        y = altitudePoints.map { it.second }
+                    )
+                }
+            }
+        }
+    }
+
+    val climbrateModelProducer = CartesianChartModelProducer()
+    private val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
+    @OptIn(FlowPreview::class)
+    private suspend fun collectclimbrate() {
+        climbrateFlow.sample(1000.milliseconds).collect { climbrate ->
+            climbratePoints.add(Pair(climbratePoints.size, climbrate.values[0]))
+            climbrateModelProducer.runTransaction {
+                lineSeries {
+                    series(
+                        x = climbratePoints.map { it.first },
+                        y = climbratePoints.map { it.second }
+                    )
+                }
+            }
+        }
+    }
+}

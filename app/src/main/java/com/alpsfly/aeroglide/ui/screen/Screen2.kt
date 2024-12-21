@@ -1,6 +1,5 @@
 package com.alpsfly.aeroglide.ui.screen
 
-import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,14 +18,26 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.data.util.SensorData
 import com.alpsfly.aeroglide.viewmodel.SensorViewModel
-import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
-import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
-import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.compose.chart.line.lineChart
-import com.patrykandpatrick.vico.core.axis.horizontal.HorizontalAxis
+import com.alpsfly.aeroglide.viewmodel.VicoChartViewModel
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
+import com.patrykandpatrick.vico.compose.common.fill
+import com.patrykandpatrick.vico.core.cartesian.AutoScrollCondition
+import com.patrykandpatrick.vico.core.cartesian.Scroll
+import com.patrykandpatrick.vico.core.cartesian.Zoom
+import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 
 @Composable
-fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hiltViewModel()) {
+fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hiltViewModel(), vicoChartViewModel: VicoChartViewModel = hiltViewModel()) {
     val altitude by sensorViewModel.altitude.collectAsState(initial = SensorData())
     val climbrate by sensorViewModel.climbrate.collectAsState(initial = SensorData())
     val pressure by sensorViewModel.pressure.collectAsState(initial = SensorData())
@@ -41,40 +53,57 @@ fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hil
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "climbrate: ${climbrate.values[0]}@${climbrate.frequency}",
-                modifier = Modifier.clickable {
-                }
-            )
-            Chart(
-                chart = lineChart(),
-                chartModelProducer = sensorViewModel.climbrateChartEntryModelProducer,
-                startAxis = rememberStartAxis(),
-                bottomAxis = rememberBottomAxis(),
-            )
             Text(text = "pressure: ${pressure.values[0]}@${pressure.frequency}",
                 modifier = Modifier.clickable {
                 }
             )
-            Chart(
-                chart = lineChart(
-                    axisValuesOverrider = sensorViewModel.pressureAxisValuesOverrider
-                ),
-                chartModelProducer = sensorViewModel.pressureChartEntryModelProducer,
-                startAxis = rememberStartAxis(),
-                bottomAxis = rememberBottomAxis(),
-            )
+            ComposeChart1(vicoChartViewModel.pressureModelProducer, Modifier)
+
             Text(text = "altitude ${altitude.values[0]}@${altitude.frequency}",
                 modifier = Modifier.clickable {
                 }
             )
-            Chart(
-                chart = lineChart(
-                    axisValuesOverrider = sensorViewModel.altitudeAxisValuesOverrider
-                ),
-                chartModelProducer = sensorViewModel.altitudeChartEntryModelProducer,
-                startAxis = rememberStartAxis(),
-                bottomAxis = rememberBottomAxis(),
+            ComposeChart1(vicoChartViewModel.altitudeModelProducer, Modifier)
+
+            Text(text = "climbrate: ${climbrate.values[0]}@${climbrate.frequency}",
+                modifier = Modifier.clickable {
+                }
             )
+            ComposeChart1(vicoChartViewModel.climbrateModelProducer, Modifier)
         }
     }
 }
+
+@Composable
+private fun ComposeChart1(modelProducer: CartesianChartModelProducer, modifier: Modifier) {
+
+    CartesianChartHost(
+        chart = rememberCartesianChart(
+            rememberLineCartesianLayer(
+                LineCartesianLayer.LineProvider.series(
+                    LineCartesianLayer.rememberLine(
+                        remember { LineCartesianLayer.LineFill.single(fill(Color(0xffa485e0))) }
+                    )
+                ),
+            ),
+            startAxis = VerticalAxis.rememberStart(),
+            bottomAxis = HorizontalAxis.rememberBottom(
+                guideline = null,
+                itemPlacer = remember { HorizontalAxis.ItemPlacer.aligned(30) },
+            ),
+        ),
+        modelProducer = modelProducer,
+        modifier = modifier,
+        zoomState = rememberVicoZoomState(
+            zoomEnabled = false,
+            initialZoom = Zoom.x(60.0),
+
+        ),
+        scrollState = rememberVicoScrollState(
+            scrollEnabled = true,
+            autoScrollCondition = AutoScrollCondition.OnModelSizeIncreased,
+            autoScroll = remember { Scroll.Relative.x(10.0) }
+        )
+    )
+}
+
