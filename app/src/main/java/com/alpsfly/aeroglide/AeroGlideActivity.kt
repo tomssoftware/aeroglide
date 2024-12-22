@@ -23,9 +23,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.navigation.compose.rememberNavController
-import com.alpsfly.aeroglide.audio.BeepGeneratorImpl
-import com.alpsfly.aeroglide.data.service.LocationService
-import com.alpsfly.aeroglide.ui.theme.AeroGlideTheme
+import com.alpsfly.aeroglide.core.util.audio.BeepGeneratorImpl
+import com.alpsfly.aeroglide.core.data.service.LocationService
+import com.alpsfly.aeroglide.core.ui.theme.AeroGlideTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber

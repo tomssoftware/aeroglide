@@ -1,8 +1,8 @@
 package com.alpsfly.aeroglide.di
 
 import android.app.Application
-import com.alpsfly.aeroglide.data.repository.SensorRepository
-import com.alpsfly.aeroglide.data.repository.SensorRepositoryImpl
+import com.alpsfly.aeroglide.core.data.repository.SensorRepository
+import com.alpsfly.aeroglide.core.data.repository.SensorRepositoryImpl
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.Binds
