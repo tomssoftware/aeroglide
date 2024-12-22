@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.viewmodel
+package com.alpsfly.aeroglide.core.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.alpsfly.aeroglide.core.data.repository.SensorRepository

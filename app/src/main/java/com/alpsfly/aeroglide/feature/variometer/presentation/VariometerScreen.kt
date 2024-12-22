@@ -1,11 +1,29 @@
-package com.alpsfly.aeroglide.feature.vario.presentation
+package com.alpsfly.aeroglide.feature.variometer.presentation
 
 import android.graphics.RectF
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.DrawModifier
 import androidx.compose.ui.geometry.Offset
@@ -23,9 +41,17 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.alpsfly.aeroglide.AeroGlideBottomBar
 import com.alpsfly.aeroglide.core.data.util.SensorData
-import com.alpsfly.aeroglide.core.viewmodel.SensorViewModel
-import com.alpsfly.aeroglide.feature.vario.viewmodel.VarioViewModel
+import com.alpsfly.aeroglide.core.ui.MenuItem
+import com.alpsfly.aeroglide.core.ui.presentation.AltitudeProfileScreen
+import com.alpsfly.aeroglide.core.ui.presentation.ClimbrateProfileScreen
+import com.alpsfly.aeroglide.core.ui.presentation.FlightStatusScreen
+import com.alpsfly.aeroglide.core.ui.presentation.Screen1
+import com.alpsfly.aeroglide.core.ui.viewmodel.SensorViewModel
+import com.alpsfly.aeroglide.feature.devicestatus.viewmodel.VicoChartViewModel
+import com.alpsfly.aeroglide.feature.variometer.viewmodel.VarioViewModel
 
 
 class CenteredModifier : DrawModifier {
@@ -60,8 +86,90 @@ private fun getOnScaleAngleEnd(climbrate: Float) = if (climbrate < 0f) {
     startScaleAngle + 1f + 30f * climbrate
 }
 
+
 @Composable
-fun Variometer(modifier: Modifier, varioViewModel: VarioViewModel = hiltViewModel()) {
+fun VariometerScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(
+        pageCount = { 3 }
+    )
+    val items: List<MenuItem> = listOf(
+        MenuItem(
+            id = "home",
+            title = "Home",
+            contentDescription = "Go to home screen",
+            icon = Icons.Default.Home
+        ),
+        MenuItem(
+            id = "settings",
+            title = "Settings",
+            contentDescription = "Go to settings screen",
+            icon = Icons.Default.Settings
+        ),
+        MenuItem(
+            id = "help",
+            title = "Help",
+            contentDescription = "Get help",
+            icon = Icons.Default.Info
+        ),
+    )
+
+    Scaffold(
+        bottomBar = {
+            AeroGlideBottomBar(
+                modifier = Modifier,
+                items = items,
+                pagerState = pagerState,
+                coroutineScope = coroutineScope
+            )
+        }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(it)
+        ) {
+            HorizontalPager(state = pagerState) { page ->
+                when (page) {
+                    0 -> {
+                        AnalogVariometer(Modifier.fillMaxSize())
+                    }
+
+                    1 -> {
+                        AltitudeProfileScreen(Modifier.fillMaxSize(), navController)
+                    }
+
+                    2 -> {
+                        ClimbrateProfileScreen(Modifier.fillMaxSize(), navController)
+                    }
+                }
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            FlightStatusScreen(Modifier.fillMaxWidth(), navController)
+            //AnalogVariometer(Modifier.fillMaxSize())
+        }
+    }
+}
+
+@Composable
+fun AnalogVariometer(
+    modifier: Modifier = Modifier,
+    varioViewModel: VarioViewModel = hiltViewModel()
+) {
     val climbrate by varioViewModel.climbrate.collectAsState(initial = SensorData())
 
     var majorOval: Rect
@@ -114,7 +222,12 @@ fun DrawScope.drawClimbIndicator(drawScope: DrawScope) {
     }
 }
 
-private fun DrawScope.drawVarioScale(drawScope: DrawScope, majorOval: Rect, minorOval: Rect, climbrate: Float) {
+private fun DrawScope.drawVarioScale(
+    drawScope: DrawScope,
+    majorOval: Rect,
+    minorOval: Rect,
+    climbrate: Float
+) {
     // draw background scale
     val majorScale = Path()
     val minorScale = Path()
