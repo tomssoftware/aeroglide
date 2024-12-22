@@ -1,5 +1,6 @@
 package com.alpsfly.aeroglide.ui.page
 
+import Variometer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.alpsfly.aeroglide.ui.module.ClockComposable
 import com.alpsfly.aeroglide.ui.screen.Screen
 
 @Composable
@@ -31,7 +31,7 @@ fun Page1() {
                 modifier = Modifier.clickable {
                 }
             )
-            ClockComposable(hours = 10, minutes = 30)
+            Variometer(modifier = Modifier.fillMaxSize())
         }
     }
 }

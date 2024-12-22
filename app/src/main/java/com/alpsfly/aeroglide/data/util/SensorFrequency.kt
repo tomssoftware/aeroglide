@@ -10,7 +10,7 @@ class SensorFrequency(private var startTime: Long = 0, private var count: Long =
 
     fun get(): Float {
         if (startTime == 0L) {
-            startTime = System.nanoTime();
+            startTime = System.nanoTime()
         }
         return getFrequency(startTime, count++)
     }
