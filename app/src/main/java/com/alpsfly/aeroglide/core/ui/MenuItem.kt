@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.ui.util
+package com.alpsfly.aeroglide.core.ui
 
 import androidx.compose.ui.graphics.vector.ImageVector
 

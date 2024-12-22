@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.data.util.SensorData
-import com.alpsfly.aeroglide.core.viewmodel.SensorViewModel
+import com.alpsfly.aeroglide.core.ui.viewmodel.SensorViewModel
 import com.alpsfly.aeroglide.feature.devicestatus.viewmodel.VicoChartViewModel
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
@@ -37,7 +37,12 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 
 @Composable
-fun Screen2(navController: NavController, sensorViewModel: SensorViewModel = hiltViewModel(), vicoChartViewModel: VicoChartViewModel = hiltViewModel()) {
+fun DeviceStatusScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    sensorViewModel: SensorViewModel = hiltViewModel(),
+    vicoChartViewModel: VicoChartViewModel = hiltViewModel()
+) {
     val altitude by sensorViewModel.altitude.collectAsState(initial = SensorData())
     val climbrate by sensorViewModel.climbrate.collectAsState(initial = SensorData())
     val pressure by sensorViewModel.pressure.collectAsState(initial = SensorData())

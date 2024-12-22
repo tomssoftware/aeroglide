@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.alpsfly.aeroglide.core.ui.screen.Screen
+import com.alpsfly.aeroglide.core.ui.Screen
 
 @Composable
 fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerState, onClick: () -> Unit) {
@@ -28,7 +28,7 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                     selected = false,
                     onClick = {
                         onClick()
-                        navController.navigate(route = Screen.Screen1.route)
+                        navController.navigate(route = Screen.VariometerScreen.route)
                     }
                 )
                 NavigationDrawerItem(
@@ -36,7 +36,7 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                     selected = false,
                     onClick = {
                         onClick()
-                        navController.navigate(route = Screen.Screen2.route)
+                        navController.navigate(route = Screen.DeviceStatusScreen.route)
                     }
                 )
                 NavigationDrawerItem(

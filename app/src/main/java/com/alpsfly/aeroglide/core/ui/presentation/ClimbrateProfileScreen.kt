@@ -1,25 +1,27 @@
-package com.alpsfly.aeroglide.core.ui.page
+package com.alpsfly.aeroglide.core.ui.presentation
 
-import com.alpsfly.aeroglide.feature.vario.presentation.Variometer
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.alpsfly.aeroglide.core.ui.screen.Screen
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.alpsfly.aeroglide.core.ui.viewmodel.ClimbrateProfileViewModel
 
 @Composable
-fun Page1() {
+fun ClimbrateProfileScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    climbrateProfileViewModel: ClimbrateProfileViewModel = hiltViewModel()
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -27,11 +29,7 @@ fun Page1() {
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "this is ${Screen.Screen1.route}",
-                modifier = Modifier.clickable {
-                }
-            )
-            Variometer(modifier = Modifier.fillMaxSize())
+            LineChartScreen(climbrateProfileViewModel.climbrateModelProducer, Modifier)
         }
     }
 }

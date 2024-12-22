@@ -4,32 +4,32 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.alpsfly.aeroglide.core.ui.screen.DetailScreen
-import com.alpsfly.aeroglide.core.ui.screen.Screen
-import com.alpsfly.aeroglide.core.ui.screen.Screen1
-import com.alpsfly.aeroglide.feature.devicestatus.presentation.Screen2
-import com.alpsfly.aeroglide.core.ui.screen.Screen3
+import com.alpsfly.aeroglide.core.ui.presentation.DetailScreen
+import com.alpsfly.aeroglide.core.ui.presentation.FlightStatusScreen
+import com.alpsfly.aeroglide.core.ui.Screen
+import com.alpsfly.aeroglide.feature.devicestatus.presentation.DeviceStatusScreen
+import com.alpsfly.aeroglide.feature.variometer.presentation.VariometerScreen
 
 @Composable
 fun AeroGlideNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Screen1.route
+        startDestination = Screen.Screen3.route
     ) {
         composable(
-            route = Screen.Screen1.route
+            route = Screen.VariometerScreen.route
         ) {
-            Screen1(navController = navController)
+            VariometerScreen(navController = navController)
         }
         composable(
-            route = Screen.Screen2.route
+            route = Screen.DeviceStatusScreen.route
         ) {
-            Screen2(navController = navController)
+            DeviceStatusScreen(navController = navController)
         }
         composable(
             route = Screen.Screen3.route
         ) {
-            Screen3(navController = navController)
+            FlightStatusScreen(navController = navController)
         }
         composable(
             route = Screen.DetailScreen.route

@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.ui.screen
+package com.alpsfly.aeroglide.core.ui.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,14 +17,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.core.viewmodel.SensorViewModel
 
 @Composable
-fun Screen3(
+fun FlightStatusScreen(
+    modifier: Modifier = Modifier,
     navController: NavController,
-    sensorViewModel: SensorViewModel = hiltViewModel()
+    //sensorViewModel: SensorViewModel = hiltViewModel()
 ) {
     val data = listOf(
         Triple("Altitude", "1234", "m"),

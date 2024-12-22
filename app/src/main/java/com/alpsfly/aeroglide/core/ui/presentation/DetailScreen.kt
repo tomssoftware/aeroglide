@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.ui.screen
+package com.alpsfly.aeroglide.core.ui.presentation
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
@@ -16,11 +16,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.AeroGlideBottomBar
-import com.alpsfly.aeroglide.core.ui.page.Page1
-import com.alpsfly.aeroglide.core.ui.page.Page2
-import com.alpsfly.aeroglide.core.ui.util.MenuItem
+import com.alpsfly.aeroglide.core.ui.MenuItem
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DetailScreen(navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
@@ -65,8 +62,6 @@ fun DetailScreen(navController: NavController) {
         ) {
             HorizontalPager(state = pagerState) { page ->
                 when (page) {
-                    0 -> Page1()
-                    1 -> Page2()
                 }
             }
         }
