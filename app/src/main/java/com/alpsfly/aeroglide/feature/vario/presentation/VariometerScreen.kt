@@ -25,6 +25,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.alpsfly.aeroglide.core.data.util.SensorData
 import com.alpsfly.aeroglide.core.viewmodel.SensorViewModel
+import com.alpsfly.aeroglide.feature.vario.viewmodel.VarioViewModel
 
 
 class CenteredModifier : DrawModifier {
@@ -60,8 +61,8 @@ private fun getOnScaleAngleEnd(climbrate: Float) = if (climbrate < 0f) {
 }
 
 @Composable
-fun Variometer(modifier: Modifier, sensorViewModel: SensorViewModel = hiltViewModel()) {
-    val climbrate by sensorViewModel.climbrate.collectAsState(initial = SensorData())
+fun Variometer(modifier: Modifier, varioViewModel: VarioViewModel = hiltViewModel()) {
+    val climbrate by varioViewModel.climbrate.collectAsState(initial = SensorData())
 
     var majorOval: Rect
     var minorOval: Rect
