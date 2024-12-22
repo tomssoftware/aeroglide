@@ -22,39 +22,23 @@ class Limits {
         private fun isInvalid(value: Float) = value.isNaN() || value.isInfinite()
 
         fun checkAltitude(altitude: Float): Boolean {
-            if (isInvalid(altitude) || (altitude < minAltitude || altitude > maxAltitude)) {
-                return false
-            }
-            return true
+            return !(isInvalid(altitude) || (altitude < minAltitude || altitude > maxAltitude))
         }
 
         fun checkPressure(pressure: Float): Boolean {
-            if (isInvalid(pressure) || (pressure < minPressure || pressure > maxPressure)) {
-                return false
-            }
-            return true
+            return !(isInvalid(pressure) || (pressure < minPressure || pressure > maxPressure))
         }
 
         fun checkClimbrate(climbrate: Float): Boolean {
-            if (isInvalid(climbrate) || (climbrate < minClimbrate || climbrate > maxClimbrate)) {
-                return false
-            }
-            return true
+            return !(isInvalid(climbrate) || (climbrate < minClimbrate || climbrate > maxClimbrate))
         }
 
         fun checkSpeed(speed: Float): Boolean {
-            if (isInvalid(speed) || (speed < minSpeed || speed > maxSpeed)) {
-                return false
-            }
-            return true
+            return !(isInvalid(speed) || (speed < minSpeed || speed > maxSpeed))
         }
 
         fun checkVerticalAcceleration(accel: Float): Boolean {
-            if (isInvalid(accel) || (accel < minVerticalAcceleration || accel > maxVerticalAcceleration)
-            ) {
-                return false
-            }
-            return true
+            return !(isInvalid(accel) || (accel < minVerticalAcceleration || accel > maxVerticalAcceleration))
         }
     }
 }

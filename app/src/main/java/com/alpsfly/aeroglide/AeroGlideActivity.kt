@@ -23,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.navigation.compose.rememberNavController
+import com.alpsfly.aeroglide.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.data.service.LocationService
 import com.alpsfly.aeroglide.ui.theme.AeroGlideTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,6 +32,9 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class AeroGlideActivity : ComponentActivity() {
+
+    private lateinit var beepGenerator: BeepGeneratorImpl
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +48,8 @@ class AeroGlideActivity : ComponentActivity() {
             ),
             0
         )
+
+        beepGenerator = BeepGeneratorImpl()
 
         Intent(applicationContext, LocationService::class.java).apply {
             action = LocationService.ACTION_START
@@ -79,7 +85,11 @@ class AeroGlideActivity : ComponentActivity() {
                                 }
                             },
                             actions = {
-                                IconButton(onClick = { /*TODO*/ }) {
+                                IconButton(onClick = {
+                                    beepGenerator.setFrequency(500f) // Set frequency to 880 Hz
+                                    beepGenerator.setDuration(1000L) // Set duration to 2 seconds
+                                    beepGenerator.playBeep()
+                                }) {
                                     Icon(
                                         imageVector = Icons.Default.PlayArrow,
                                         contentDescription = "Mark as favorite"
