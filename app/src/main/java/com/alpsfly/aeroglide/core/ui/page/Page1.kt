@@ -1,0 +1,37 @@
+package com.alpsfly.aeroglide.core.ui.page
+
+import com.alpsfly.aeroglide.feature.vario.presentation.Variometer
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import com.alpsfly.aeroglide.core.ui.screen.Screen
+
+@Composable
+fun Page1() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        )
+        {
+            Text(text = "this is ${Screen.Screen1.route}",
+                modifier = Modifier.clickable {
+                }
+            )
+            Variometer(modifier = Modifier.fillMaxSize())
+        }
+    }
+}

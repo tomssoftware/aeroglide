@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.alpsfly.aeroglide.ui.screen.DetailScreen
-import com.alpsfly.aeroglide.ui.screen.Screen
-import com.alpsfly.aeroglide.ui.screen.Screen1
-import com.alpsfly.aeroglide.ui.screen.Screen2
-import com.alpsfly.aeroglide.ui.screen.Screen3
+import com.alpsfly.aeroglide.core.ui.screen.DetailScreen
+import com.alpsfly.aeroglide.core.ui.screen.Screen
+import com.alpsfly.aeroglide.core.ui.screen.Screen1
+import com.alpsfly.aeroglide.feature.devicestatus.presentation.Screen2
+import com.alpsfly.aeroglide.core.ui.screen.Screen3
 
 @Composable
 fun AeroGlideNavGraph(navController: NavHostController) {
