@@ -21,17 +21,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.DrawModifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
@@ -45,6 +42,8 @@ import com.alpsfly.aeroglide.core.ui.centered
 import com.alpsfly.aeroglide.core.ui.presentation.AltitudeProfileScreen
 import com.alpsfly.aeroglide.core.ui.presentation.ClimbrateProfileScreen
 import com.alpsfly.aeroglide.core.ui.presentation.FlightStatusScreen
+import com.alpsfly.aeroglide.core.util.units.LocalUnit
+import com.alpsfly.aeroglide.core.util.units.UnitConverter
 import com.alpsfly.aeroglide.feature.variometer.viewmodel.VarioViewModel
 
 private var startScaleAngle = 180f
@@ -165,13 +164,13 @@ fun AnalogVariometer(
         majorOval = Rect(-radius, -radius, radius, radius)
         minorOval = Rect(-radius, -radius, radius, radius)
 
-        drawClimbIndicator(this)
+        drawClimbIndicator(this, climbrate.values[0])
         drawVarioScale(this, majorOval, minorOval, climbrate.values[0])
         drawVarioText(this, textMeasurer, climbrate.values[0])
     }
 }
 
-fun DrawScope.drawClimbIndicator(drawScope: DrawScope) {
+fun DrawScope.drawClimbIndicator(drawScope: DrawScope, climbrate: Float) {
     val radius = size.minDimension / 2.5f
     val indicatorScaleFactor = radius / 10f
     val majorOval = RectF().apply {
@@ -194,7 +193,15 @@ fun DrawScope.drawClimbIndicator(drawScope: DrawScope) {
         rotate(90f, Offset.Zero)
         scale(indicatorScaleFactor, indicatorScaleFactor, Offset.Zero)
     }) {
-        drawPath(path = trianglePath, color = Color.Red)
+        drawPath(path = trianglePath, color = Color.LightGray)
+    }
+
+    withTransform({
+        translate(-majorOval.width() / 4f, majorOval.height() / 15f)
+        rotate(-90f, Offset.Zero)
+        scale(indicatorScaleFactor, indicatorScaleFactor, Offset.Zero)
+    }) {
+        drawPath(path = trianglePath, color = Color.LightGray)
     }
 }
 
@@ -242,12 +249,13 @@ private fun DrawScope.drawVarioText(
     textMeasurer: TextMeasurer,
     climbrate: Float
 ) {
-
-    val measuredText = textMeasurer.measure(climbrate.toString())
+    val climbrateString = LocalUnit.of(climbrate, UnitConverter.Unit.MS).withDigits(2).withSymbol(true)
+    .toLocalString()
+    val measuredText = textMeasurer.measure(climbrateString)
 
     withTransform({
         translate(-measuredText.size.width / 2f, -measuredText.size.height / 2f)
     }) {
-        drawText(textMeasurer, climbrate.toString())
+        drawText(textMeasurer, climbrateString)
     }
 }

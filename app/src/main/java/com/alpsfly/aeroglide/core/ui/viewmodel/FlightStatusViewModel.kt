@@ -1,0 +1,26 @@
+package com.alpsfly.aeroglide.core.ui.viewmodel
+
+import androidx.lifecycle.ViewModel
+import com.alpsfly.aeroglide.core.data.repository.SensorRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.sample
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
+
+@HiltViewModel
+class FlightStatusViewModel @Inject constructor(
+    sensorRepository: SensorRepository,
+) : ViewModel() {
+
+    @OptIn(FlowPreview::class)
+    val pressureFlow = sensorRepository.pressureDataSource.sample(1000.milliseconds)
+
+    val locationFlow = sensorRepository.locationDataSource
+
+    @OptIn(FlowPreview::class)
+    val altitudeFlow = sensorRepository.altitudeFlow.sample(1000.milliseconds)
+
+    @OptIn(FlowPreview::class)
+    val climbrateFlow = sensorRepository.climbRateFlow.sample(1000.milliseconds)
+}
