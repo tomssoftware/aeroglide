@@ -1,7 +1,9 @@
 package com.alpsfly.aeroglide.core.ui.presentation
 
+import android.location.Location
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,6 +11,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,46 +20,94 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.alpsfly.aeroglide.core.data.util.SensorData
+import com.alpsfly.aeroglide.core.ui.viewmodel.FlightStatusViewModel
+import com.alpsfly.aeroglide.core.util.units.LocalUnit
+import com.alpsfly.aeroglide.core.util.units.UnitConverter
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FlightStatusScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    //sensorViewModel: SensorViewModel = hiltViewModel()
+    flightStatusViewModel: FlightStatusViewModel = hiltViewModel()
 ) {
-    val data = listOf(
-        Triple("Altitude", "1234", "m"),
-        Triple("Speed", "567", "km/h"),
-        Triple("Temperature", "25", "°C"),
-        Triple("Pressure", "1013", "hPa"),
-        Triple("Humidity", "60", "%"),
-        Triple("Wind", "15", "m/s")
-    )
-    DataGrid(data = data, modifier = Modifier)
-}
+    val altitude by flightStatusViewModel.altitudeFlow.collectAsState(initial = SensorData())
+    val climbrate by flightStatusViewModel.climbrateFlow.collectAsState(initial = SensorData())
+    val pressure by flightStatusViewModel.pressureFlow.collectAsState(initial = SensorData())
+    val location by flightStatusViewModel.locationFlow.collectAsState(initial = Location("none"))
 
-@Composable
-fun DataGrid(
-    data: List<Triple<String, String, String>>,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        data.chunked(3).forEach { rowData ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                rowData.forEach { (caption, value, unit) ->
-                    DataCell(
-                        caption = caption,
-                        value = value,
-                        unit = unit,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+
+    LocalUnit
+        .of(altitude.values[0], UnitConverter.Unit.M)
+        .withDigits(0)
+        .withSymbol(false)
+        .toLocalString()
+
+
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            DataCell(
+                caption = "Altitude",
+                value = LocalUnit
+                    .of(altitude.values[0], UnitConverter.Unit.M)
+                    .withDigits(0)
+                    .withSymbol(false)
+                    .toLocalString(),
+                unit = "m",
+                modifier = Modifier.weight(1f)
+            )
+            DataCell(
+                caption = "Climbrate",
+                value = LocalUnit
+                    .of(climbrate.values[0], UnitConverter.Unit.MS)
+                    .withDigits(2)
+                    .withSymbol(false)
+                    .toLocalString(),
+                unit = LocalUnit.of(climbrate.values[0], UnitConverter.Unit.MS).toLocalSymbol(),
+                modifier = Modifier.weight(1f)
+            )
+            DataCell(
+                caption = "Pressure",
+                value = LocalUnit
+                    .of(pressure.values[0], UnitConverter.Unit.M) // todo: hpa
+                    .withSymbol(false)
+                    .toLocalString(),
+                unit = "hpa",
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            DataCell(
+                caption = "Speed",
+                value = LocalUnit.of(location.speed, UnitConverter.Unit.KMH)
+                    .withSymbol(flag = false).toLocalString(),
+                unit = "km/h",
+                modifier = Modifier.weight(1f)
+            )
+            DataCell(
+                caption = "GPS Acc.",
+                value = LocalUnit.of(location.accuracy, UnitConverter.Unit.M)
+                    .withSymbol(false).toLocalString(),
+                unit = "ts",
+                modifier = Modifier.weight(1f)
+            )
+            DataCell(
+                caption = "GPS Alt.",
+                value = LocalUnit.of(location.altitude.toFloat(), UnitConverter.Unit.M)
+                    .withSymbol(false).toLocalString(),
+                unit = "m",
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
@@ -114,16 +166,3 @@ fun DataCell(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewDataGrid() {
-    val data = listOf(
-        Triple("Altitude", "1234", "m"),
-        Triple("Speed", "567", "km/h"),
-        Triple("Temperature", "25", "°C"),
-        Triple("Pressure", "1013", "hPa"),
-        Triple("Humidity", "60", "%"),
-        Triple("Wind", "15", "m/s")
-    )
-    DataGrid(data = data, modifier = Modifier)
-}
