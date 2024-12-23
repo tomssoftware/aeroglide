@@ -1,5 +1,8 @@
 buildscript {
-    val agp_version by extra("8.7.3")
+    val agpVersion by extra("8.7.3")
+//    val kotlin_version by extra("1.9.25")
+//    val hilt_version by extra("2.51.1")
+//    val retrofitVersion by extra("2.9.0")
 }
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {

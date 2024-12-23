@@ -16,6 +16,13 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        buildConfigField("String", "FIREBASE_FUNCTIONS_URL", "\"https://us-central1-thermalscout.cloudfunctions.net/\"")
+        buildConfigField("String", "FIREBASE_EMULATOR_HOST_ADDRESS", "\"10.0.2.2\"")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_AUTH", "9099")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FUNCTIONS", "5001")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FIRESTORE", "8080")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_PUBSUB", "8085")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -57,6 +64,9 @@ android {
 }
 
 val vicoVersion = "2.0.0-beta.3"
+val retrofitVersion = "2.9.0"
+val roomVersion = "2.6.1"
+
 dependencies {
 
     implementation("androidx.core:core-ktx:1.15.0")
@@ -74,6 +84,13 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-compiler:2.51.1")
 
+    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
+    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+
+    // androidx Room
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+
     // vico charts
     implementation("com.patrykandpatrick.vico:compose:$vicoVersion")
     implementation("com.patrykandpatrick.vico:compose-m3:$vicoVersion")
@@ -81,6 +98,24 @@ dependencies {
 
     // timber logger
     implementation ("com.jakewharton.timber:timber:5.0.1")
+
+    // Firebase services
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+    implementation("com.google.firebase:firebase-appcheck-debug")
+
+    // Retrofit dependencies
+    // noinspection GradleDependency do not use alpha version
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
+    implementation ("com.squareup.retrofit2:retrofit:$retrofitVersion")
+    implementation ("com.squareup.retrofit2:converter-gson:$retrofitVersion")
+    implementation ("com.squareup.retrofit2:converter-scalars:$retrofitVersion")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
