@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.core.view.MotionEventCompat
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
@@ -46,8 +45,7 @@ fun LineChartScreen(modelProducer: CartesianChartModelProducer, modifier: Modifi
         zoomState = rememberVicoZoomState(
             zoomEnabled = false,
             initialZoom = Zoom.x(60.0),
-
-            ),
+        ),
         scrollState = rememberVicoScrollState(
             scrollEnabled = true,
             autoScrollCondition = AutoScrollCondition.OnModelSizeIncreased,
