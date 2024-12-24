@@ -14,7 +14,7 @@ import com.alpsfly.aeroglide.feature.variometer.presentation.VariometerScreen
 fun AeroGlideNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Screen3.route
+        startDestination = Screen.VariometerScreen.route
     ) {
         composable(
             route = Screen.VariometerScreen.route

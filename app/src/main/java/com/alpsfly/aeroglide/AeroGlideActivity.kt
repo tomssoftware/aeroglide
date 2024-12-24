@@ -22,6 +22,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.util.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
@@ -62,6 +63,7 @@ class AeroGlideActivity : ComponentActivity() {
                 val drawerState = rememberDrawerState(DrawerValue.Closed)
                 val coroutineScope = rememberCoroutineScope()
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+                val viewModel: AeroGlideViewModel = hiltViewModel()
                 Scaffold(
                     modifier = Modifier,
                     topBar = {
@@ -86,16 +88,21 @@ class AeroGlideActivity : ComponentActivity() {
                             },
                             actions = {
                                 IconButton(onClick = {
-                                    beepGenerator.setFrequency(500f) // Set frequency to 880 Hz
-                                    beepGenerator.setDuration(1000L) // Set duration to 2 seconds
-                                    beepGenerator.playBeep()
+                                    if (viewModel.isRecording())
+                                        viewModel.stopRecording()
+                                    else
+                                        viewModel.startRecording()
                                 }) {
                                     Icon(
                                         imageVector = Icons.Default.PlayArrow,
                                         contentDescription = "Mark as favorite"
                                     )
                                 }
-                                IconButton(onClick = { /*TODO*/ }) {
+                                IconButton(onClick = {
+                                    beepGenerator.setFrequency(500f) // Set frequency to 880 Hz
+                                    beepGenerator.setDuration(1000L) // Set duration to 2 seconds
+                                    beepGenerator.playBeep()
+                                }) {
                                     Icon(
                                         imageVector = Icons.Default.AddCircle,
                                         contentDescription = "Edit notes"

@@ -12,8 +12,6 @@ class LocalDataSource private constructor(
     private val application: AeroGlideApplication,
     private val database: AeroGlideDatabase
 ) {
-
-
     val allTracks: LiveData<MutableList<Track>> = database.trackDao().allTracks
 
     suspend fun getTrack(trackId: Long) = withContext(Dispatchers.IO) {
