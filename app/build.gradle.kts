@@ -1,8 +1,9 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    kotlin("kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -82,7 +83,7 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.dagger:hilt-android:2.51.1")
-    kapt("com.google.dagger:hilt-compiler:2.51.1")
+    ksp("com.google.dagger:hilt-compiler:2.51.1")
 
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
@@ -90,6 +91,7 @@ dependencies {
     // androidx Room
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
 
     // vico charts
     implementation("com.patrykandpatrick.vico:compose:$vicoVersion")
@@ -126,7 +128,3 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
 
-// Allow references to generated code
-kapt {
-    correctErrorTypes = true
-}
