@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.thermalscout.appbase.datasource.remote.retrofit.authentication
+package com.alpsfly.aeroglide.core.data.network.retrofit.authentication
 
-import android.util.Log
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GetTokenResult

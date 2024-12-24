@@ -1,4 +1,4 @@
-package com.thermalscout.appbase.datasource.remote.firebase
+package com.alpsfly.aeroglide.core.data.network.firebase
 
 sealed class Response<out T> {
     data object Processing: Response<Nothing>()

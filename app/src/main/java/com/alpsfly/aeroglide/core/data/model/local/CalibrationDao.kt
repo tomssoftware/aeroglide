@@ -1,10 +1,11 @@
-package com.thermalscout.database
+package com.alpsfly.aeroglide.core.data.model.local
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.alpsfly.aeroglide.core.data.model.local.Calibration
 
 @Dao
 interface CalibrationDao {

@@ -1,4 +1,4 @@
-package com.thermalscout.database.network.firebase
+package com.alpsfly.aeroglide.core.data.model.network.firebase
 
 // todo: add missing fields
 data class SubscriptionPurchase(

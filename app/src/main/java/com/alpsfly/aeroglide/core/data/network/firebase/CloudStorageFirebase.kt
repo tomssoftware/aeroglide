@@ -1,4 +1,4 @@
-package com.thermalscout.appbase.datasource.remote.firebase
+package com.alpsfly.aeroglide.core.data.network.firebase
 
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.firestore.FieldValue

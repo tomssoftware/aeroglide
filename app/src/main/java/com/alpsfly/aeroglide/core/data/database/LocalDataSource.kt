@@ -3,8 +3,8 @@ package com.alpsfly.aeroglide.core.data.database
 import androidx.lifecycle.LiveData
 import com.alpsfly.aeroglide.AeroGlideApplication
 import com.alpsfly.aeroglide.AeroGlideDatabase
-import com.thermalscout.database.Track
-import com.thermalscout.database.TrackLog
+import com.alpsfly.aeroglide.core.data.model.local.Track
+import com.alpsfly.aeroglide.core.data.model.local.TrackLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

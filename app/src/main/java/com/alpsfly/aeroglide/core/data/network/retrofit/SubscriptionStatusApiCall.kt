@@ -1,4 +1,4 @@
-package com.thermalscout.appbase.datasource.remote.retrofit
+package com.alpsfly.aeroglide.core.data.network.retrofit
 
 
 import com.alpsfly.aeroglide.core.data.model.local.billing.ContentResource
