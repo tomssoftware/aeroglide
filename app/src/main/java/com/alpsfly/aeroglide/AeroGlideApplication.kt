@@ -14,12 +14,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 @HiltAndroidApp
-class AeroGlideApplication(val databaseName: String = "aeroglide_database") : Application() {
-    private val localStorage by lazy {
-        AeroGlideDatabase.getDatabase(this, databaseName)
-    }
+class AeroGlideApplication @Inject constructor (/*private val database: AeroGlideDatabase*/) : Application() {
+   // private val localStorage by lazy { database }
 
     private val mapStorage: MapStorage
         get() = MapStorage.getInstance()
@@ -30,14 +29,14 @@ class AeroGlideApplication(val databaseName: String = "aeroglide_database") : Ap
     private val cloudFunctions: CloudFunctions
         get() = CloudFunctions.getInstance()
 
-    private val webDataSource: WebDataSource
-        get() = WebDataSource.getInstance(cloudStorage, cloudFunctions, mapStorage)
-
-    private val localDataSource: LocalDataSource
-        get() = LocalDataSource.getInstance(this, localStorage)
-
-    val repository: AeroGlideRepository
-        get() = AeroGlideRepository.getInstance(localDataSource, webDataSource)
+//    private val webDataSource: WebDataSource
+//        get() = WebDataSource.getInstance(cloudStorage, cloudFunctions, mapStorage)
+//
+//    private val localDataSource: LocalDataSource
+//        get() = LocalDataSource.getInstance(this, localStorage)
+//
+//    val repository: AeroGlideRepository
+//        get() = AeroGlideRepository.getInstance(localDataSource, webDataSource)
 
     override fun onCreate() {
         super.onCreate()
