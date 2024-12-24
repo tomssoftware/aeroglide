@@ -1,4 +1,4 @@
-package com.thermalscout.database
+package com.alpsfly.aeroglide.core.data.model.local
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

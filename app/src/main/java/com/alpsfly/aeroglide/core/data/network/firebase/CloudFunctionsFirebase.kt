@@ -1,11 +1,11 @@
-package com.thermalscout.appbase.datasource.remote.firebase
+package com.alpsfly.aeroglide.core.data.network.firebase
 
 import com.alpsfly.aeroglide.BuildConfig
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.alpsfly.aeroglide.core.data.network.retrofit.PendingRequestCounter
-import com.thermalscout.appbase.datasource.remote.retrofit.SubscriptionStatusApiCall
-import com.thermalscout.appbase.datasource.remote.retrofit.authentication.RetrofitClient
+import com.alpsfly.aeroglide.core.data.network.retrofit.SubscriptionStatusApiCall
+import com.alpsfly.aeroglide.core.data.network.retrofit.authentication.RetrofitClient
 
 
 class CloudFunctionsFirebase : CloudFunctions {

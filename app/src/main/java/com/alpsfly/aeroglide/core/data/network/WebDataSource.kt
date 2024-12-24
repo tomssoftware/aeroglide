@@ -1,9 +1,9 @@
-package com.thermalscout.appbase.datasource.remote
+package com.alpsfly.aeroglide.core.data.network
 
 import android.location.Location
-import com.thermalscout.appbase.datasource.remote.firebase.CloudFunctions
-import com.thermalscout.appbase.datasource.remote.firebase.CloudStorage
-import com.thermalscout.appbase.datasource.remote.mapbox.MapStorage
+import com.alpsfly.aeroglide.core.data.network.firebase.CloudFunctions
+import com.alpsfly.aeroglide.core.data.network.firebase.CloudStorage
+import com.alpsfly.aeroglide.core.data.network.mapbox.MapStorage
 import com.alpsfly.aeroglide.core.data.model.network.Pilot
 import com.alpsfly.aeroglide.core.data.model.network.firebase.Purchase
 import com.alpsfly.aeroglide.core.data.model.network.firebase.User

@@ -1,6 +1,4 @@
-package com.thermalscout.appbase.datasource.remote.firebase
-
-import retrofit2.Response
+package com.alpsfly.aeroglide.core.data.network.firebase
 
 interface CloudFunctions {
     suspend fun registerInstanceId(instanceId: String)

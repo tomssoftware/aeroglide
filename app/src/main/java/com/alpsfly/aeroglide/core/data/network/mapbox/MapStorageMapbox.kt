@@ -1,12 +1,11 @@
-package com.thermalscout.appbase.datasource.remote.mapbox
+package com.alpsfly.aeroglide.core.data.network.mapbox
 
 import android.location.Location
-import com.thermalscout.appbase.datasource.remote.firebase.Response
+import com.alpsfly.aeroglide.core.data.network.firebase.Response
 import com.alpsfly.aeroglide.core.data.model.network.mapbox.Direction
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.*
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.thermalscout.appbase.datasource.remote.retrofit.authentication
+package com.alpsfly.aeroglide.core.data.network.retrofit.authentication
 
 import com.alpsfly.aeroglide.BuildConfig
 import com.google.gson.GsonBuilder

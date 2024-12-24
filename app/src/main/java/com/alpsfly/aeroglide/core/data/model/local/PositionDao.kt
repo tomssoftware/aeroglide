@@ -1,4 +1,4 @@
-package com.thermalscout.database
+package com.alpsfly.aeroglide.core.data.model.local
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
