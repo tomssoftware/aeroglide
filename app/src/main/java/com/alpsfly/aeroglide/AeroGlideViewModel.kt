@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @HiltViewModel
 class AeroGlideViewModel @Inject constructor(
     sensorRepository: SensorRepository,
-    aeroGlideRepository: AeroGlideRepository
+    private val aeroGlideRepository: IAeroGlideRepository
 ) : ViewModel() {
     @OptIn(FlowPreview::class)
     val climbrate = sensorRepository.climbRateFlow.sample(1000.milliseconds)
