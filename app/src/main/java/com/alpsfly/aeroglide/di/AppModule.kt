@@ -1,6 +1,7 @@
 package com.alpsfly.aeroglide.di
 
 import android.app.Application
+import com.alpsfly.aeroglide.AeroGlideRepository
 import com.alpsfly.aeroglide.core.data.repository.SensorRepository
 import com.alpsfly.aeroglide.core.data.repository.SensorRepositoryImpl
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -30,4 +31,14 @@ interface RepositoryModule {
     fun bindSensorRepository(
         sensorRepositoryImpl: SensorRepositoryImpl
     ): SensorRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface AeroGlideRepositoryModule {
+    @Binds
+    @Singleton
+    fun bindSensorRepository(
+        aeroGlideRepositoryImpl: AeroGlideRepositoryImpl
+    ): AeroGlideRepository
 }
