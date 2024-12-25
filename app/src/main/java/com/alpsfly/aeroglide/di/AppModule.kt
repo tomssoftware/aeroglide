@@ -4,13 +4,15 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.alpsfly.aeroglide.AeroGlideDatabase
-import com.alpsfly.aeroglide.AeroGlideRepository
-import com.alpsfly.aeroglide.IAeroGlideRepository
+import com.alpsfly.aeroglide.core.data.repository.DataSourceRepository
+import com.alpsfly.aeroglide.core.data.repository.IAeroGlideRepository
 import com.alpsfly.aeroglide.core.data.database.ILocalDataSource
 import com.alpsfly.aeroglide.core.data.database.LocalDataSource
 import com.alpsfly.aeroglide.core.data.model.local.TrackDao
 import com.alpsfly.aeroglide.core.data.network.IWebDataSource
 import com.alpsfly.aeroglide.core.data.network.WebDataSource
+import com.alpsfly.aeroglide.core.data.network.firebase.CloudStorage
+import com.alpsfly.aeroglide.core.data.network.firebase.CloudStorageFirebase
 import com.alpsfly.aeroglide.core.data.repository.SensorRepository
 import com.alpsfly.aeroglide.core.data.repository.SensorRepositoryImpl
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -65,7 +67,7 @@ interface AeroGlideRepositoryModule {
     @Binds
     @Singleton
     fun bindAeroGlideRepository(
-        aeroGlideRepository: AeroGlideRepository
+        dataSourceRepository: DataSourceRepository
     ): IAeroGlideRepository
 }
 
@@ -81,10 +83,11 @@ interface LocalDataSourceModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface WebDataSourceModule {
+interface CloudStorageFirebaseModule {
     @Binds
     @Singleton
-    fun bindWebDataSource(
-        webDataSource: WebDataSource
-    ): IWebDataSource
+    fun bindCloudStorageFirebase(
+        cloudStorageFirebase: CloudStorageFirebase
+    ): CloudStorage
 }
+

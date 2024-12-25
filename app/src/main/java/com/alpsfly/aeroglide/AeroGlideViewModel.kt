@@ -3,6 +3,7 @@ package com.alpsfly.aeroglide
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.model.local.Track
+import com.alpsfly.aeroglide.core.data.repository.IAeroGlideRepository
 import com.alpsfly.aeroglide.core.data.repository.SensorRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,21 +19,17 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class AeroGlideViewModel @Inject constructor(
-    sensorRepository: SensorRepository,
+    private val sensorRepository: SensorRepository,
     private val aeroGlideRepository: IAeroGlideRepository
 ) : ViewModel() {
-    @OptIn(FlowPreview::class)
-    val climbrate = sensorRepository.climbRateFlow.sample(1000.milliseconds)
-    @OptIn(FlowPreview::class)
-    val altitude = sensorRepository.altitudeFlow.sample(1000.milliseconds)
-
     private val enableRecording = MutableStateFlow(false)
 
     init {
         viewModelScope.launch {
             enableRecording.flatMapLatest { enable ->
                 if (enable) {
-                    altitude
+                    @OptIn(FlowPreview::class)
+                    sensorRepository.altitudeFlow.sample(1000.milliseconds)
                 } else {
                     emptyFlow()
                 }
