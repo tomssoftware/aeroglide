@@ -21,15 +21,6 @@ interface CloudStorage {
     suspend fun updatePurchase(purchase: Purchase)
 
     companion object {
-        @Volatile
-        private var INSTANCE: CloudStorage? = null
-
-        fun getInstance(): CloudStorage =
-            INSTANCE ?: synchronized(this) {
-                INSTANCE ?: CloudStorageFirebase().also {
-                    INSTANCE = it
-                }
-            }
 
         // root collection paths
         const val USERS = "users"

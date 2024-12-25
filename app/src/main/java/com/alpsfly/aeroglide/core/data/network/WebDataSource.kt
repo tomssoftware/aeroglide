@@ -63,20 +63,4 @@ class WebDataSource @Inject constructor(
 //        mapStorage.loadRoute(origin, destination)
 
 
-//    companion object {
-//
-//        @Volatile
-//        private var INSTANCE: WebDataSource? = null
-//
-//        fun getInstance(
-//            cloudStorage: CloudStorage,
-//            cloudFunctions: CloudFunctions,
-//            mapStorage: MapStorage
-//        ): WebDataSource =
-//            INSTANCE ?: synchronized(this) {
-//                INSTANCE ?: WebDataSource(cloudStorage, cloudFunctions, mapStorage).also {
-//                    INSTANCE = it
-//                }
-//            }
-//    }
 }

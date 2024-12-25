@@ -121,16 +121,4 @@ class LocalDataSource @Inject constructor(
     }
 
     private fun hasExpectedDeviceContext() = true
-
-//    companion object {
-//        @Volatile
-//        private var INSTANCE: LocalDataSource? = null
-//
-//        fun getInstance(application: AeroGlideApplication, database: AeroGlideDatabase): LocalDataSource =
-//            INSTANCE ?: synchronized(this) {
-//                INSTANCE ?: LocalDataSource(application, database).also {
-//                    INSTANCE = it
-//                }
-//            }
-//    }
 }

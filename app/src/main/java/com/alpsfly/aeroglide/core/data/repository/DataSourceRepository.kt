@@ -1,31 +1,18 @@
-package com.alpsfly.aeroglide
+package com.alpsfly.aeroglide.core.data.repository
 
 import android.content.Context
-import android.location.Location
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.alpsfly.aeroglide.core.data.database.LocalDataSource
 import com.alpsfly.aeroglide.core.data.model.local.Altitude
 import com.alpsfly.aeroglide.core.data.model.local.Climbrate
 import com.alpsfly.aeroglide.core.data.model.local.Track
 import com.alpsfly.aeroglide.core.data.model.local.TrackLog
 import com.alpsfly.aeroglide.core.data.model.local.Velocity
-import com.alpsfly.aeroglide.core.data.model.network.Pilot
-import com.alpsfly.aeroglide.core.data.model.network.firebase.Blacklist
 import com.alpsfly.aeroglide.core.data.model.network.firebase.Purchase
-import com.alpsfly.aeroglide.core.data.model.network.firebase.User
-import com.alpsfly.aeroglide.core.data.model.network.mapbox.Direction
 import com.alpsfly.aeroglide.core.data.network.WebDataSource
 import com.alpsfly.aeroglide.core.data.network.firebase.Response
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -60,7 +47,7 @@ interface IAeroGlideRepository {
 
     suspend fun getUser(userId: String): List<com.alpsfly.aeroglide.core.data.model.local.User>
 
-//    suspend fun loadRoute(origin: Location, destination: Location): Flow<Response<Direction?>>
+    //    suspend fun loadRoute(origin: Location, destination: Location): Flow<Response<Direction?>>
 //
 //    suspend fun setRoute(route: Direction)
 //
@@ -80,7 +67,7 @@ interface IAeroGlideRepository {
 }
 
 @Singleton
-class AeroGlideRepository @Inject constructor(
+class DataSourceRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val localDataSource: LocalDataSource,
     private val webDataSource: WebDataSource
@@ -149,7 +136,7 @@ class AeroGlideRepository @Inject constructor(
         localDataSource.getUser(userId)
     }
 
-//    override suspend fun loadRoute(origin: Location, destination: Location) = withContext(Dispatchers.IO) {
+    //    override suspend fun loadRoute(origin: Location, destination: Location) = withContext(Dispatchers.IO) {
 //        webDataSource.loadRoute(origin, destination)
 //    }
 //
@@ -171,20 +158,10 @@ class AeroGlideRepository @Inject constructor(
 //    override suspend fun incStatisticCounter(userId: String, document: String, field: String) =
 //        webDataSource.incStatisticCounter(userId, document, field)
 //
-//    override suspend fun readPurchase(purchaseToken: String) = webDataSource.readPurchase(purchaseToken)
+//    override suspend fun readPurchase(purchaseToken: String) =
+//        webDataSource.readPurchase(purchaseToken)
+//
 //    override suspend fun updatePurchase(purchase: Purchase) = webDataSource.updatePurchase(purchase)
 
-//    companion object {
-//        @Volatile
-//        private var INSTANCE: AeroGlideRepository? = null
-//
-//        fun getInstance(
-//            localDataSource: LocalDataSource,
-//            webDataSource: WebDataSource
-//        ): AeroGlideRepository =
-//            INSTANCE ?: synchronized(this) {
-//                INSTANCE ?: AeroGlideRepository(null, localDataSource, webDataSource)
-//                    .also { INSTANCE = it }
-//            }
-//    }
+
 }

@@ -17,8 +17,11 @@ import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class CloudStorageFirebase : CloudStorage {
+@Singleton
+class CloudStorageFirebase @Inject constructor(): CloudStorage {
     private val firestore = Firebase.firestore
     private val crashlytics = Firebase.crashlytics
 
