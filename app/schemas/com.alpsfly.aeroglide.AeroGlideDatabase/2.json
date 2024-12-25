@@ -1,0 +1,594 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "145cf36b8177287ef44f3fa0ca5a80c2",
+    "entities": [
+      {
+        "tableName": "altitude",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `altitude` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitude",
+            "columnName": "altitude",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "climbrate",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `climbrate` REAL NOT NULL, `grade` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbrate",
+            "columnName": "climbrate",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "grade",
+            "columnName": "grade",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "calibration",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `automatic` INTEGER NOT NULL, `calibration_altitude` REAL NOT NULL, `calibration_pressure` REAL NOT NULL, `gps_accuracy` REAL NOT NULL, `gps_altitude` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "automatic",
+            "columnName": "automatic",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calibrationAltitude",
+            "columnName": "calibration_altitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calibrationPressure",
+            "columnName": "calibration_pressure",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gpsAccuracy",
+            "columnName": "gps_accuracy",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gpsAltitude",
+            "columnName": "gps_altitude",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "elevation",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `elevation` INTEGER NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "elevation",
+            "columnName": "elevation",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "position",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `accuracy` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accuracy",
+            "columnName": "accuracy",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "track",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`track_id` INTEGER NOT NULL, `user_id` TEXT NOT NULL, `name` TEXT NOT NULL, `area` TEXT NOT NULL, `departure_date` INTEGER NOT NULL, `departure_time` INTEGER NOT NULL, `distance` REAL NOT NULL, `duration` INTEGER NOT NULL, `lat` REAL NOT NULL, `lon` REAL NOT NULL, `ascent` REAL NOT NULL, `descent` REAL NOT NULL, `min_altitude` REAL NOT NULL, `max_altitude` REAL NOT NULL, `min_speed` REAL NOT NULL, `max_speed` REAL NOT NULL, `max_climbrate` REAL NOT NULL, `min_climbrate` REAL NOT NULL, `max_climbrate_int` REAL NOT NULL, `min_climbrate_int` REAL NOT NULL, `max_grade` REAL NOT NULL, `min_grade` REAL NOT NULL, `max_heartrate` INTEGER NOT NULL, `min_heartrate` INTEGER NOT NULL, PRIMARY KEY(`track_id`))",
+        "fields": [
+          {
+            "fieldPath": "trackId",
+            "columnName": "track_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "area",
+            "columnName": "area",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departureDate",
+            "columnName": "departure_date",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departureTime",
+            "columnName": "departure_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "distance",
+            "columnName": "distance",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "duration",
+            "columnName": "duration",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lat",
+            "columnName": "lat",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lon",
+            "columnName": "lon",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ascent",
+            "columnName": "ascent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descent",
+            "columnName": "descent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minAltitude",
+            "columnName": "min_altitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxAltitude",
+            "columnName": "max_altitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minSpeed",
+            "columnName": "min_speed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxSpeed",
+            "columnName": "max_speed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxClimbrate",
+            "columnName": "max_climbrate",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minClimbrate",
+            "columnName": "min_climbrate",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxClimbrateInt",
+            "columnName": "max_climbrate_int",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minClimbrateInt",
+            "columnName": "min_climbrate_int",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxGrade",
+            "columnName": "max_grade",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minGrade",
+            "columnName": "min_grade",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxHeartrate",
+            "columnName": "max_heartrate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minHeartrate",
+            "columnName": "min_heartrate",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "track_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "track_log",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`track_log_id` INTEGER NOT NULL, `track_id` INTEGER NOT NULL, `air_pressure_timestamp` INTEGER NOT NULL, `air_pressure` REAL NOT NULL, `altitude_timestamp` INTEGER NOT NULL, `altitude` REAL NOT NULL, `aviation_timestamp` INTEGER NOT NULL, `ascent` REAL NOT NULL, `descent` REAL NOT NULL, `climbrate_timestamp` INTEGER NOT NULL, `climbrate` REAL NOT NULL, `glideratio` REAL NOT NULL, `grade` REAL NOT NULL, `elevation_timestamp` INTEGER NOT NULL, `elevation` INTEGER NOT NULL, `compass_timestamp` INTEGER NOT NULL, `azimuth` REAL NOT NULL, `position_timestamp` INTEGER NOT NULL, `accuracy` REAL NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `gps_altitude` REAL NOT NULL, `velocity_timestamp` INTEGER NOT NULL, `velocity` REAL NOT NULL, `bearing` REAL NOT NULL, `wind_indication_timestamp` INTEGER NOT NULL, `wind_speed` REAL NOT NULL, `wind_direction` REAL NOT NULL, `heartrate_timestamp` INTEGER NOT NULL, `heartrate` INTEGER NOT NULL, PRIMARY KEY(`track_log_id`))",
+        "fields": [
+          {
+            "fieldPath": "trackLogId",
+            "columnName": "track_log_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "trackId",
+            "columnName": "track_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "airPressureTimestamp",
+            "columnName": "air_pressure_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "airPressure",
+            "columnName": "air_pressure",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitudeTimestamp",
+            "columnName": "altitude_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitude",
+            "columnName": "altitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aviationTimestamp",
+            "columnName": "aviation_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ascent",
+            "columnName": "ascent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descent",
+            "columnName": "descent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbrateTimestamp",
+            "columnName": "climbrate_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbrate",
+            "columnName": "climbrate",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "glideRatio",
+            "columnName": "glideratio",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "grade",
+            "columnName": "grade",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "elevationTimestamp",
+            "columnName": "elevation_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "elevation",
+            "columnName": "elevation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "compassTimestamp",
+            "columnName": "compass_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "azimuth",
+            "columnName": "azimuth",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "positionTimestamp",
+            "columnName": "position_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accuracy",
+            "columnName": "accuracy",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gpsAltitude",
+            "columnName": "gps_altitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "velocityTimestamp",
+            "columnName": "velocity_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "velocity",
+            "columnName": "velocity",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bearing",
+            "columnName": "bearing",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "windIndicationTimestamp",
+            "columnName": "wind_indication_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "windSpeed",
+            "columnName": "wind_speed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "windDirection",
+            "columnName": "wind_direction",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "heartTimestamp",
+            "columnName": "heartrate_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "heartrate",
+            "columnName": "heartrate",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "track_log_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "user",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`user_id` TEXT NOT NULL, `fore_name` TEXT NOT NULL, `last_name` TEXT NOT NULL, `licence` TEXT NOT NULL, `glider` TEXT NOT NULL, `phone` TEXT NOT NULL, `email` TEXT NOT NULL, PRIMARY KEY(`user_id`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "foreName",
+            "columnName": "fore_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastName",
+            "columnName": "last_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "licence",
+            "columnName": "licence",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "glider",
+            "columnName": "glider",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phone",
+            "columnName": "phone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "user_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '145cf36b8177287ef44f3fa0ca5a80c2')"
+    ]
+  }
+}
