@@ -2,7 +2,7 @@ package com.alpsfly.aeroglide.core.data.network.mapbox
 
 import android.location.Location
 import com.alpsfly.aeroglide.core.data.network.firebase.Response
-import com.alpsfly.aeroglide.core.data.model.network.mapbox.Direction
+import com.alpsfly.aeroglide.core.model.common.mapbox.Direction
 import kotlinx.coroutines.flow.Flow
 
 interface MapStorage {

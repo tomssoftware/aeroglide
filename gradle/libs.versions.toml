@@ -15,12 +15,12 @@ hilt = "2.54"
 junit = "4.13.2"
 kotlin = "2.1.0"
 ksp = "2.1.0-1.0.29"
-retrofit = "2.9.0"
-okhttp = "4.9.0"
+retrofit = "2.11.0"
+okhttp = "4.12.0"
 timber = "5.0.1"
 firebase-bom = "33.7.0"
-vicoVersion = "2.0.0-beta.3"
-serialization = "1.6.3"
+vicoVersion = "2.0.0-beta.4"
+serialization = "1.7.3"
 play = "21.3.0"
 espresso = "3.6.1"
 
@@ -90,9 +90,4 @@ android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt-gradle = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-
-
-
-
