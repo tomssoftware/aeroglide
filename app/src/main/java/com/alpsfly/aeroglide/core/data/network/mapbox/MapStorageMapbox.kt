@@ -40,12 +40,12 @@ class MapStorageMapbox : MapStorage {
             .build()
         val httpResponse = client.newCall(httpRequest).execute()
         val response = httpResponse.body.let {
-                Response.Success(toJson(it.string()))
+                Response.Success(toJson(it?.string() ?: ""))
             }
 
         trySend(response).isSuccess
         awaitClose {
-            httpResponse.body.close()
+            httpResponse.body?.close()
             httpResponse.close()
         }
     }

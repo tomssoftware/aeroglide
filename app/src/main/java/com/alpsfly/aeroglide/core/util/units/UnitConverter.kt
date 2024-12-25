@@ -22,6 +22,7 @@ object UnitConverter {
     }
 
     enum class UnitType(val label: String) {
+        NONE("None"),
         LENGTH("Length"),
         SPEED("Speed")
     }
@@ -32,33 +33,32 @@ object UnitConverter {
     }
 
     enum class Unit {
+
         // BASE UNITS
         M(UnitType.LENGTH, "m", UnitSystem.METRIC, "m"),
         MS(UnitType.SPEED, "m/s", UnitSystem.METRIC, "m/s"),
         // LENGTH
-        KM(UnitType.LENGTH, "km", UnitSystem.METRIC, "km", M, 1000.0f, 0.001f),
-        MI(UnitType.LENGTH, "mi", UnitSystem.IMPERIAL,"mi", M, 1609.34f, 0.000621371f),
-        FT(UnitType.LENGTH, "ft", UnitSystem.IMPERIAL, "ft", M, 0.3048f, 3.28084f),
+        KM(UnitType.LENGTH, "km", UnitSystem.METRIC, "km", 1000.0f, 0.001f),
+        MI(UnitType.LENGTH, "mi", UnitSystem.IMPERIAL,"mi", 1609.34f, 0.000621371f),
+        FT(UnitType.LENGTH, "ft", UnitSystem.IMPERIAL, "ft", 0.3048f, 3.28084f),
         // SPEED
-        KMH(UnitType.SPEED, "km/h", UnitSystem.METRIC, "km/h", MS, 0.2777778f, 3.6f),
-        MPH(UnitType.SPEED, "mi/h", UnitSystem.METRIC, "mi/h", MS, 0.44704f, 2.236936f),
-        FPM(UnitType.SPEED, "ft/min", UnitSystem.METRIC, "ft/min", MS, 0.005080f, 196.8504f);
+        KMH(UnitType.SPEED, "km/h", UnitSystem.METRIC, "km/h", 0.2777778f, 3.6f),
+        MPH(UnitType.SPEED, "mi/h", UnitSystem.METRIC, "mi/h", 0.44704f, 2.236936f),
+        FPM(UnitType.SPEED, "ft/min", UnitSystem.METRIC, "ft/min", 0.005080f, 196.8504f);
 
-        var type: UnitType
+        var type: UnitType = UnitType.NONE
             private set
-        var symbol: String
+        var symbol: String = "None"
             private set
-        var system: UnitSystem
+        var system: UnitSystem = UnitSystem.METRIC
             private set
-        var label: String
+        var label: String = "None"
             private set
-        var reference: Unit
+        var to: Converter = MultiplicationConverter(0f)
             private set
-        var to: Converter
+        var from: Converter = MultiplicationConverter(0f)
             private set
-        var from: Converter
-            private set
-        var isBase: Boolean
+        var isBase: Boolean = false
             private set
 
         constructor(
@@ -66,7 +66,6 @@ object UnitConverter {
             unit: String,
             system: UnitSystem,
             label: String,
-            reference: Unit,
             multiToRef: Float,
             multiFromRef: Float
         ) {
@@ -74,7 +73,6 @@ object UnitConverter {
             symbol = unit
             this.system = system
             this.label = label
-            this.reference = reference
             to = MultiplicationConverter(multiToRef)
             from = MultiplicationConverter(multiFromRef)
             isBase = false
@@ -93,7 +91,6 @@ object UnitConverter {
             symbol = unit
             this.system = system
             this.label = label
-            this.reference = reference
             to = converterTo
             from = converterFrom
             isBase = false
@@ -104,7 +101,6 @@ object UnitConverter {
             symbol = unit
             this.system = system
             this.label = label
-            reference = M
             to = UnitConverter()
             from = UnitConverter()
             isBase = true
