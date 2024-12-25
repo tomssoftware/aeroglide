@@ -1,0 +1,28 @@
+package com.alpsfly.aeroglide.core.database
+
+/**
+ * Created by Thomas on 19.02.2018.
+ */
+
+import androidx.room.*
+import com.alpsfly.aeroglide.core.model.common.User
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface UserDao {
+
+    @Query("select * from user")
+    fun getAllUsers(): Flow<List<User>>
+
+    @Query("select * from user where user_id = :id")
+    fun getUser(id: String): Flow<List<User>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun addUser(user: User)
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    fun updateUser(user: User)
+
+    @Query("delete from user")
+    fun removeAllUsers()
+}

@@ -2,10 +2,11 @@ package com.alpsfly.aeroglide
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alpsfly.aeroglide.core.data.model.local.Track
-import com.alpsfly.aeroglide.core.data.repository.IAeroGlideRepository
-import com.alpsfly.aeroglide.core.data.repository.SensorRepository
+import com.alpsfly.aeroglide.core.data.DataRepository
+import com.alpsfly.aeroglide.core.data.SensorRepository
+import com.alpsfly.aeroglide.core.model.common.User
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -20,7 +22,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @HiltViewModel
 class AeroGlideViewModel @Inject constructor(
     private val sensorRepository: SensorRepository,
-    private val aeroGlideRepository: IAeroGlideRepository
+    private val dataRepository: DataRepository,
 ) : ViewModel() {
     private val enableRecording = MutableStateFlow(false)
 
@@ -34,10 +36,21 @@ class AeroGlideViewModel @Inject constructor(
                     emptyFlow()
                 }
             }.collect { altitude ->
-                aeroGlideRepository.insertTrack(Track().apply {
-                    this.trackId = altitude.timestamp
-                    this.minAltitude = altitude.values[0]
-                })
+                viewModelScope.launch {
+                    withContext(Dispatchers.IO) {
+                        dataRepository.addUser(
+                            User(
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                ""
+                            )
+                        )
+                    }
+                }
             }
         }
     }

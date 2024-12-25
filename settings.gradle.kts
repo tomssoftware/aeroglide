@@ -16,9 +16,15 @@
 
 pluginManagement {
     repositories {
-        gradlePluginPortal()
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 dependencyResolutionManagement {
@@ -32,3 +38,13 @@ dependencyResolutionManagement {
 rootProject.name = "AeroGlide"
 
 include(":app")
+include(":core:common")
+include(":core:data")
+include(":core:database")
+include(":core:domain")
+include(":core:firebase")
+include(":core:model")
+include(":core:ui")
+include(":feature:devicestatus")
+include(":feature:variometer")
+

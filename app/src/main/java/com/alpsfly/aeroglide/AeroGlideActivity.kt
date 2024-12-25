@@ -24,7 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
-import com.alpsfly.aeroglide.core.util.audio.BeepGeneratorImpl
+import com.alpsfly.aeroglide.core.domain.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
 import com.alpsfly.aeroglide.core.ui.theme.AeroGlideTheme
 import dagger.hilt.android.AndroidEntryPoint

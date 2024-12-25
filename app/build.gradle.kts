@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-@Suppress("DSL_SCOPE_VIOLATION") // Remove when fixed https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt.gradle)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt.gradle)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -49,11 +47,6 @@ android {
         buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FUNCTIONS", "5001")
         buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FIRESTORE", "8080")
         buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_PUBSUB", "8085")
-
-        // Enable room auto-migrations
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
     }
 
     buildTypes {
@@ -74,10 +67,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
         aidl = false
@@ -85,15 +74,19 @@ android {
         renderScript = false
         shaders = false
     }
-
-    packagingOptions {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
 }
 
 dependencies {
+    api(project(":core:common"))
+    api(project(":core:domain"))
+    api(project(":core:model"))
+    api(project(":core:data"))
+    api(project(":core:database"))
+    api(project(":core:ui"))
+
+    api(project(":feature:variometer"))
+    api(project(":feature:devicestatus"))
+
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -108,18 +101,13 @@ dependencies {
 
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     // Arch Components
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
-
-    // Arch Components Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
 
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)
@@ -167,5 +155,4 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-
 }

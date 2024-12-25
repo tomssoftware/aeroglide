@@ -5,10 +5,10 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.alpsfly.aeroglide.core.data.model.network.Pilot
-import com.alpsfly.aeroglide.core.data.model.network.firebase.User
-import com.alpsfly.aeroglide.core.data.model.network.firebase.Blacklist
-import com.alpsfly.aeroglide.core.data.model.network.firebase.Purchase
+import com.alpsfly.aeroglide.core.model.common.Pilot
+import com.alpsfly.aeroglide.core.model.common.firebase.User
+import com.alpsfly.aeroglide.core.model.common.firebase.Blacklist
+import com.alpsfly.aeroglide.core.model.common.firebase.Purchase
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
