@@ -36,17 +36,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
-        buildConfigField(
-            "String",
-            "FIREBASE_FUNCTIONS_URL",
-            "\"https://us-central1-thermalscout.cloudfunctions.net/\""
-        )
-        buildConfigField("String", "FIREBASE_EMULATOR_HOST_ADDRESS", "\"10.0.2.2\"")
-        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_AUTH", "9099")
-        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FUNCTIONS", "5001")
-        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FIRESTORE", "8080")
-        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_PUBSUB", "8085")
     }
 
     buildTypes {
@@ -82,6 +71,7 @@ dependencies {
     api(project(":core:model"))
     api(project(":core:data"))
     api(project(":core:database"))
+    api(project(":core:firebase"))
     api(project(":core:ui"))
 
     api(project(":feature:variometer"))

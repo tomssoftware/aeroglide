@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alpsfly.aeroglide.core.data.network.retrofit.authentication
+package com.alpsfly.aeroglide.core.firebase.retrofit.authentication
 
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth

@@ -1,7 +1,7 @@
-package com.alpsfly.aeroglide.core.data.network.mapbox
+package com.alpsfly.aeroglide.core.mapbox.data
 
 import android.location.Location
-import com.alpsfly.aeroglide.core.data.network.firebase.Response
+import com.alpsfly.aeroglide.core.firebase.Response
 import com.alpsfly.aeroglide.core.model.common.mapbox.Direction
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.alpsfly.aeroglide.core.data.network.retrofit.authentication
+package com.alpsfly.aeroglide.core.firebase.retrofit.authentication
 
-import com.alpsfly.aeroglide.BuildConfig
+import com.alpsfly.aeroglide.core.firebase.BuildConfig
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

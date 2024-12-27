@@ -4,18 +4,6 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.util.Log
-import com.alpsfly.aeroglide.core.data.network.firebase.CloudFunctions
-import com.alpsfly.aeroglide.core.data.network.mapbox.MapStorage
-import com.google.firebase.FirebaseApp
-import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.firestoreSettings
-import com.google.firebase.ktx.Firebase
-
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,14 +18,14 @@ class AeroGlideApplication @Inject constructor (/*private val database: AeroGlid
 
    // private val localStorage by lazy { database }
 
-    private val mapStorage: MapStorage
-        get() = MapStorage.getInstance()
+//    private val mapStorage: com.alpsfly.aeroglide.core.mapbox.data.MapStorage
+//        get() = com.alpsfly.aeroglide.core.mapbox.data.MapStorage.getInstance()
 
 //    private val cloudStorage: CloudStorage
 //        get() = CloudStorage.getInstance()
 //
-    private val cloudFunctions: CloudFunctions
-        get() = CloudFunctions.getInstance()
+//    private val cloudFunctions: com.alpsfly.aeroglide.core.firebase.CloudFunctions
+//        get() = com.alpsfly.aeroglide.core.firebase.CloudFunctions.getInstance()
 
 //    private val webDataSource: WebDataSource
 //        get() = WebDataSource.getInstance(cloudStorage, cloudFunctions, mapStorage)

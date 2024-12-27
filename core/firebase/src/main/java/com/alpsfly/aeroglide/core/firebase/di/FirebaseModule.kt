@@ -16,11 +16,23 @@
 
 package com.alpsfly.aeroglide.core.firebase.di
 
+import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 class FirebaseModule {
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface CloudStorageFirebaseModule {
+    @Binds
+    @Singleton
+    fun bindCloudStorageFirebase(
+        cloudStorageFirebase: com.alpsfly.aeroglide.core.firebase.CloudStorageFirebase
+    ): com.alpsfly.aeroglide.core.firebase.CloudStorage
 }

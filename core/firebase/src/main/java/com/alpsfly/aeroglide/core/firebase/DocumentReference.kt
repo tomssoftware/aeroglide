@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.data.network.firebase
+package com.alpsfly.aeroglide.core.firebase
 
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -11,9 +11,9 @@ fun <T> DocumentReference.addSnapshotListenerFlow(dataType: Class<T>): Flow<Resp
     val listener = EventListener<DocumentSnapshot> { snapshot, error ->
         val response = if (snapshot != null) {
             val data = snapshot.toObject(dataType)
-            Response.Success(data)
+            com.alpsfly.aeroglide.core.firebase.Response.Success(data)
         } else {
-            Response.Error(error?.message ?: error.toString())
+            com.alpsfly.aeroglide.core.firebase.Response.Error(error?.message ?: error.toString())
         }
         trySend(response).isSuccess
     }

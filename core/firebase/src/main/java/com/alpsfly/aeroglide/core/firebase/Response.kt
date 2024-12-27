@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.data.network.firebase
+package com.alpsfly.aeroglide.core.firebase
 
 sealed class Response<out T> {
     data object Processing: Response<Nothing>()

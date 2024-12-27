@@ -1,8 +1,8 @@
 package com.alpsfly.aeroglide.di
 
 import android.app.Application
-import com.alpsfly.aeroglide.core.data.network.firebase.CloudStorage
-import com.alpsfly.aeroglide.core.data.network.firebase.CloudStorageFirebase
+import com.alpsfly.aeroglide.core.firebase.CloudStorage
+import com.alpsfly.aeroglide.core.firebase.CloudStorageFirebase
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -35,13 +35,5 @@ interface RepositoryModule {
     ): SensorRepository
 }
 
-@Module
-@InstallIn(SingletonComponent::class)
-interface CloudStorageFirebaseModule {
-    @Binds
-    @Singleton
-    fun bindCloudStorageFirebase(
-        cloudStorageFirebase: CloudStorageFirebase
-    ): CloudStorage
-}
+
 

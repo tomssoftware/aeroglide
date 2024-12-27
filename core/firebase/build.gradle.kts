@@ -29,11 +29,22 @@ android {
 
         testInstrumentationRunner = "com.alpsfly.aeroglide.core.testing.HiltTestRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        buildConfigField(
+            "String",
+            "FIREBASE_FUNCTIONS_URL",
+            "\"https://us-central1-thermalscout.cloudfunctions.net/\""
+        )
+        buildConfigField("String", "FIREBASE_EMULATOR_HOST_ADDRESS", "\"10.0.2.2\"")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_AUTH", "9099")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FUNCTIONS", "5001")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FIRESTORE", "8080")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_PUBSUB", "8085")
     }
 
     buildFeatures {
         aidl = false
-        buildConfig = false
+        buildConfig = true
         renderScript = false
         shaders = false
     }
@@ -45,10 +56,35 @@ android {
 }
 
 dependencies {
+    api(project(":core:domain"))
+
     // Arch Components
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Import the BoM for Firebase
+    implementation(platform(libs.firebase.bom))
+
+    // Add Firebase libraries
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.playintegrity)
+    implementation(libs.firebase.appcheck.debug)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+    implementation(libs.retrofitConverterScalars)
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLoggingInterceptor)
+
+    // Logging
+    implementation(libs.timber)
 }

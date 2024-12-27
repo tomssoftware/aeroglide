@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.data.network.retrofit
+package com.alpsfly.aeroglide.core.firebase.retrofit
 
 
 import retrofit2.Response

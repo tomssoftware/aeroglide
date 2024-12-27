@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alpsfly.aeroglide.core.data.network.retrofit
+package com.alpsfly.aeroglide.core.firebase.retrofit
 
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
