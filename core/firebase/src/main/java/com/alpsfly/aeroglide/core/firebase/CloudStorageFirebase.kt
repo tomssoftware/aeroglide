@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.data.network.firebase
+package com.alpsfly.aeroglide.core.firebase
 
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.firestore.FieldValue

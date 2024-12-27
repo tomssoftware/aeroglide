@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.data.network.firebase
+package com.alpsfly.aeroglide.core.firebase
 
 interface CloudFunctions {
     suspend fun registerInstanceId(instanceId: String)

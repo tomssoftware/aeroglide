@@ -45,6 +45,7 @@ include(":core:domain")
 include(":core:firebase")
 include(":core:model")
 include(":core:ui")
+include(":core:mapbox")
 include(":feature:devicestatus")
 include(":feature:variometer")
 

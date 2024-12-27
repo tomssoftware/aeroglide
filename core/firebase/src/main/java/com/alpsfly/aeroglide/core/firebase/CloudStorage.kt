@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.data.network.firebase
+package com.alpsfly.aeroglide.core.firebase
 
 import com.alpsfly.aeroglide.core.model.common.Pilot
 import com.alpsfly.aeroglide.core.model.common.firebase.User

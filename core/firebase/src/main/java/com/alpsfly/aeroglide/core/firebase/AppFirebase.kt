@@ -20,3 +20,5 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 
 
+private val cloudFunctions: CloudFunctions
+    get() = CloudFunctions.getInstance()
