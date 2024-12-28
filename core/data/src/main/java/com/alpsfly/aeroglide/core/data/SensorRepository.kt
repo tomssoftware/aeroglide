@@ -8,6 +8,7 @@ import android.location.LocationManager
 import com.alpsfly.aeroglide.core.domain.IKalmanFilter
 import com.alpsfly.aeroglide.core.domain.KalmanFilter
 import com.alpsfly.aeroglide.core.common.Limits
+import com.alpsfly.aeroglide.core.common.chunked
 import com.alpsfly.aeroglide.core.domain.Q_ACCELERATION
 import com.alpsfly.aeroglide.core.domain.R_ALTITUDE
 import com.alpsfly.aeroglide.core.domain.SensorFrequency
@@ -23,12 +24,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.chunked
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -101,28 +100,28 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * Vertical acceleration flow
      */
-    private val verticalAccelerationFlowFrequency = SensorFrequency()
+    private val targetFrequency = 5f
+    private val sourceFrequency = SensorFrequency()
+    private fun chunkSize() =
+        if (sourceFrequency.get() / targetFrequency <= 0f) 10 else (sourceFrequency.get() / targetFrequency).toInt()
+
     override val verticalAccelerationFlow: Flow<SensorData>
         get() {
-            return combine(sensorManager.linearAccelerationSensorDataFlow(), sensorManager.rotationVectorSensorDataFlow()) { a, r ->
+            return combine(
+                sensorManager.linearAccelerationSensorDataFlow(),
+                sensorManager.rotationVectorSensorDataFlow()
+            ) { a, r ->
+                getVerticalAcceleration(a, r)
+            }.chunked(chunkSize()) { verticalAcceleration ->
+                verticalAcceleration.average().toFloat()
+            }.map { averageVerticalAcceleration ->
                 SensorData(
                     type = SensorType.VerticalAcceleration,
-                    frequency = verticalAccelerationFlowFrequency.get(),
-                    values = floatArrayOf(getVerticalAcceleration(a, r))
+                    frequency = sourceFrequency.get(),
+                    values = floatArrayOf(averageVerticalAcceleration)
                 )
-            }.onEach {
-                delay(100) // Delay for 100 milliseconds (10 Hz)
-            }.shareSensorData()
+            }
         }
-
-//    private fun getPressure(size: Int): Flow<SensorData> {
-//        return sensorManager.pressureSensorDataFlow().chunked(size) { list ->
-//            val timestamp = list.fold(0L) { sum, item -> sum + item.timestamp } / list.size
-//            val frequency = list.fold(0f) { sum, item -> sum + item.frequency } / list.size / size
-//            val pressure = list.fold(0f) { sum, item -> sum + item.values[0] } / list.size.toFloat()
-//            SensorData(timestamp = timestamp, frequency = frequency, values = floatArrayOf(pressure), type = list[0].type)
-//        }
-//    }
 
     /**
      * Altitude flow
@@ -145,7 +144,7 @@ class SensorRepositoryImpl @Inject constructor(
                     altitude = calcAltitude(pressure, pressure0, altitude0)
                 }
                 SensorData(type = SensorType.Altitude, values = floatArrayOf(altitude), frequency = altitudeFlowFrequency.get())
-            }.shareSensorData()
+            }
         }
 
     /**
@@ -165,7 +164,7 @@ class SensorRepositoryImpl @Inject constructor(
                     values = floatArrayOf(kalmanFilter.climbrate),
                     frequency = accelerationData.frequency
                 )
-            }.shareSensorData()
+            }
         }
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
