@@ -13,6 +13,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -44,6 +45,7 @@ import com.alpsfly.aeroglide.core.presentation.FlightStatusScreen
 import com.alpsfly.aeroglide.core.presentation.centered
 import com.alpsfly.aeroglide.core.presentation.AeroGlideBottomBar
 import com.alpsfly.aeroglide.core.MenuItem
+import com.alpsfly.aeroglide.core.mapbox.data.MapScreen
 import com.alpsfly.aeroglide.feature.variometer.viewmodel.VarioViewModel
 
 private var startScaleAngle = 180f
@@ -74,7 +76,7 @@ fun VariometerScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(
-        pageCount = { 3 }
+        pageCount = { 4 }
     )
     val items: List<MenuItem> = listOf(
         MenuItem(
@@ -94,6 +96,12 @@ fun VariometerScreen(
             title = "Help",
             contentDescription = "Get help",
             icon = Icons.Default.Info
+        ),
+        MenuItem(
+            id = "map",
+            title = "Map",
+            contentDescription = "Map",
+            icon = Icons.Default.MailOutline
         ),
     )
 
@@ -136,6 +144,10 @@ fun VariometerScreen(
                             ClimbrateProfileScreen(
                                 modifier =Modifier.fillMaxSize(),
                                 navController = navController)
+                        }
+
+                        3 -> {
+                            MapScreen()
                         }
                     }
                 }

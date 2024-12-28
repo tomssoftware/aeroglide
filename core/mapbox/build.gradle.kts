@@ -16,14 +16,12 @@
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt.gradle)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.feature.variometer"
+    namespace = "com.alpsfly.aeroglide.core.mapbox"
     compileSdk = 35
 
     defaultConfig {
@@ -31,9 +29,9 @@ android {
     }
 
     buildFeatures {
-        compose = true
         aidl = false
         buildConfig = false
+        compose = true
         renderScript = false
         shaders = false
     }
@@ -45,26 +43,11 @@ android {
 }
 
 dependencies {
-    api(project(":core:ui"))
-    api(project(":core:data"))
-    api(project(":core:common"))
-    api(project(":core:model"))
-    api(project(":core:mapbox"))
+    api(project(":core:firebase"))
 
-    // Core Android dependencies
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-
-    // Arch Components
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    // Hilt Dependency Injection
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kontlinx.serialization.core)
+    implementation(libs.kontlinx.serialization.json)
 
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)
@@ -73,8 +56,15 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
-    // Vico chart library
-    implementation(libs.vico.core)
-    implementation(libs.vico.compose)
-    implementation(libs.vico.compose.m3)
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+    implementation(libs.retrofitConverterScalars)
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLoggingInterceptor)
+
+    // Mapbox
+    implementation (libs.mapbox.android)
+    implementation (libs.mapbox.compose)
 }
+
