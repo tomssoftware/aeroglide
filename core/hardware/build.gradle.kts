@@ -17,18 +17,14 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.core.domain"
+    namespace = "com.alpsfly.aeroglide.core.hardware"
     compileSdk = 35
 
     defaultConfig {
         minSdk = 26
-
-        testInstrumentationRunner = "com.alpsfly.aeroglide.core.testing.HiltTestRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildFeatures {
@@ -46,8 +42,9 @@ android {
 
 dependencies {
     api(project(":core:model"))
-    api(project(":core:hardware"))
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.test)
+
+    implementation(libs.play.service.location)
 }

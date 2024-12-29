@@ -42,6 +42,7 @@ rootProject.name = "AeroGlide"
 
 include(":app")
 include(":core:common")
+include(":core:hardware")
 include(":core:data")
 include(":core:database")
 include(":core:domain")

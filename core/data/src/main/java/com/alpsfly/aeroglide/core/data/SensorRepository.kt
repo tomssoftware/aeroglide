@@ -11,13 +11,12 @@ import com.alpsfly.aeroglide.core.common.Limits
 import com.alpsfly.aeroglide.core.common.chunked
 import com.alpsfly.aeroglide.core.domain.Q_ACCELERATION
 import com.alpsfly.aeroglide.core.domain.R_ALTITUDE
-import com.alpsfly.aeroglide.core.domain.SensorFrequency
-import com.alpsfly.aeroglide.core.domain.accelerometerSensorDataFlow
+import com.alpsfly.aeroglide.core.hardware.accelerometerSensorDataFlow
 import com.alpsfly.aeroglide.core.domain.getVerticalAcceleration
-import com.alpsfly.aeroglide.core.domain.linearAccelerationSensorDataFlow
-import com.alpsfly.aeroglide.core.domain.locationDataFlow
-import com.alpsfly.aeroglide.core.domain.pressureSensorDataFlow
-import com.alpsfly.aeroglide.core.domain.rotationVectorSensorDataFlow
+import com.alpsfly.aeroglide.core.hardware.linearAccelerationSensorDataFlow
+import com.alpsfly.aeroglide.core.hardware.locationDataFlow
+import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
+import com.alpsfly.aeroglide.core.hardware.rotationVectorSensorDataFlow
 import com.alpsfly.aeroglide.core.model.SensorData
 import com.alpsfly.aeroglide.core.model.SensorType
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -101,7 +100,7 @@ class SensorRepositoryImpl @Inject constructor(
      * Vertical acceleration flow
      */
     private val targetFrequency = 5f
-    private val sourceFrequency = SensorFrequency()
+    private val sourceFrequency = com.alpsfly.aeroglide.core.hardware.SensorFrequency()
     private fun chunkSize() =
         if (sourceFrequency.get() / targetFrequency <= 0f) 10 else (sourceFrequency.get() / targetFrequency).toInt()
 
@@ -129,7 +128,7 @@ class SensorRepositoryImpl @Inject constructor(
     private var calibrated = false
     private var altitude0 = 0f
     private var pressure0 = 0f
-    private val altitudeFlowFrequency = SensorFrequency()
+    private val altitudeFlowFrequency = com.alpsfly.aeroglide.core.hardware.SensorFrequency()
     override val altitudeFlow: Flow<SensorData>
         get() {
             return combine(sensorManager.pressureSensorDataFlow(), locationManager.locationDataFlow(context, 1000)) { p, l ->
