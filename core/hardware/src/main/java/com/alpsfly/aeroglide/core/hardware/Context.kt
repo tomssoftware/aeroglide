@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.domain
+package com.alpsfly.aeroglide.core.hardware
 
 import android.content.Context
 import android.content.pm.PackageManager
