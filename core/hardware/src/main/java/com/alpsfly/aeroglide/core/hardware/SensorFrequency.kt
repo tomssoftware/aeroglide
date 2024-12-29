@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.domain
+package com.alpsfly.aeroglide.core.hardware
 
 
 class SensorFrequency(private var startTime: Long = 0, private var count: Long = 0L) {

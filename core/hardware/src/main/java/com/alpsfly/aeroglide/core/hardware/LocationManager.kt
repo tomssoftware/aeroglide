@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.domain
+package com.alpsfly.aeroglide.core.hardware
 
 import android.annotation.SuppressLint
 import android.content.Context
