@@ -3,6 +3,8 @@ package com.alpsfly.aeroglide.feature.devicestatus.viewmodel
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alpsfly.aeroglide.core.common.units.LocalUnit
+import com.alpsfly.aeroglide.core.common.units.UnitConverter
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
@@ -27,15 +29,18 @@ class VicoChartViewModel @Inject constructor(
             collectAltitude()
         }
         viewModelScope.launch {
-            collectclimbrate()
+            collectClimbrate()
         }
         viewModelScope.launch {
             collectPressure()
         }
     }
 
+    val altitudeCalibrationStatus = sensorRepository.altitudeCalibrationStatus
+
     val pressureModelProducer = CartesianChartModelProducer()
     private val pressurePoints = mutableStateListOf<Pair<Int, Float>>()
+
     @OptIn(FlowPreview::class)
     private suspend fun collectPressure() {
         pressureFlow.sample(1000.milliseconds).collect { pressure ->
@@ -53,6 +58,7 @@ class VicoChartViewModel @Inject constructor(
 
     val altitudeModelProducer = CartesianChartModelProducer()
     private val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
+
     @OptIn(FlowPreview::class)
     private suspend fun collectAltitude() {
         altitudeFlow.sample(1000.milliseconds).collect { altitude ->
@@ -70,15 +76,16 @@ class VicoChartViewModel @Inject constructor(
 
     val climbrateModelProducer = CartesianChartModelProducer()
     private val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
+
     @OptIn(FlowPreview::class)
-    private suspend fun collectclimbrate() {
+    private suspend fun collectClimbrate() {
         climbrateFlow.sample(1000.milliseconds).collect { climbrate ->
             climbratePoints.add(Pair(climbratePoints.size, climbrate.values[0]))
             climbrateModelProducer.runTransaction {
                 lineSeries {
                     series(
                         x = climbratePoints.map { it.first },
-                        y = climbratePoints.map { it.second }
+                        y = climbratePoints.map { it.second } //{ LocalUnit.of(it.second, UnitConverter.Unit.MS).toValue() }
                     )
                 }
             }

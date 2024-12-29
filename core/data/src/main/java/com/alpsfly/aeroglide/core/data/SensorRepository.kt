@@ -13,18 +13,23 @@ import com.alpsfly.aeroglide.core.domain.Q_ACCELERATION
 import com.alpsfly.aeroglide.core.domain.R_ALTITUDE
 import com.alpsfly.aeroglide.core.hardware.accelerometerSensorDataFlow
 import com.alpsfly.aeroglide.core.domain.getVerticalAcceleration
+import com.alpsfly.aeroglide.core.hardware.SensorFrequency
 import com.alpsfly.aeroglide.core.hardware.linearAccelerationSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.locationDataFlow
 import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.rotationVectorSensorDataFlow
 import com.alpsfly.aeroglide.core.model.SensorData
 import com.alpsfly.aeroglide.core.model.SensorType
+import com.alpsfly.aeroglide.core.model.hardware.AltitudeCalibrationStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
@@ -56,11 +61,14 @@ interface SensorRepository {
 
     /** Fused sensor */
     val altitudeFlow: Flow<SensorData>
+
+    /** Status of altitude calibration **/
+    val altitudeCalibrationStatus: StateFlow<AltitudeCalibrationStatus>
 }
 
 @Singleton
 class SensorRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) : SensorRepository, SensorEventCallback() {
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -100,7 +108,7 @@ class SensorRepositoryImpl @Inject constructor(
      * Vertical acceleration flow
      */
     private val targetFrequency = 5f
-    private val sourceFrequency = com.alpsfly.aeroglide.core.hardware.SensorFrequency()
+    private val sourceFrequency = SensorFrequency()
     private fun chunkSize() =
         if (sourceFrequency.get() / targetFrequency <= 0f) 10 else (sourceFrequency.get() / targetFrequency).toInt()
 
@@ -125,22 +133,25 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * Altitude flow
      */
-    private var calibrated = false
-    private var altitude0 = 0f
-    private var pressure0 = 0f
-    private val altitudeFlowFrequency = com.alpsfly.aeroglide.core.hardware.SensorFrequency()
+    private val _altitudeCalibrationStatus = MutableStateFlow(AltitudeCalibrationStatus())
+    override val altitudeCalibrationStatus: StateFlow<AltitudeCalibrationStatus> = _altitudeCalibrationStatus.asStateFlow()
+    private val altitudeFlowFrequency = SensorFrequency()
     override val altitudeFlow: Flow<SensorData>
         get() {
             return combine(sensorManager.pressureSensorDataFlow(), locationManager.locationDataFlow(context, 1000)) { p, l ->
                 val pressure = p.values[0] * 100f
                 var altitude = l.altitude.toFloat()
-                if (l.hasAccuracy() && l.hasVerticalAccuracy() && pressure != 0f && !calibrated) {
-                    pressure0 = pressure
-                    altitude0 = altitude
-                    calibrated = true
-                }
-                if (altitude0 != 0f && pressure0 != 0f && pressure != 0f) {
-                    altitude = calcAltitude(pressure, pressure0, altitude0)
+                with(_altitudeCalibrationStatus.value) {
+                    if (l.hasAccuracy() && l.hasVerticalAccuracy() && pressure != 0f && !isCalibrated) {
+                        isCalibrated = true
+                        pressure0 = pressure
+                        altitude0 = altitude
+                        verticalAccuracy = l.verticalAccuracyMeters
+                        horizontalAccuracy = l.verticalAccuracyMeters
+                    }
+                    if (altitude0 != 0f && pressure0 != 0f && pressure != 0f) {
+                        altitude = calcAltitude(pressure, pressure0, altitude0)
+                    }
                 }
                 SensorData(type = SensorType.Altitude, values = floatArrayOf(altitude), frequency = altitudeFlowFrequency.get())
             }

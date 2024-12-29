@@ -131,19 +131,22 @@ fun VariometerScreen(
                     when (page) {
                         0 -> {
                             AnalogVariometer(
-                                modifier = Modifier.fillMaxSize())
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
 
                         1 -> {
                             AltitudeProfileScreen(
                                 modifier = Modifier.fillMaxSize(),
-                                navController = navController)
+                                navController = navController
+                            )
                         }
 
                         2 -> {
                             ClimbrateProfileScreen(
-                                modifier =Modifier.fillMaxSize(),
-                                navController = navController)
+                                modifier = Modifier.fillMaxSize(),
+                                navController = navController
+                            )
                         }
 
                         3 -> {
@@ -266,8 +269,11 @@ private fun DrawScope.drawVarioText(
     textMeasurer: TextMeasurer,
     climbrate: Float
 ) {
-    val climbrateString = LocalUnit.of(climbrate, UnitConverter.Unit.MS).withDigits(2).withSymbol(true)
-    .toLocalString()
+    val climbrateString = LocalUnit
+        .of(climbrate, UnitConverter.Unit.MS)
+        .withDigits(2)
+        .withSymbol(true)
+        .toLocalString()
     val measuredText = textMeasurer.measure(climbrateString)
 
     withTransform({
