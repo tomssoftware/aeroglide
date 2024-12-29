@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.alpsfly.aeroglide.core.model.hardware.AltitudeCalibrationStatus
 import com.alpsfly.aeroglide.feature.devicestatus.viewmodel.VicoChartViewModel
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
@@ -38,11 +40,18 @@ fun DeviceStatusScreen(
     navController: NavController,
     vicoChartViewModel: VicoChartViewModel = hiltViewModel()
 ) {
+    val calibrationStatus = vicoChartViewModel.altitudeCalibrationStatus.collectAsState(AltitudeCalibrationStatus())
+
     Box(
+        contentAlignment = Alignment.TopCenter,
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
+        Text(text = "calibration: ${calibrationStatus.value.isCalibrated}, ${calibrationStatus.value.altitude0}, ${calibrationStatus.value.verticalAccuracy}",
+            modifier = Modifier.clickable {
+            }
+        )
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
