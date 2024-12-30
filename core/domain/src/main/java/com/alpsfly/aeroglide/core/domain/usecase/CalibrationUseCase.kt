@@ -1,16 +1,15 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
 import android.location.Location
-import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.model.SensorData
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import javax.inject.Inject
 
-class CalibrationUseCase(
-    private val sensorRepository: SensorRepository,
-    private val dataRepository: DataRepository
+class CalibrationUseCase @Inject constructor(
+    private val sensorRepository: SensorRepository
 ) {
     operator fun invoke() : Flow<Calibration> =
         sensorRepository.pressureDataSource.mapToCalibrationResult(sensorRepository.locationDataSource)
