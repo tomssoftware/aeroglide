@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.domain
+package com.alpsfly.aeroglide.core.data.util
 
 import com.alpsfly.aeroglide.core.model.SensorData
 import kotlin.math.sqrt

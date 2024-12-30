@@ -24,6 +24,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import com.alpsfly.aeroglide.core.database.AppDatabase
+import com.alpsfly.aeroglide.core.database.CalibrationDao
 import com.alpsfly.aeroglide.core.database.UserDao
 import javax.inject.Singleton
 
@@ -33,6 +34,11 @@ class DatabaseModule {
     @Provides
     fun provideUserDao(appDatabase: AppDatabase): UserDao {
         return appDatabase.userDao()
+    }
+
+    @Provides
+    fun provideCalibrationDao(appDatabase: AppDatabase): CalibrationDao {
+        return appDatabase.calibrationDao()
     }
 
     @Provides
