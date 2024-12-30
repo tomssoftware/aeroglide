@@ -34,8 +34,8 @@ class LocalUnit internal constructor( // todo: make template
     fun toValue() = value
 
     override fun toString() = when (showSymbol) {
-        true -> String.format("%.${digits}f %s", value, symbol)
-        false -> String.format("%.${digits}f", value)
+        true -> String.format("%.${digits}f %s", value, symbol).trim()
+        false -> String.format("%.${digits}f", value).trim()
     }
 
     fun toLocalValue(): Float {
