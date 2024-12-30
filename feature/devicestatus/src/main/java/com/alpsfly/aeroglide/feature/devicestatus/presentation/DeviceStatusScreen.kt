@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.core.model.hardware.AltitudeCalibrationStatus
+import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.feature.devicestatus.viewmodel.VicoChartViewModel
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
@@ -40,7 +40,7 @@ fun DeviceStatusScreen(
     navController: NavController,
     vicoChartViewModel: VicoChartViewModel = hiltViewModel()
 ) {
-    val calibrationStatus = vicoChartViewModel.altitudeCalibrationStatus.collectAsState(AltitudeCalibrationStatus())
+    val calibrationStatus = vicoChartViewModel.altitudeCalibrationStatus.collectAsState(Calibration())
 
     Box(
         contentAlignment = Alignment.TopCenter,

@@ -20,7 +20,7 @@ import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.rotationVectorSensorDataFlow
 import com.alpsfly.aeroglide.core.model.SensorData
 import com.alpsfly.aeroglide.core.model.SensorType
-import com.alpsfly.aeroglide.core.model.hardware.AltitudeCalibrationStatus
+import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,7 +63,7 @@ interface SensorRepository {
     val altitudeFlow: Flow<SensorData>
 
     /** Status of altitude calibration **/
-    val altitudeCalibrationStatus: StateFlow<AltitudeCalibrationStatus>
+    val altitudeCalibrationStatus: StateFlow<Calibration>
 }
 
 @Singleton
@@ -133,8 +133,8 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * Altitude flow
      */
-    private val _altitudeCalibrationStatus = MutableStateFlow(AltitudeCalibrationStatus())
-    override val altitudeCalibrationStatus: StateFlow<AltitudeCalibrationStatus> = _altitudeCalibrationStatus.asStateFlow()
+    private val _altitudeCalibrationStatus = MutableStateFlow(Calibration())
+    override val altitudeCalibrationStatus: StateFlow<Calibration> = _altitudeCalibrationStatus.asStateFlow()
     private val altitudeFlowFrequency = SensorFrequency()
     override val altitudeFlow: Flow<SensorData>
         get() {
