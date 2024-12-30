@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "bdff8d9360abaf7f4c3fa54291d4b6d9",
+    "identityHash": "c6394b641c36f44dcecc59eecb0df19b",
     "entities": [
       {
         "tableName": "user",
@@ -59,12 +59,62 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "calibration",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `isCalibrated` INTEGER NOT NULL, `altitude0` REAL NOT NULL, `pressure0` REAL NOT NULL, `verticalAccuracy` REAL NOT NULL, `horizontalAccuracy` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCalibrated",
+            "columnName": "isCalibrated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitude0",
+            "columnName": "altitude0",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pressure0",
+            "columnName": "pressure0",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "verticalAccuracy",
+            "columnName": "verticalAccuracy",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horizontalAccuracy",
+            "columnName": "horizontalAccuracy",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bdff8d9360abaf7f4c3fa54291d4b6d9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c6394b641c36f44dcecc59eecb0df19b')"
     ]
   }
 }

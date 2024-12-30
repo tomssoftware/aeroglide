@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.domain.audio
+package com.alpsfly.aeroglide.core.common.audio
 
 import android.media.AudioFormat
 import android.media.AudioManager

@@ -22,9 +22,10 @@ import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 
 @Database(
-    entities =
-    [User::class],
-    [Calibration::class],
+    entities = [
+        User::class,
+        Calibration::class
+    ],
     version = 1
 )
 abstract class AppDatabase : RoomDatabase() {

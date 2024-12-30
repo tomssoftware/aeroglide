@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.domain
+package com.alpsfly.aeroglide.core.data.util
 
 const val Q_ACCELERATION = 0.9f
 const val R_ALTITUDE = 0.1f
