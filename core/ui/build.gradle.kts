@@ -51,6 +51,7 @@ dependencies {
     api(project(":core:data"))
     api(project(":core:common"))
     api(project(":core:model"))
+    api(project(":core:domain"))
 
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)

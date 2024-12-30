@@ -46,8 +46,8 @@ android {
 
 dependencies {
     api(project(":core:common"))
-    api(project(":core:domain"))
     api(project(":core:model"))
+    api(project(":core:hardware"))
     api(project(":core:database"))
 
     // Arch Components

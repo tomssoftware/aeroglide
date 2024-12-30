@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.flowOf
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
 import com.alpsfly.aeroglide.core.model.common.User
+import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,8 +42,13 @@ interface DataModule {
 
 class FakeDataRepository @Inject constructor() : DataRepository {
     override val users: Flow<List<User>> = flowOf(fakeUsers)
+    override val calibration: Flow<List<Calibration>> = flowOf(fakeCalibration)
 
     override suspend fun addUser(user: User) {
+        throw NotImplementedError()
+    }
+
+    override suspend fun addCalibration(calibration: Calibration) {
         throw NotImplementedError()
     }
 }
@@ -51,4 +57,10 @@ val fakeUsers = listOf(
     User("", "", "", "", "", "", ""),
     User("", "", "", "", "", "", ""),
     User("", "", "", "", "", "", "")
+)
+
+val fakeCalibration = listOf(
+    Calibration(),
+    Calibration(),
+    Calibration()
 )
