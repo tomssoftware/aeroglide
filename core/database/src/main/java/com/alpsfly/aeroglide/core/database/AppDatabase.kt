@@ -19,8 +19,15 @@ package com.alpsfly.aeroglide.core.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.alpsfly.aeroglide.core.model.common.User
+import com.alpsfly.aeroglide.core.model.hardware.Calibration
 
-@Database(entities = [User::class], version = 1)
+@Database(
+    entities =
+    [User::class],
+    [Calibration::class],
+    version = 1
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
+    abstract fun calibrationDao(): CalibrationDao
 }
