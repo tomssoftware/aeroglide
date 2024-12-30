@@ -42,4 +42,9 @@ android {
 
 dependencies {
     implementation(libs.kotlinx.coroutines.android)
+
+    // Testing
+    testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.junit.jupiter)
 }
