@@ -49,6 +49,10 @@ dependencies {
     api(project(":core:data"))
     api(project(":core:hardware"))
 
+    // Hilt Dependency Injection
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.test)
 }

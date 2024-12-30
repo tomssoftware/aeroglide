@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
@@ -38,15 +39,7 @@ fun FlightStatusScreen(
     val climbrate by flightStatusViewModel.climbrateFlow.collectAsState(initial = SensorData())
     val pressure by flightStatusViewModel.pressureFlow.collectAsState(initial = SensorData())
     val location by flightStatusViewModel.locationFlow.collectAsState(initial = Location("none"))
-
-
-    LocalUnit
-        .of(altitude.values[0], UnitConverter.Unit.M)
-        .withDigits(0)
-        .withSymbol(false)
-        .toLocalString()
-
-
+    val calibrationUiState by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -94,13 +87,25 @@ fun FlightStatusScreen(
                 unit = "km/h",
                 modifier = Modifier.weight(1f)
             )
-            DataCell(
-                caption = "GPS Acc.",
-                value = LocalUnit.of(location.accuracy, UnitConverter.Unit.M)
-                    .withSymbol(false).toLocalString(),
-                unit = "ts",
-                modifier = Modifier.weight(1f)
-            )
+            when (calibrationUiState) {
+                is CalibrationUiState.Success -> {
+                    DataCell(
+                        caption = "Alt. Acc.",
+                        value = LocalUnit.of((calibrationUiState as CalibrationUiState.Success).calibration.verticalAccuracy, UnitConverter.Unit.M)
+                            .withSymbol(false).toLocalString(),
+                        unit = "ts",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                is CalibrationUiState.Loading -> {
+                    DataCell(
+                        caption = "Alt. Acc.",
+                        value = "-",
+                        unit = "-",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
             DataCell(
                 caption = "GPS Alt.",
                 value = LocalUnit.of(location.altitude.toFloat(), UnitConverter.Unit.M)
