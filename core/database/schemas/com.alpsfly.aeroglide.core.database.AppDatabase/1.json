@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c6394b641c36f44dcecc59eecb0df19b",
+    "identityHash": "a73b3d4c93b169504870c2036b2d81d3",
     "entities": [
       {
         "tableName": "user",
@@ -109,12 +109,51 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "sensor_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `values` TEXT NOT NULL, PRIMARY KEY(`type`, `timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frequency",
+            "columnName": "frequency",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "values",
+            "columnName": "values",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "type",
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c6394b641c36f44dcecc59eecb0df19b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a73b3d4c93b169504870c2036b2d81d3')"
     ]
   }
 }

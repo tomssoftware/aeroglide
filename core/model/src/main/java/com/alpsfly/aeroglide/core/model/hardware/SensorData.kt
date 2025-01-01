@@ -1,12 +1,17 @@
-package com.alpsfly.aeroglide.core.model
+package com.alpsfly.aeroglide.core.model.hardware
 
+import androidx.room.Entity
+
+@Entity(
+    tableName = "sensor_data",
+    primaryKeys = ["type", "timestamp"]
+)
 data class SensorData(
     val type: SensorType = SensorType.Unknown,
     val timestamp: Long = System.currentTimeMillis(),
     val frequency: Float = 0f,
     val values: FloatArray = floatArrayOf(0f, 0f, 0f)
 ) {
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

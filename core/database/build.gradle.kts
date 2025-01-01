@@ -60,4 +60,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Google
+    implementation (libs.google.code.gson)
 }

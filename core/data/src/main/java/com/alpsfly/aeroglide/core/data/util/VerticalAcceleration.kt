@@ -1,6 +1,6 @@
 package com.alpsfly.aeroglide.core.data.util
 
-import com.alpsfly.aeroglide.core.model.SensorData
+import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import kotlin.math.sqrt
 
 fun getVerticalAcceleration(linearAcceleration: SensorData, rotationVector: SensorData): Float {

@@ -18,18 +18,20 @@ import com.alpsfly.aeroglide.core.hardware.linearAccelerationSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.locationDataFlow
 import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.rotationVectorSensorDataFlow
-import com.alpsfly.aeroglide.core.model.SensorData
-import com.alpsfly.aeroglide.core.model.SensorType
+import com.alpsfly.aeroglide.core.model.hardware.SensorData
+import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.chunked
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
@@ -58,6 +60,7 @@ interface SensorRepository {
 
     /** Fused sensor */
     val climbRateFlow: Flow<SensorData>
+    val climbrateFlowUi: Flow<SensorData>
 
     /** Fused sensor */
     val altitudeFlow: Flow<SensorData>
@@ -153,13 +156,18 @@ class SensorRepositoryImpl @Inject constructor(
                         altitude = calcAltitude(pressure, pressure0, altitude0)
                     }
                 }
-                SensorData(type = SensorType.Altitude, values = floatArrayOf(altitude), frequency = altitudeFlowFrequency.get())
+                SensorData(
+                    type = SensorType.Altitude,
+                    values = floatArrayOf(altitude),
+                    frequency = altitudeFlowFrequency.get()
+                )
             }
         }
 
     /**
      * Climbrate flow
      */
+    private val climbrateFlowFrequency = SensorFrequency()
     override val climbRateFlow: Flow<SensorData>
         get() {
             return altitudeFlow.combine(verticalAccelerationFlow) { altitudeData, accelerationData ->
@@ -172,10 +180,32 @@ class SensorRepositoryImpl @Inject constructor(
                 SensorData(
                     type = SensorType.Climbrate,
                     values = floatArrayOf(kalmanFilter.climbrate),
-                    frequency = accelerationData.frequency
+                    frequency = climbrateFlowFrequency.get()
                 )
             }
         }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val targetFrequencyCfu = 1f
+    private val climbrateFlowFrequencyUi = SensorFrequency()
+    private fun chunkSizeCfu() =
+        if (climbrateFlowFrequencyUi.get() / targetFrequencyCfu <= 0f) 10 else (climbrateFlowFrequencyUi.get() / targetFrequencyCfu).toInt()
+    override val climbrateFlowUi: Flow<SensorData>
+        get() {
+            return climbRateFlow
+                .map { d -> d.values[0] }
+                .chunked(chunkSizeCfu()) { l ->
+                    l.average().toFloat()
+                }.map { a ->
+                    SensorData(
+                        type = SensorType.Climbrate,
+                        timestamp = System.currentTimeMillis(),
+                        frequency = climbrateFlowFrequencyUi.get(),
+                        values = floatArrayOf(a)
+                    )
+                }
+        }
+
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
         if (altitude0 in Limits.minAltitude..Limits.maxAltitude &&

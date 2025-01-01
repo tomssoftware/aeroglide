@@ -17,23 +17,28 @@
 package com.alpsfly.aeroglide.core.data
 
 import com.alpsfly.aeroglide.core.database.CalibrationDao
+import com.alpsfly.aeroglide.core.database.SensorDataDao
 import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.database.UserDao
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 interface DataRepository {
     val users: Flow<List<User>>
     val calibration: Flow<List<Calibration>>
+    val sensorData: Flow<List<SensorData>>
 
     suspend fun addUser(user: User)
     suspend fun addCalibration(calibration: Calibration)
+    suspend fun addSensorData(sensorData: SensorData)
 }
 
 class LocalDataRepository @Inject constructor(
     private val userDao: UserDao,
-    private val calibrationDao: CalibrationDao
+    private val calibrationDao: CalibrationDao,
+    private val sensorDataDao: SensorDataDao
 ) : DataRepository {
 
     override val users: Flow<List<User>> =
@@ -48,5 +53,12 @@ class LocalDataRepository @Inject constructor(
 
     override suspend fun addCalibration(calibration: Calibration) {
         calibrationDao.addCalibration(calibration)
+    }
+
+    override val sensorData: Flow<List<SensorData>> =
+        sensorDataDao.getAllSensorData()
+
+    override suspend fun addSensorData(sensorData: SensorData) {
+        sensorDataDao.addSensorData(sensorData)
     }
 }
