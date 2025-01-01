@@ -5,8 +5,8 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventCallback
 import android.hardware.SensorManager
 import android.hardware.SensorManager.SENSOR_DELAY_NORMAL
-import com.alpsfly.aeroglide.core.model.SensorData
-import com.alpsfly.aeroglide.core.model.SensorType
+import com.alpsfly.aeroglide.core.model.hardware.SensorData
+import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 

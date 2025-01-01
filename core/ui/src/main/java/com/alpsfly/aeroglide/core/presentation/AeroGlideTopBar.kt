@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide
+package com.alpsfly.aeroglide.core.presentation
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.CenterAlignedTopAppBar

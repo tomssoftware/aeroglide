@@ -2,7 +2,7 @@ package com.alpsfly.aeroglide.core.domain.usecase
 
 import android.location.Location
 import com.alpsfly.aeroglide.core.data.SensorRepository
-import com.alpsfly.aeroglide.core.model.SensorData
+import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine

@@ -19,7 +19,7 @@ class ClimbrateProfileViewModel @Inject constructor(
     sensorRepository: SensorRepository,
 ) : ViewModel() {
 
-    private val climbrateFlow = sensorRepository.climbRateFlow
+    private val climbrateFlow = sensorRepository.climbrateFlowUi
 
     init {
         viewModelScope.launch {
@@ -31,7 +31,7 @@ class ClimbrateProfileViewModel @Inject constructor(
     private val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
     @OptIn(FlowPreview::class)
     private suspend fun collectClimbrate() {
-        climbrateFlow.sample(1000.milliseconds).collect { climbrate ->
+        climbrateFlow.collect { climbrate ->
             climbratePoints.add(Pair(climbratePoints.size, climbrate.values[0]))
             climbrateModelProducer.runTransaction {
                 lineSeries {
