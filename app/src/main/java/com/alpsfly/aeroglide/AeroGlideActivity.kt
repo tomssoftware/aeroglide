@@ -19,6 +19,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
@@ -26,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
+import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.theme.AeroGlideTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -64,6 +67,7 @@ class AeroGlideActivity : ComponentActivity() {
                 val coroutineScope = rememberCoroutineScope()
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 val viewModel: AeroGlideViewModel = hiltViewModel()
+                val isRecording by viewModel.isRecording.collectAsState()
                 Scaffold(
                     modifier = Modifier,
                     topBar = {
@@ -88,7 +92,7 @@ class AeroGlideActivity : ComponentActivity() {
                             },
                             actions = {
                                 IconButton(onClick = {
-                                    if (viewModel.isRecording())
+                                    if (isRecording)
                                         viewModel.stopRecording()
                                     else
                                         viewModel.startRecording()

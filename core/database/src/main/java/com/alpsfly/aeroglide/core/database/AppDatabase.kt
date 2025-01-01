@@ -18,17 +18,22 @@ package com.alpsfly.aeroglide.core.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.hardware.SensorData
 
 @Database(
     entities = [
         User::class,
-        Calibration::class
+        Calibration::class,
+        SensorData::class
     ],
     version = 1
 )
+@TypeConverters(FloatArrayTypeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun calibrationDao(): CalibrationDao
+    abstract fun sensorDataDao(): SensorDataDao
 }

@@ -25,7 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
-import com.alpsfly.aeroglide.core.model.SensorData
+import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.viewmodel.FlightStatusViewModel
 
 @OptIn(ExperimentalLayoutApi::class)
