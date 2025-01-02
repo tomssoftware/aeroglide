@@ -20,8 +20,8 @@ class VicoChartViewModel @Inject constructor(
     sensorRepository: SensorRepository,
 ) : ViewModel() {
 
-    private val altitudeFlow = sensorRepository.altitudeFlow
-    private val climbrateFlow = sensorRepository.climbRateFlow
+    private val altitudeFlow = sensorRepository.altitudeFlowUi
+    private val climbrateFlow = sensorRepository.climbrateFlowUi
     private val pressureFlow = sensorRepository.pressureDataSource
 
     init {
@@ -61,7 +61,7 @@ class VicoChartViewModel @Inject constructor(
 
     @OptIn(FlowPreview::class)
     private suspend fun collectAltitude() {
-        altitudeFlow.sample(1000.milliseconds).collect { altitude ->
+        altitudeFlow.collect { altitude ->
             altitudePoints.add(Pair(altitudePoints.size, altitude.values[0]))
             altitudeModelProducer.runTransaction {
                 lineSeries {
@@ -79,7 +79,7 @@ class VicoChartViewModel @Inject constructor(
 
     @OptIn(FlowPreview::class)
     private suspend fun collectClimbrate() {
-        climbrateFlow.sample(1000.milliseconds).collect { climbrate ->
+        climbrateFlow.collect { climbrate ->
             climbratePoints.add(Pair(climbratePoints.size, climbrate.values[0]))
             climbrateModelProducer.runTransaction {
                 lineSeries {

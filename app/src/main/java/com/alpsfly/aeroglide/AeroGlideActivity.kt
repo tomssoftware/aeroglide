@@ -21,7 +21,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,6 +33,7 @@ import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.theme.AeroGlideTheme
+import com.alpsfly.aeroglide.feature.disclaimer.presentation.WelcomeDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -68,6 +72,16 @@ class AeroGlideActivity : ComponentActivity() {
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 val viewModel: AeroGlideViewModel = hiltViewModel()
                 val isRecording by viewModel.isRecording.collectAsState()
+                var showDialog by remember { mutableStateOf(true) }
+
+                if (showDialog) {
+                    WelcomeDialog(
+                        onDismiss = { showDialog = false },
+                        modifier = Modifier,
+                        navController = navController
+                    )
+                }
+
                 Scaffold(
                     modifier = Modifier,
                     topBar = {

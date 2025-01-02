@@ -24,9 +24,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
 import com.alpsfly.aeroglide.core.database.CalibrationDao
+import com.alpsfly.aeroglide.core.database.SensorDataDao
 import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.database.UserDao
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import kotlinx.coroutines.DEBUG_PROPERTY_VALUE_AUTO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
@@ -40,7 +42,7 @@ class LocalDataRepositoryTest {
 
     @Test
     fun aeroGlides_newItemSaved_itemIsReturned() = runTest {
-        val repository = LocalDataRepository(FakeUserDao(), FakeCalibrationDao())
+        val repository = LocalDataRepository(FakeUserDao(), FakeCalibrationDao(), FakeSensorDataDao())
 
         repository.addUser(
             User(
@@ -103,4 +105,19 @@ private class FakeUserDao : UserDao {
     override fun removeAllUsers() {
         data.clear()
     }
+}
+
+private class FakeSensorDataDao : SensorDataDao {
+
+    private val data = mutableListOf<SensorData>()
+    private val _data = MutableStateFlow(mutableListOf<SensorData>())
+
+    override fun getAllSensorData(): Flow<List<SensorData>> {
+       return _data.asStateFlow()
+    }
+
+    override fun addSensorData(sensorData: SensorData) {
+        data.add(SensorData())
+    }
+
 }
