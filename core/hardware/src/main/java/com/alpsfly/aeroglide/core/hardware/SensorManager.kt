@@ -16,7 +16,7 @@ fun SensorManager.accelerometerSensorDataFlow() = callbackFlow {
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = SensorData(type = SensorType.Acceleration, frequency = frequency.get(), values = event.values.clone())
+                val sensorData = SensorData(type = SensorType.Acceleration, frequency = frequency.inc(), values = event.values.clone())
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
         }
@@ -33,7 +33,7 @@ fun SensorManager.linearAccelerationSensorDataFlow() = callbackFlow {
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = SensorData(type = SensorType.LinearAcceleration, frequency = frequency.get(), values = event.values.clone())
+                val sensorData = SensorData(type = SensorType.LinearAcceleration, frequency = frequency.inc(), values = event.values.clone())
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
         }
@@ -50,7 +50,7 @@ fun SensorManager.pressureSensorDataFlow() = callbackFlow {
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = SensorData(type = SensorType.Pressure, frequency = frequency.get(), values = event.values.clone())
+                val sensorData = SensorData(type = SensorType.Pressure, frequency = frequency.inc(), values = event.values.clone())
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
         }
@@ -67,7 +67,7 @@ fun SensorManager.rotationVectorSensorDataFlow() = callbackFlow {
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = SensorData(type = SensorType.RotationVector, frequency = frequency.get(), values = event.values.clone())
+                val sensorData = SensorData(type = SensorType.RotationVector, frequency = frequency.inc(), values = event.values.clone())
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
         }

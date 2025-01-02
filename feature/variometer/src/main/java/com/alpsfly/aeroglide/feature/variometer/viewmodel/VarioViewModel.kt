@@ -12,6 +12,5 @@ import kotlin.time.Duration.Companion.milliseconds
 class VarioViewModel @Inject constructor(
     sensorRepository: SensorRepository,
 ) : ViewModel() {
-    @OptIn(FlowPreview::class)
-    val climbrate = sensorRepository.climbRateFlow.sample(1000.milliseconds)
+    val climbrate = sensorRepository.climbrateFlowUi
 }
