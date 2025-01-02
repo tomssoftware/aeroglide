@@ -52,4 +52,5 @@ include(":core:ui")
 include(":core:mapbox")
 include(":feature:devicestatus")
 include(":feature:variometer")
+include(":feature:disclaimer")
 

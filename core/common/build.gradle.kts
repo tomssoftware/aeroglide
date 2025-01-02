@@ -42,9 +42,13 @@ android {
 
 dependencies {
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.datetime) // Or the latest version
+
+    implementation(libs.timber)
 
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.junit.jupiter)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

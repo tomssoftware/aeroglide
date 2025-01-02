@@ -35,10 +35,10 @@ fun FlightStatusScreen(
     navController: NavController,
     flightStatusViewModel: FlightStatusViewModel = hiltViewModel()
 ) {
-    val altitude by flightStatusViewModel.altitudeFlow.collectAsState(initial = SensorData())
-    val climbrate by flightStatusViewModel.climbrateFlow.collectAsState(initial = SensorData())
-    val pressure by flightStatusViewModel.pressureFlow.collectAsState(initial = SensorData())
-    val location by flightStatusViewModel.locationFlow.collectAsState(initial = Location("none"))
+    val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = SensorData())
+    val climbrate by flightStatusViewModel.climbrateFlow.collectAsStateWithLifecycle(initialValue = SensorData())
+    val pressure by flightStatusViewModel.pressureFlow.collectAsStateWithLifecycle(initialValue = SensorData())
+    val location by flightStatusViewModel.locationFlow.collectAsStateWithLifecycle(initialValue = Location("none"))
     val calibrationUiState by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxWidth()) {

@@ -16,6 +16,10 @@
 
 package com.alpsfly.aeroglide.core.data.di
 
+import android.content.Context
+import android.hardware.SensorManager
+import android.location.LocationManager
+import androidx.core.content.getSystemService
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -27,13 +31,35 @@ import com.alpsfly.aeroglide.core.data.LocalDataRepository
 import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
+import dagger.Provides
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface DataModule {
+object SensorManagerModule {
+    @Provides
+    @Singleton
+    fun provideSensorManager(@ApplicationContext context: Context): SensorManager {
+        return context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    }
+}
 
+@Module
+@InstallIn(SingletonComponent::class)
+object LocationManagerModule {
+    @Provides
+    @Singleton
+    fun provideLocationManager(@ApplicationContext context: Context): LocationManager {
+        return context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    }
+}
+
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface DataModule {
     @Singleton
     @Binds
     fun bindsAeroGlideRepository(

@@ -19,7 +19,7 @@ class AltitudeProfileViewModel @Inject constructor(
     sensorRepository: SensorRepository,
 ) : ViewModel() {
 
-    private val altitudeFlow = sensorRepository.altitudeFlow
+    private val altitudeFlow = sensorRepository.altitudeFlowUi
 
     init {
         viewModelScope.launch {

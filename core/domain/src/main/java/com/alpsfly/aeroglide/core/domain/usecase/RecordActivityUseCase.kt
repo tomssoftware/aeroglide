@@ -48,7 +48,7 @@ class StartRecordActivityUseCase @Inject constructor(
 
     private fun getSensorFlow(sensorType: SensorType): Flow<SensorData> {
         return when (sensorType) {
-            SensorType.Altitude -> sensorRepository.altitudeFlow
+            SensorType.Altitude -> sensorRepository.altitudeFlowUi
             SensorType.Climbrate -> sensorRepository.climbrateFlowUi
             else -> throw IllegalArgumentException("Unsupported sensor type: $sensorType")
         }

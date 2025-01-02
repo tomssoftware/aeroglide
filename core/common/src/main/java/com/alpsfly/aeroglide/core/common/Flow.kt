@@ -2,22 +2,23 @@ package com.alpsfly.aeroglide.core.common
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.Clock
+import kotlin.time.Duration
 
-/**
- * Returns a Flow that emits sequential [size]d chunks of data from the source flow,
- * after transforming them with [transform].
- *
- * The list passed to [transform] is transient and must not be cached.
- *
- * https://stackoverflow.com/questions/70901974/how-can-i-design-a-flow-which-is-a-average-value-of-every-latest-5-data-of-anoth
- */
-fun <T, R> Flow<T>.chunked(size: Int, transform: suspend (List<T>) -> R): Flow<R> = flow {
-    val cache = ArrayList<T>(size)
-    collect {
-        cache.add(it)
-        if (cache.size == size) {
-            emit(transform(cache))
-            cache.clear()
+fun <T> Flow<T>.chunked(duration: Duration): Flow<List<T>> = flow {
+    val cache = mutableListOf<T>()
+    var lastEmitTime = Clock.System.now()
+    collect { value ->
+        cache.add(value)
+        val currentTime = Clock.System.now()
+        val elapsedDuration = currentTime - lastEmitTime
+        if (elapsedDuration >= duration) {
+            emit(ArrayList(cache))  // Emit a copy of the cache
+            cache.clear()  // Clear the cache for the next chunk
+            lastEmitTime = currentTime  // Reset the last emit time
         }
+    }
+    if (cache.isNotEmpty()) {  // Emit any remaining items in the cache
+        emit(ArrayList(cache))
     }
 }
