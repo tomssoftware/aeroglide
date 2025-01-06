@@ -39,6 +39,7 @@ fun FlightStatusScreen(
     val climbrate by flightStatusViewModel.climbrateFlow.collectAsStateWithLifecycle(initialValue = SensorData())
     val pressure by flightStatusViewModel.pressureFlow.collectAsStateWithLifecycle(initialValue = SensorData())
     val location by flightStatusViewModel.locationFlow.collectAsStateWithLifecycle(initialValue = Location("none"))
+    val verticalAcceleration by flightStatusViewModel.verticalAccelerationFlow.collectAsStateWithLifecycle(initialValue = SensorData())
     val calibrationUiState by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -63,7 +64,10 @@ fun FlightStatusScreen(
                     .withDigits(2)
                     .withSymbol(false)
                     .toLocalString(),
-                unit = LocalUnit.of(climbrate.values[0], UnitConverter.Unit.MS).toLocalSymbol(),
+                unit = LocalUnit.of(
+                    climbrate.values[0],
+                    UnitConverter.Unit.MS)
+                    .toLocalSymbol(),
                 modifier = Modifier.weight(1f)
             )
             DataCell(
@@ -71,6 +75,7 @@ fun FlightStatusScreen(
                 value = LocalUnit
                     .of(pressure.values[0], UnitConverter.Unit.M) // todo: hpa
                     .withSymbol(false)
+                    .withDigits(1)
                     .toLocalString(),
                 unit = "hpa",
                 modifier = Modifier.weight(1f)
@@ -107,10 +112,14 @@ fun FlightStatusScreen(
                 }
             }
             DataCell(
-                caption = "GPS Alt.",
-                value = LocalUnit.of(location.altitude.toFloat(), UnitConverter.Unit.M)
-                    .withSymbol(false).toLocalString(),
-                unit = "m",
+                caption = "Vert. Accel.",
+                value = LocalUnit.of(
+                    verticalAcceleration.values[0],
+                    UnitConverter.Unit.M)
+                    .withSymbol(false)
+                    .withDigits(2)
+                    .toLocalString(),
+                unit = "a",
                 modifier = Modifier.weight(1f)
             )
         }

@@ -22,6 +22,7 @@ class FlightStatusViewModel @Inject constructor(
     val locationFlow = sensorRepository.locationDataSource
     val altitudeFlow = sensorRepository.altitudeFlowUi
     val climbrateFlow = sensorRepository.climbrateFlowUi
+    val verticalAccelerationFlow = sensorRepository.verticalAccelerationFlowUi
 
     val calibrationUiState: StateFlow<CalibrationUiState> =
         calibrationUseCase().map { result ->

@@ -4,8 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.alpsfly.aeroglide.core.Screen
 import com.alpsfly.aeroglide.feature.devicestatus.presentation.DeviceStatusScreen
+import com.alpsfly.aeroglide.feature.diagnosis.presentation.DiagnosisDetailScreen
 import com.alpsfly.aeroglide.feature.variometer.presentation.VariometerScreen
+import com.alpsfly.aeroglide.feature.diagnosis.presentation.DiagnosisScreen
 
 
 @Composable
@@ -25,9 +28,14 @@ fun AeroGlideNavGraph(navController: NavHostController) {
             DeviceStatusScreen(navController = navController)
         }
         composable(
-            route = Screen.Screen3.route
+            route = Screen.DiagnosisScreen.route
         ) {
-            //Screen1(navController = navController)
+            DiagnosisScreen(navController = navController)
+        }
+        composable(
+            route = Screen.DiagnosisDetailScreen.route
+        ) {
+            DiagnosisDetailScreen(navController = navController)
         }
         composable(
             route = Screen.DetailScreen.route

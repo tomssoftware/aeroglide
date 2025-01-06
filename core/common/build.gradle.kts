@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.timber)
 
     // Testing
+    testImplementation(libs.turbine)
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.junit.jupiter)
