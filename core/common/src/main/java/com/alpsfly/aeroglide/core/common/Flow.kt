@@ -2,23 +2,32 @@ package com.alpsfly.aeroglide.core.common
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.datetime.Clock
 import kotlin.time.Duration
 
-fun <T> Flow<T>.chunked(duration: Duration): Flow<List<T>> = flow {
-    val cache = mutableListOf<T>()
-    var lastEmitTime = Clock.System.now()
+fun <T> Flow<T>.chunked(duration: Duration, timeProvider: TimeProvider = SystemTimeProvider()): Flow<List<T>> = flow {
+    val chunk = mutableListOf<T>()
+    var lastEmitTime = timeProvider.nanoTime()
     collect { value ->
-        cache.add(value)
-        val currentTime = Clock.System.now()
+        chunk.add(value)
+        val currentTime = timeProvider.nanoTime()
         val elapsedDuration = currentTime - lastEmitTime
-        if (elapsedDuration >= duration) {
-            emit(ArrayList(cache))  // Emit a copy of the cache
-            cache.clear()  // Clear the cache for the next chunk
+        if ((elapsedDuration - duration.inWholeNanoseconds) >= 0) {
+            emit(chunk.toList())  // Emit a copy of the cache
+            chunk.clear()  // Clear the cache for the next chunk
             lastEmitTime = currentTime  // Reset the last emit time
         }
     }
-    if (cache.isNotEmpty()) {  // Emit any remaining items in the cache
-        emit(ArrayList(cache))
+    if (chunk.isNotEmpty()) {  // Emit any remaining items in the cache
+        emit(ArrayList(chunk))
+    }
+}
+
+interface TimeProvider {
+    fun nanoTime(): Long
+}
+
+class SystemTimeProvider : TimeProvider {
+    override fun nanoTime(): Long {
+        return System.nanoTime()
     }
 }

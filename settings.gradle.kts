@@ -53,4 +53,5 @@ include(":core:mapbox")
 include(":feature:devicestatus")
 include(":feature:variometer")
 include(":feature:disclaimer")
+include(":feature:diagnosis")
 

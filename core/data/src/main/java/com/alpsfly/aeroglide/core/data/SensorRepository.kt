@@ -47,6 +47,8 @@ interface SensorRepository {
     /** Location sensor flow with 1000ms delay */
     val locationDataSource: Flow<Location>
 
+    val verticalAccelerationFlowUi: Flow<SensorData>
+
     val pressureFlowUi: Flow<SensorData>
 
     /** Fused sensor */
@@ -77,22 +79,22 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * pressure state flow
      */
-    override val pressureDataSource = sensorManager.pressureSensorDataFlow().shareSensorData()
+    override val pressureDataSource = sensorManager.pressureSensorDataFlow()//.shareSensorData()
 
     /**
      * Location state flow
      */
-    override val locationDataSource = locationManager.locationDataFlow(context, 1000).shareSensorData()
+    override val locationDataSource = locationManager.locationDataFlow(context, 1000)//.shareSensorData()
 
     /**
      * Linear acceleration shared flow
      */
-    private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow().shareSensorData()
+    private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow()//.shareSensorData()
 
     /**
      * Rotation vector shared flow
      */
-    private val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow().shareSensorData()
+    private val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow()//.shareSensorData()
 
     /**
      * Vertical acceleration flow
@@ -102,18 +104,32 @@ class SensorRepositoryImpl @Inject constructor(
         get() {
             return combine(linearAccelerationDataSource, rotationVectorDataSource) { a, r ->
                 getVerticalAcceleration(a, r)
-            }.chunked(200.milliseconds)
-                .map { verticalAcceleration ->
-                    verticalAcceleration.average().toFloat()
-                }.map { averageVerticalAcceleration ->
-                    val sensorData = SensorData(
+            }.map {
+                if (verticalAccelerationFrequency.get() > 0f) {
+                    kalmanFilter.predict(it, 1f / verticalAccelerationFrequency.get())
+                }
+                SensorData(
+                    type = SensorType.VerticalAcceleration,
+                    timestamp = System.currentTimeMillis(),
+                    frequency = verticalAccelerationFrequency.inc(),
+                    values = floatArrayOf(it)
+                )
+            }
+        }
+
+    private val verticalAccelerationFrequencyUi = SensorFrequency()
+    override val verticalAccelerationFlowUi: Flow<SensorData>
+        get() {
+            return verticalAccelerationFlow
+                .map { d -> d.values[0] }
+                .chunked(1000.milliseconds)
+                .map { l ->
+                    SensorData(
                         type = SensorType.VerticalAcceleration,
                         timestamp = System.currentTimeMillis(),
-                        frequency = verticalAccelerationFrequency.inc(),
-                        values = floatArrayOf(averageVerticalAcceleration)
+                        frequency = verticalAccelerationFrequencyUi.inc(),
+                        values = floatArrayOf(l.average().toFloat())
                     )
-                    //Timber.v(sensorData.toString())
-                    sensorData
                 }
         }
 
@@ -124,15 +140,12 @@ class SensorRepositoryImpl @Inject constructor(
                 .map { d -> d.values[0] }
                 .chunked(1000.milliseconds)
                 .map { l ->
-                    val sensorData =
-                        SensorData(
-                            type = SensorType.Pressure,
-                            timestamp = System.currentTimeMillis(),
-                            frequency = pressureFlowFrequencyUi.inc(),
-                            values = floatArrayOf(l.average().toFloat())
-                        )
-                    // Timber.v(sensorData.toString())
-                    sensorData
+                    SensorData(
+                        type = SensorType.Pressure,
+                        timestamp = System.currentTimeMillis(),
+                        frequency = pressureFlowFrequencyUi.inc(),
+                        values = floatArrayOf(l.average().toFloat())
+                    )
                 }
         }
 
@@ -142,7 +155,6 @@ class SensorRepositoryImpl @Inject constructor(
     private val _altitudeCalibrationStatus = MutableStateFlow(Calibration())
     override val altitudeCalibrationStatus: StateFlow<Calibration> = _altitudeCalibrationStatus.asStateFlow()
     private val altitudeFlowFrequency = SensorFrequency()
-    private val altitudeFlowFrequencyUi = SensorFrequency()
     override val altitudeFlow: Flow<SensorData>
         get() {
             return combine(pressureDataSource, locationDataSource) { p, l ->
@@ -160,31 +172,28 @@ class SensorRepositoryImpl @Inject constructor(
                         altitude = calcAltitude(pressure, pressure0, altitude0)
                     }
                 }
-                val sensorData = SensorData(
+                SensorData(
                     type = SensorType.Altitude,
                     timestamp = System.currentTimeMillis(),
                     values = floatArrayOf(altitude),
                     frequency = altitudeFlowFrequency.inc()
                 )
-                // Timber.v(sensorData.toString())
-                sensorData
             }
         }
 
+    private val altitudeFlowFrequencyUi = SensorFrequency()
     override val altitudeFlowUi: Flow<SensorData>
         get() {
             return altitudeFlow
                 .map { d -> d.values[0] }
                 .chunked(1000.milliseconds)
                 .map { l ->
-                    val sensorData = SensorData(
+                    SensorData(
                         type = SensorType.Altitude,
                         timestamp = System.currentTimeMillis(),
                         frequency = altitudeFlowFrequencyUi.inc(),
                         values = floatArrayOf(l.average().toFloat())
                     )
-                    // Timber.v(sensorData.toString())
-                    sensorData
                 }
         }
 
@@ -192,41 +201,35 @@ class SensorRepositoryImpl @Inject constructor(
      * Climbrate flow
      */
     private val climbrateFlowFrequency = SensorFrequency()
-    private val climbrateFlowFrequencyUi = SensorFrequency()
     override val climbRateFlow: Flow<SensorData>
         get() {
-            return altitudeFlow.combine(verticalAccelerationFlow) { altitudeData, accelerationData ->
-                if (accelerationData.frequency > 0) {
-                    kalmanFilter.predict(accelerationData.values[0], 1f / accelerationData.frequency)
+            return altitudeFlow
+                .map { d -> d.values[0] }
+                .chunked(250.milliseconds)
+                .map { l ->
+                    kalmanFilter.update(l.average().toFloat())
+                    SensorData(
+                        type = SensorType.Climbrate,
+                        timestamp = System.currentTimeMillis(),
+                        values = floatArrayOf(kalmanFilter.climbrate),
+                        frequency = climbrateFlowFrequency.inc()
+                    )
                 }
-                if (altitudeData.frequency > 0) {
-                    kalmanFilter.update(altitudeData.values[0])
-                }
-                val sensorData = SensorData(
-                    type = SensorType.Climbrate,
-                    timestamp = System.currentTimeMillis(),
-                    values = floatArrayOf(kalmanFilter.climbrate),
-                    frequency = climbrateFlowFrequency.inc()
-                )
-                // Timber.v(sensorData.toString())
-                sensorData
-            }
         }
 
+    private val climbrateFlowFrequencyUi = SensorFrequency()
     override val climbrateFlowUi: Flow<SensorData>
         get() {
             return climbRateFlow
                 .map { s -> s.values[0] }
                 .chunked(1000.milliseconds)
                 .map { l ->
-                    val sensorData = SensorData(
+                    SensorData(
                         type = SensorType.Climbrate,
                         timestamp = System.currentTimeMillis(),
                         frequency = climbrateFlowFrequencyUi.inc(),
                         values = floatArrayOf(l.average().toFloat())
                     )
-                    // Timber.v(sensorData.toString())
-                    sensorData
                 }
         }
 

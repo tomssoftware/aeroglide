@@ -26,7 +26,7 @@ fun WelcomeDialog(
     onDismiss: () -> Unit,
     disclaimerViewModel: DisclaimerViewModel = hiltViewModel()
 ) {
-    val disclaimerUiState by disclaimerViewModel.disclaimerUiState.collectAsStateWithLifecycle()
+    //val disclaimerUiState by disclaimerViewModel.disclaimerUiState.collectAsStateWithLifecycle()
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -38,23 +38,23 @@ fun WelcomeDialog(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                when (disclaimerUiState) {
-                    is DisclaimerUiState.Loading -> {
-                        Text(
-                            text = "Welcome to the App! Loading ...",
-                            style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-
-                    is DisclaimerUiState.Success -> {
-                        Text(
-                            text = "Welcome to the App!",
-                            style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-                }
+//                when (disclaimerUiState) {
+//                    is DisclaimerUiState.Loading -> {
+//                        Text(
+//                            text = "Welcome to the App! Loading ...",
+//                            style = MaterialTheme.typography.headlineSmall,
+//                            modifier = Modifier.padding(bottom = 8.dp)
+//                        )
+//                    }
+//
+//                    is DisclaimerUiState.Success -> {
+//                        Text(
+//                            text = "Welcome to the App!",
+//                            style = MaterialTheme.typography.headlineSmall,
+//                            modifier = Modifier.padding(bottom = 8.dp)
+//                        )
+//                    }
+//                }
 
                 Text(
                     text = "Thank you for using our app. We hope you enjoy it!",
