@@ -77,6 +77,8 @@ dependencies {
     api(project(":feature:variometer"))
     api(project(":feature:devicestatus"))
     api(project(":feature:disclaimer"))
+    api(project(":feature:diagnosis"))
+
 
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)

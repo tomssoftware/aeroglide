@@ -33,6 +33,10 @@ data class SensorData(
         result = 31 * result + values.contentHashCode()
         return result
     }
+
+    override fun toString(): String {
+        return "type=$type\ntimestamp=$timestamp\nfrequency=$frequency\nvalues=${values.contentToString()}\n"
+    }
 }
 
 enum class SensorType {

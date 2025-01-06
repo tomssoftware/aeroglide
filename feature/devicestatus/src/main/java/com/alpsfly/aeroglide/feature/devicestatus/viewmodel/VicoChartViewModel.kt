@@ -22,7 +22,7 @@ class VicoChartViewModel @Inject constructor(
 
     private val altitudeFlow = sensorRepository.altitudeFlowUi
     private val climbrateFlow = sensorRepository.climbrateFlowUi
-    private val pressureFlow = sensorRepository.pressureDataSource
+    private val pressureFlow = sensorRepository.pressureFlowUi
 
     init {
         viewModelScope.launch {
@@ -41,9 +41,8 @@ class VicoChartViewModel @Inject constructor(
     val pressureModelProducer = CartesianChartModelProducer()
     private val pressurePoints = mutableStateListOf<Pair<Int, Float>>()
 
-    @OptIn(FlowPreview::class)
     private suspend fun collectPressure() {
-        pressureFlow.sample(1000.milliseconds).collect { pressure ->
+        pressureFlow.collect { pressure ->
             pressurePoints.add(Pair(pressurePoints.size, pressure.values[0]))
             pressureModelProducer.runTransaction {
                 lineSeries {
@@ -59,7 +58,6 @@ class VicoChartViewModel @Inject constructor(
     val altitudeModelProducer = CartesianChartModelProducer()
     private val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
 
-    @OptIn(FlowPreview::class)
     private suspend fun collectAltitude() {
         altitudeFlow.collect { altitude ->
             altitudePoints.add(Pair(altitudePoints.size, altitude.values[0]))
@@ -77,7 +75,6 @@ class VicoChartViewModel @Inject constructor(
     val climbrateModelProducer = CartesianChartModelProducer()
     private val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
 
-    @OptIn(FlowPreview::class)
     private suspend fun collectClimbrate() {
         climbrateFlow.collect { climbrate ->
             climbratePoints.add(Pair(climbratePoints.size, climbrate.values[0]))

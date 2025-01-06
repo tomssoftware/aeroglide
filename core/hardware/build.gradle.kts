@@ -48,6 +48,8 @@ dependencies {
 
     implementation(libs.play.service.location)
 
+    implementation(libs.timber)
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
