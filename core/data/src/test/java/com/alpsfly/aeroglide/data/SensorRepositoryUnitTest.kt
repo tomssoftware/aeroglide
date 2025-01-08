@@ -6,14 +6,9 @@ import android.location.LocationManager
 import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
-import com.alpsfly.aeroglide.core.model.hardware.SensorData
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-
 
 class SensorRepositoryUnitTest {
 
@@ -28,36 +23,5 @@ class SensorRepositoryUnitTest {
         `when`(mockTimeProvider.nanoTime()).thenReturn(1000000000L)
         sensorRepository = SensorRepositoryImpl(context = mockContext, mockSensorManager, mockLocationManager, mockTimeProvider)
     }
-
-    @Test
-    fun `verticalAccelerationFlow should combine, chunk, map and emit correct values`() = runTest {
-        // Arrange
-        val linearAccelerationFlow = flow {
-            emit(SensorData())
-//            emit(SensorData())
-//            emit(SensorData())
-//            emit(SensorData())
-        }
-        val rotationVectorFlow = flow {
-            emit(SensorData())
-//            emit(SensorData())
-//            emit(SensorData())
-//            emit(SensorData())
-        }
-
-//        whenever(mockSensorManager.linearAccelerationSensorDataFlow()).thenReturn(linearAccelerationFlow)
-//        whenever(mockSensorManager.rotationVectorSensorDataFlow()).thenReturn(rotationVectorFlow)
-
-        // Act
-        // val resultFlow = sensorRepository.verticalAccelerationFlow
-
-//        // Assert
-//        resultFlow.test {
-//            val item1 = awaitItem()
-//            assertEquals(SensorType.VerticalAcceleration, item1.type)
-//            assertEquals(0.0f, item1.values[0], 0.001f)
-//        }
-    }
 }
-
 
