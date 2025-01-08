@@ -29,9 +29,8 @@ class AltitudeProfileViewModel @Inject constructor(
 
     val altitudeModelProducer = CartesianChartModelProducer()
     private val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
-    @OptIn(FlowPreview::class)
     private suspend fun collectAltitude() {
-        altitudeFlow.sample(1000.milliseconds).collect { altitude ->
+        altitudeFlow.collect { altitude ->
             altitudePoints.add(Pair(altitudePoints.size, altitude.values[0]))
             altitudeModelProducer.runTransaction {
                 lineSeries {
