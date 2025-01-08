@@ -1,5 +1,7 @@
 package com.alpsfly.aeroglide.core.hardware
 
+import com.alpsfly.aeroglide.core.common.SystemTimeProvider
+import com.alpsfly.aeroglide.core.common.TimeProvider
 import kotlin.time.Duration.Companion.seconds
 
 class SensorFrequency(
@@ -25,12 +27,3 @@ class SensorFrequency(
     }
 }
 
-interface TimeProvider {
-    fun nanoTime(): Long
-}
-
-class SystemTimeProvider : TimeProvider {
-    override fun nanoTime(): Long {
-        return System.nanoTime()
-    }
-}

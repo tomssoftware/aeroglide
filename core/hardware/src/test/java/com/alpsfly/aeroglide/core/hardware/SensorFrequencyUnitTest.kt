@@ -1,5 +1,5 @@
+import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.hardware.SensorFrequency
-import com.alpsfly.aeroglide.core.hardware.TimeProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before

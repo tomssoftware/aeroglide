@@ -3,9 +3,9 @@ package com.alpsfly.aeroglide.data
 import android.content.Context
 import android.hardware.SensorManager
 import android.location.LocationManager
+import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
-import com.alpsfly.aeroglide.core.hardware.TimeProvider
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
@@ -26,7 +26,7 @@ class SensorRepositoryUnitTest {
     @Before
     fun setup() {
         `when`(mockTimeProvider.nanoTime()).thenReturn(1000000000L)
-        sensorRepository = SensorRepositoryImpl(context = mockContext, mockSensorManager, mockLocationManager)
+        sensorRepository = SensorRepositoryImpl(context = mockContext, mockSensorManager, mockLocationManager, mockTimeProvider)
     }
 
     @Test

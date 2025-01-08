@@ -6,7 +6,9 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
 import com.alpsfly.aeroglide.core.common.Limits
+import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.common.chunked
+import com.alpsfly.aeroglide.core.common.di.SystemTime
 import com.alpsfly.aeroglide.core.data.util.IKalmanFilter
 import com.alpsfly.aeroglide.core.data.util.KalmanFilter
 import com.alpsfly.aeroglide.core.data.util.Q_ACCELERATION
@@ -67,7 +69,8 @@ interface SensorRepository {
 class SensorRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val sensorManager: SensorManager,
-    private val locationManager: LocationManager
+    private val locationManager: LocationManager,
+    @SystemTime private val timeProvider: TimeProvider
 ) : SensorRepository, SensorEventCallback() {
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val kalmanFilter: IKalmanFilter =
@@ -110,7 +113,7 @@ class SensorRepositoryImpl @Inject constructor(
                 }
                 SensorData(
                     type = SensorType.VerticalAcceleration,
-                    timestamp = System.currentTimeMillis(),
+                    timestamp = timeProvider.currentTimeMillis(),
                     frequency = verticalAccelerationFrequency.inc(),
                     values = floatArrayOf(it)
                 )
