@@ -74,13 +74,13 @@ class AeroGlideActivity : ComponentActivity() {
                 val isRecording by viewModel.isRecording.collectAsState()
                 var showDialog by remember { mutableStateOf(true) }
 
-                if (showDialog) {
-                    WelcomeDialog(
-                        onDismiss = { showDialog = false },
-                        modifier = Modifier,
-                        navController = navController
-                    )
-                }
+//                if (showDialog) {
+//                    WelcomeDialog(
+//                        onDismiss = { showDialog = false },
+//                        modifier = Modifier,
+//                        navController = navController
+//                    )
+//                }
 
                 Scaffold(
                     modifier = Modifier,
