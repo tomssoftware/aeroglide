@@ -9,6 +9,7 @@ import com.alpsfly.aeroglide.core.common.Limits
 import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.common.chunked
 import com.alpsfly.aeroglide.core.common.di.SystemTime
+import com.alpsfly.aeroglide.core.common.movingAverage
 import com.alpsfly.aeroglide.core.data.util.IKalmanFilter
 import com.alpsfly.aeroglide.core.data.util.KalmanFilter
 import com.alpsfly.aeroglide.core.data.util.Q_ACCELERATION
@@ -31,7 +32,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.chunked
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
@@ -72,11 +75,6 @@ class SensorRepositoryImpl @Inject constructor(
     @SystemTime private val timeProvider: TimeProvider
 ) : SensorRepository, SensorEventCallback() {
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val kalmanFilter: IKalmanFilter =
-        KalmanFilter(
-            Q_ACCELERATION,
-            R_ALTITUDE
-        )
 
     /**
      * pressure state flow
@@ -107,9 +105,6 @@ class SensorRepositoryImpl @Inject constructor(
             return combine(linearAccelerationDataSource, rotationVectorDataSource) { a, r ->
                 getVerticalAcceleration(a, r)
             }.map {
-                if (sensorFrequency.get() > 0f) {
-                    kalmanFilter.predict(it, 1f / sensorFrequency.get())
-                }
                 SensorData(
                     type = SensorType.VerticalAcceleration,
                     timestamp = timeProvider.currentTimeMillis(),
@@ -205,24 +200,45 @@ class SensorRepositoryImpl @Inject constructor(
     override val climbRateFlow: Flow<SensorData>
         get() {
             val sensorFrequency = SensorFrequency()
-            return altitudeFlow
-                .map {
-                    kalmanFilter.update(it.values[0])
+            val kalmanFilter: IKalmanFilter = KalmanFilter(Q_ACCELERATION, R_ALTITUDE)
+            var lastAltitude = 0L
+            var lastVerticalAcceleration = 0L
+            var isKalmanFilterConfigured = false
+            return combine(altitudeFlow, verticalAccelerationFlow) { a, v ->
+                if (a.timestamp != lastAltitude) {
+                    if (lastAltitude == 0L) {
+                        kalmanFilter.configure(Q_ACCELERATION, R_ALTITUDE, a.values[0])
+                        isKalmanFilterConfigured = true
+                    }
+                    kalmanFilter.update(a.values[0])
+                    lastAltitude = a.timestamp
+                }
+                if (v.timestamp != lastVerticalAcceleration) {
+                    if (isKalmanFilterConfigured && sensorFrequency.get() > 0) {
+                        kalmanFilter.predict(v.values[0], 1f / sensorFrequency.get())
+                    }
+                    lastVerticalAcceleration = v.timestamp
+                    sensorFrequency.inc()
+                }
+                kalmanFilter.climbrate
+            }.movingAverage(20)
+                .map { a ->
                     SensorData(
                         type = SensorType.Climbrate,
                         timestamp = System.currentTimeMillis(),
-                        frequency = sensorFrequency.inc(),
-                        values = floatArrayOf(kalmanFilter.climbrate)
+                        frequency = sensorFrequency.get(),
+                        values = floatArrayOf(a)
                     )
                 }
         }
+
 
     override val climbrateFlowUi: Flow<SensorData>
         get() {
             val sensorFrequency = SensorFrequency()
             return climbRateFlow
                 .map { s -> s.values[0] }
-                .chunked(3000.milliseconds)
+                .chunked(1000.milliseconds)
                 .map { l ->
                     SensorData(
                         type = SensorType.Climbrate,

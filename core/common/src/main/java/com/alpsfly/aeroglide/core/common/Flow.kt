@@ -22,3 +22,30 @@ fun <T> Flow<T>.chunked(duration: Duration, timeProvider: TimeProvider = Android
     }
 }
 
+fun <T : Number> Flow<T>.movingAverage(windowSize: Int): Flow<Float> = flow {
+    val window = ArrayDeque<Float>(windowSize)
+    collect { value ->
+        if (window.size == windowSize) {
+            window.removeFirst()
+        }
+        window.addLast(value.toFloat())
+        val average = window.average().toFloat()
+        emit(average)
+    }
+}
+
+fun <T : Number> Flow<T>.movingAverage(duration: Duration, frequency: Float): Flow<Float> {
+    return flow {
+        val windowSize = if (frequency > 0f) (duration.inWholeMilliseconds / (1000 / frequency)).toInt() else 1
+        val window = ArrayDeque<Float>(windowSize)
+        collect { value ->
+            if (window.isNotEmpty() && window.size == windowSize) {
+                window.removeFirst()
+            }
+            window.addLast(value.toFloat())
+            val average = window.average().toFloat()
+            emit(average)
+        }
+    }
+}
+

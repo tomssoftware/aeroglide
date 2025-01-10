@@ -18,7 +18,15 @@ class SensorFrequency(
             count = 0
             startTime = timeProvider.nanoTime()
         }
-        frequency = count++ / ((timeProvider.nanoTime() - startTime) / 1.seconds.inWholeNanoseconds).toFloat()
+
+        val duration = timeProvider.nanoTime() - startTime
+        frequency = if (duration >= 1.seconds.inWholeNanoseconds) {
+            count / (duration / 1.seconds.inWholeNanoseconds).toFloat()
+        } else {
+            0f
+        }
+        count++
+
         return frequency
     }
 
