@@ -8,6 +8,7 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,6 +21,8 @@ class ClimbrateProfileViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val climbrateFlow = sensorRepository.climbrateFlowUi
+    private val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
+    val climbrateModelProducer = CartesianChartModelProducer()
 
     init {
         viewModelScope.launch {
@@ -27,9 +30,6 @@ class ClimbrateProfileViewModel @Inject constructor(
         }
     }
 
-    val climbrateModelProducer = CartesianChartModelProducer()
-    private val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
-    @OptIn(FlowPreview::class)
     private suspend fun collectClimbrate() {
         climbrateFlow.collect { climbrate ->
             climbratePoints.add(Pair(climbratePoints.size, climbrate.values[0]))

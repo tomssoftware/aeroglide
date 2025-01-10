@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
-import com.alpsfly.aeroglide.feature.devicestatus.viewmodel.VicoChartViewModel
+import com.alpsfly.aeroglide.feature.devicestatus.viewmodel.DeviceStatusViewModel
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
@@ -38,9 +38,9 @@ import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 fun DeviceStatusScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    vicoChartViewModel: VicoChartViewModel = hiltViewModel()
+    deviceStatusViewModel: DeviceStatusViewModel = hiltViewModel()
 ) {
-    val calibrationStatus = vicoChartViewModel.altitudeCalibrationStatus.collectAsState(Calibration())
+    val calibrationStatus = deviceStatusViewModel.altitudeCalibrationStatus.collectAsState(Calibration())
 
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -62,25 +62,25 @@ fun DeviceStatusScreen(
                 modifier = Modifier.clickable {
                 }
             )
-            ComposeChart1(vicoChartViewModel.pressureModelProducer, Modifier)
+            LineChart(deviceStatusViewModel.pressureModelProducer, Modifier)
 
             Text(text = "altitude",
                 modifier = Modifier.clickable {
                 }
             )
-            ComposeChart1(vicoChartViewModel.altitudeModelProducer, Modifier)
+            LineChart(deviceStatusViewModel.altitudeModelProducer, Modifier)
 
             Text(text = "climbrate",
                 modifier = Modifier.clickable {
                 }
             )
-            ComposeChart1(vicoChartViewModel.climbrateModelProducer, Modifier)
+            LineChart(deviceStatusViewModel.climbrateModelProducer, Modifier)
         }
     }
 }
 
 @Composable
-private fun ComposeChart1(modelProducer: CartesianChartModelProducer, modifier: Modifier) {
+private fun LineChart(modelProducer: CartesianChartModelProducer, modifier: Modifier) {
 
     CartesianChartHost(
         chart = rememberCartesianChart(
