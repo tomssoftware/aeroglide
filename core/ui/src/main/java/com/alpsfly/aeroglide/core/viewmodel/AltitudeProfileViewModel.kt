@@ -31,7 +31,7 @@ class AltitudeProfileViewModel @Inject constructor(
     private val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
     private suspend fun collectAltitude() {
         altitudeFlow.collect { altitude ->
-            altitudePoints.add(Pair(altitudePoints.size, altitude.values[0]))
+            altitudePoints.add(Pair(altitudePoints.size, altitude.altitude))
             altitudeModelProducer.runTransaction {
                 lineSeries {
                     series(
