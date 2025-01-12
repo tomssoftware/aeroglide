@@ -44,7 +44,7 @@ class DeviceStatusViewModel @Inject constructor(
 
     private suspend fun collectPressure() {
         pressureFlow.collect { pressure ->
-            pressurePoints.add(Pair(pressurePoints.size, pressure.values[0]))
+            pressurePoints.add(Pair(pressurePoints.size, pressure.pressure))
             pressureModelProducer.runTransaction {
                 lineSeries {
                     series(
@@ -58,7 +58,7 @@ class DeviceStatusViewModel @Inject constructor(
 
     private suspend fun collectAltitude() {
         altitudeFlow.collect { altitude ->
-            altitudePoints.add(Pair(altitudePoints.size, altitude.values[0]))
+            altitudePoints.add(Pair(altitudePoints.size, altitude.altitude))
             altitudeModelProducer.runTransaction {
                 lineSeries {
                     series(
@@ -72,7 +72,7 @@ class DeviceStatusViewModel @Inject constructor(
 
     private suspend fun collectClimbrate() {
         climbrateFlow.collect { climbrate ->
-            climbratePoints.add(Pair(climbratePoints.size, climbrate.values[0]))
+            climbratePoints.add(Pair(climbratePoints.size, climbrate.climbrate))
             climbrateModelProducer.runTransaction {
                 lineSeries {
                     series(

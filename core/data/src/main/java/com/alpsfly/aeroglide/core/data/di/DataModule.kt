@@ -29,6 +29,9 @@ import kotlinx.coroutines.flow.flowOf
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
 import com.alpsfly.aeroglide.core.model.common.User
+import com.alpsfly.aeroglide.core.model.database.Altitude
+import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import dagger.Provides
@@ -71,6 +74,21 @@ class FakeDataRepository @Inject constructor() : DataRepository {
     override val users: Flow<List<User>> = flowOf(fakeUsers)
     override val calibration: Flow<List<Calibration>> = flowOf(fakeCalibration)
     override val sensorData: Flow<List<SensorData>> = flowOf(fakeSensorData)
+    override val pressure: Flow<List<Pressure>> = flowOf(fakePressure)
+    override val altitude: Flow<List<Altitude>> = flowOf(fakeAltitude)
+    override val climbrate: Flow<List<Climbrate>> = flowOf(fakeClimbrate)
+
+    override suspend fun addAltitude(altitude: Altitude) {
+        throw NotImplementedError()
+    }
+
+    override suspend fun addClimbrate(climbrate: Climbrate) {
+        throw NotImplementedError()
+    }
+
+    override suspend fun addPressure(pressure: Pressure) {
+        throw NotImplementedError()
+    }
 
     override suspend fun addUser(user: User) {
         throw NotImplementedError()
@@ -102,3 +120,8 @@ val fakeSensorData = listOf(
     SensorData(),
     SensorData()
 )
+
+val fakePressure = listOf(Pressure(), Pressure(), Pressure())
+val fakeAltitude = listOf(Altitude(), Altitude(), Altitude())
+val fakeClimbrate = listOf(Climbrate(), Climbrate(), Climbrate())
+

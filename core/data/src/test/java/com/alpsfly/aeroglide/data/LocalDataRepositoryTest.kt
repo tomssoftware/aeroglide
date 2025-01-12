@@ -16,23 +16,26 @@
 
 package com.alpsfly.aeroglide.data
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.alpsfly.aeroglide.core.data.LocalDataRepository
+import com.alpsfly.aeroglide.core.database.AltitudeDao
+import com.alpsfly.aeroglide.core.database.CalibrationDao
+import com.alpsfly.aeroglide.core.database.PressureDao
+import com.alpsfly.aeroglide.core.database.SensorDataDao
+import com.alpsfly.aeroglide.core.database.UserDao
+import com.alpsfly.aeroglide.core.database.di.ClimbrateDao
+import com.alpsfly.aeroglide.core.model.common.User
+import com.alpsfly.aeroglide.core.model.database.Altitude
+import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.Pressure
+import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import com.alpsfly.aeroglide.core.data.LocalDataRepository
-import com.alpsfly.aeroglide.core.database.CalibrationDao
-import com.alpsfly.aeroglide.core.database.SensorDataDao
-import com.alpsfly.aeroglide.core.model.common.User
-import com.alpsfly.aeroglide.core.database.UserDao
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
-import com.alpsfly.aeroglide.core.model.hardware.SensorData
-import kotlinx.coroutines.DEBUG_PROPERTY_VALUE_AUTO
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Unit tests for [LocalDataRepository].
@@ -42,7 +45,14 @@ class LocalDataRepositoryTest {
 
     @Test
     fun aeroGlides_newItemSaved_itemIsReturned() = runTest {
-        val repository = LocalDataRepository(FakeUserDao(), FakeCalibrationDao(), FakeSensorDataDao())
+        val repository = LocalDataRepository(
+            FakeAltitudeDao(),
+            FakeCalibrationDao(),
+            FakeClimbrateDao(),
+            FakePressureDao(),
+            FakeSensorDataDao(),
+            FakeUserDao(),
+        )
 
         repository.addUser(
             User(
@@ -59,7 +69,27 @@ class LocalDataRepositoryTest {
         // Todo: implement tests
         assertEquals(0, repository.users.first().size)
     }
+}
 
+private class FakeAltitudeDao : AltitudeDao {
+    override fun getAllAltitude(): Flow<List<Altitude>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun addAltitude(altitude: Altitude) {
+        TODO("Not yet implemented")
+    }
+
+}
+
+private class FakeClimbrateDao : ClimbrateDao {
+    override fun getAllClimbrate(): Flow<List<Climbrate>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun addClimbrate(climbrate: Climbrate) {
+        TODO("Not yet implemented")
+    }
 }
 
 private class FakeCalibrationDao : CalibrationDao {
@@ -78,7 +108,16 @@ private class FakeCalibrationDao : CalibrationDao {
     override fun addCalibration(calibration: Calibration) {
         data.add(calibration)
     }
+}
 
+private class FakePressureDao : PressureDao {
+    override fun getAllPressure(): Flow<List<Pressure>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun addPressure(pressure: Pressure) {
+        TODO("Not yet implemented")
+    }
 }
 
 private class FakeUserDao : UserDao {
@@ -119,5 +158,4 @@ private class FakeSensorDataDao : SensorDataDao {
     override fun addSensorData(sensorData: SensorData) {
         data.add(SensorData())
     }
-
 }

@@ -46,6 +46,7 @@ import com.alpsfly.aeroglide.core.presentation.centered
 import com.alpsfly.aeroglide.core.presentation.AeroGlideBottomBar
 import com.alpsfly.aeroglide.core.MenuItem
 import com.alpsfly.aeroglide.core.mapbox.data.MapScreen
+import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.feature.variometer.viewmodel.VarioViewModel
 
 private var startScaleAngle = 180f
@@ -165,7 +166,7 @@ fun AnalogVariometer(
     modifier: Modifier = Modifier,
     varioViewModel: VarioViewModel = hiltViewModel()
 ) {
-    val climbrate by varioViewModel.climbrate.collectAsState(initial = SensorData())
+    val climbrate by varioViewModel.climbrate.collectAsState(initial = Climbrate())
 
     var majorOval: Rect
     var minorOval: Rect
@@ -184,9 +185,9 @@ fun AnalogVariometer(
         majorOval = Rect(-radius, -radius, radius, radius)
         minorOval = Rect(-radius, -radius, radius, radius)
 
-        drawClimbIndicator(this, climbrate.values[0])
-        drawVarioScale(this, majorOval, minorOval, climbrate.values[0])
-        drawVarioText(this, textMeasurer, climbrate.values[0])
+        drawClimbIndicator(this, climbrate.climbrate)
+        drawVarioScale(this, majorOval, minorOval, climbrate.climbrate)
+        drawVarioText(this, textMeasurer, climbrate.climbrate)
     }
 }
 

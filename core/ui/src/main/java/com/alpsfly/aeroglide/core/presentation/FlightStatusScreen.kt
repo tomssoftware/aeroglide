@@ -25,6 +25,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
+import com.alpsfly.aeroglide.core.model.database.Altitude
+import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.viewmodel.FlightStatusViewModel
 
@@ -35,9 +38,9 @@ fun FlightStatusScreen(
     navController: NavController,
     flightStatusViewModel: FlightStatusViewModel = hiltViewModel()
 ) {
-    val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = SensorData())
-    val climbrate by flightStatusViewModel.climbrateFlow.collectAsStateWithLifecycle(initialValue = SensorData())
-    val pressure by flightStatusViewModel.pressureFlow.collectAsStateWithLifecycle(initialValue = SensorData())
+    val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = Altitude())
+    val climbrate by flightStatusViewModel.climbrateFlow.collectAsStateWithLifecycle(initialValue = Climbrate())
+    val pressure by flightStatusViewModel.pressureFlow.collectAsStateWithLifecycle(initialValue = Pressure())
     val location by flightStatusViewModel.locationFlow.collectAsStateWithLifecycle(initialValue = Location("none"))
     val verticalAcceleration by flightStatusViewModel.verticalAccelerationFlow.collectAsStateWithLifecycle(initialValue = SensorData())
     val calibrationUiState by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle()
@@ -50,7 +53,7 @@ fun FlightStatusScreen(
             DataCell(
                 caption = "Altitude",
                 value = LocalUnit
-                    .of(altitude.values[0], UnitConverter.Unit.M)
+                    .of(altitude.altitude, UnitConverter.Unit.M)
                     .withDigits(0)
                     .withSymbol(false)
                     .toLocalString(),
@@ -60,12 +63,12 @@ fun FlightStatusScreen(
             DataCell(
                 caption = "Climbrate",
                 value = LocalUnit
-                    .of(climbrate.values[0], UnitConverter.Unit.MS)
+                    .of(climbrate.climbrate, UnitConverter.Unit.MS)
                     .withDigits(2)
                     .withSymbol(false)
                     .toLocalString(),
                 unit = LocalUnit.of(
-                    climbrate.values[0],
+                    climbrate.climbrate,
                     UnitConverter.Unit.MS)
                     .toLocalSymbol(),
                 modifier = Modifier.weight(1f)
@@ -73,7 +76,7 @@ fun FlightStatusScreen(
             DataCell(
                 caption = "Pressure",
                 value = LocalUnit
-                    .of(pressure.values[0], UnitConverter.Unit.M) // todo: hpa
+                    .of(pressure.pressure, UnitConverter.Unit.M) // todo: hpa
                     .withSymbol(false)
                     .withDigits(1)
                     .toLocalString(),
