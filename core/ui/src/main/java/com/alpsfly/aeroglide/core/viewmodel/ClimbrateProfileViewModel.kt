@@ -32,7 +32,7 @@ class ClimbrateProfileViewModel @Inject constructor(
 
     private suspend fun collectClimbrate() {
         climbrateFlow.collect { climbrate ->
-            climbratePoints.add(Pair(climbratePoints.size, climbrate.values[0]))
+            climbratePoints.add(Pair(climbratePoints.size, climbrate.climbrate))
             climbrateModelProducer.runTransaction {
                 lineSeries {
                     series(

@@ -20,6 +20,9 @@ import com.alpsfly.aeroglide.core.hardware.linearAccelerationSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.locationDataFlow
 import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.rotationVectorSensorDataFlow
+import com.alpsfly.aeroglide.core.model.database.Altitude
+import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.model.hardware.SensorType
@@ -32,9 +35,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.chunked
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
@@ -46,6 +47,7 @@ interface SensorRepository {
 
     /** Pressure sensor flow with 200ms delay */
     val pressureDataSource: Flow<SensorData>
+    val pressureFlowUi: Flow<Pressure>
 
     /** Location sensor flow with 1000ms delay */
     val locationDataSource: Flow<Location>
@@ -53,15 +55,13 @@ interface SensorRepository {
     val verticalAccelerationFlow: Flow<SensorData>
     val verticalAccelerationFlowUi: Flow<SensorData>
 
-    val pressureFlowUi: Flow<SensorData>
-
     /** Fused sensor */
     val climbRateFlow: Flow<SensorData>
-    val climbrateFlowUi: Flow<SensorData>
+    val climbrateFlowUi: Flow<Climbrate>
 
     /** Fused sensor */
     val altitudeFlow: Flow<SensorData>
-    val altitudeFlowUi: Flow<SensorData>
+    val altitudeFlowUi: Flow<Altitude>
 
     /** Status of altitude calibration **/
     val altitudeCalibrationStatus: StateFlow<Calibration>
@@ -130,18 +130,17 @@ class SensorRepositoryImpl @Inject constructor(
                 }
         }
 
-    override val pressureFlowUi: Flow<SensorData>
+    override val pressureFlowUi: Flow<Pressure>
         get() {
             val sensorFrequency = SensorFrequency()
             return pressureDataSource
                 .map { d -> d.values[0] }
                 .chunked(1000.milliseconds)
                 .map { l ->
-                    SensorData(
-                        type = SensorType.Pressure,
+                    Pressure(
                         timestamp = System.currentTimeMillis(),
                         frequency = sensorFrequency.inc(),
-                        values = floatArrayOf(l.average().toFloat())
+                        pressure = l.average().toFloat()
                     )
                 }
         }
@@ -178,18 +177,17 @@ class SensorRepositoryImpl @Inject constructor(
             }
         }
 
-    override val altitudeFlowUi: Flow<SensorData>
+    override val altitudeFlowUi: Flow<Altitude>
         get() {
             val sensorFrequency = SensorFrequency()
             return altitudeFlow
                 .map { d -> d.values[0] }
                 .chunked(1000.milliseconds)
                 .map { l ->
-                    SensorData(
-                        type = SensorType.Altitude,
+                    Altitude(
                         timestamp = System.currentTimeMillis(),
                         frequency = sensorFrequency.inc(),
-                        values = floatArrayOf(l.average().toFloat())
+                        altitude = l.average().toFloat()
                     )
                 }
         }
@@ -233,18 +231,17 @@ class SensorRepositoryImpl @Inject constructor(
         }
 
 
-    override val climbrateFlowUi: Flow<SensorData>
+    override val climbrateFlowUi: Flow<Climbrate>
         get() {
             val sensorFrequency = SensorFrequency()
             return climbRateFlow
                 .map { s -> s.values[0] }
                 .chunked(1000.milliseconds)
                 .map { l ->
-                    SensorData(
-                        type = SensorType.Climbrate,
+                    Climbrate(
                         timestamp = System.currentTimeMillis(),
                         frequency = sensorFrequency.inc(),
-                        values = floatArrayOf(l.average().toFloat())
+                        climbrate = l.average().toFloat()
                     )
                 }
         }

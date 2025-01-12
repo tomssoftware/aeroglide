@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.Screen
+import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.feature.diagnosis.viewmodel.DiagnosisViewModel
@@ -88,12 +89,12 @@ fun DiagnosisDetailScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            val sensorData = diagnosisViewModel.pressureFlowUi.collectAsState(initial = SensorData())
+            val sensorData = diagnosisViewModel.pressureFlowUi.collectAsState(initial = Pressure())
 
-            Text(text = "${sensorData.value.type}", modifier = Modifier.clickable {})
+            Text(text = "${Pressure::class.java}", modifier = Modifier.clickable {})
             Text(text = "${sensorData.value.timestamp}", modifier = Modifier.clickable {})
             Text(text = "${sensorData.value.frequency}", modifier = Modifier.clickable {})
-            Text(text = "${sensorData.value.values[0]}", modifier = Modifier.clickable {})
+            Text(text = "${sensorData.value.pressure}", modifier = Modifier.clickable {})
         }
     }
 }
