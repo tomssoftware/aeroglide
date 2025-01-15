@@ -52,7 +52,7 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                     selected = false,
                     onClick = {
                         onClick()
-                        navController.navigate(route = Screen.DetailScreen.route)
+                        navController.navigate(route = Screen.ActivityHistoryScreen.route)
                     }
                 )
             }
