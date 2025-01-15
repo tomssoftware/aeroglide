@@ -18,6 +18,7 @@ package com.alpsfly.aeroglide.core.database.di
 
 import android.content.Context
 import androidx.room.Room
+import com.alpsfly.aeroglide.core.database.ActivityDao
 import com.alpsfly.aeroglide.core.database.AltitudeDao
 import dagger.Module
 import dagger.Provides
@@ -26,6 +27,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import com.alpsfly.aeroglide.core.database.AppDatabase
 import com.alpsfly.aeroglide.core.database.CalibrationDao
+import com.alpsfly.aeroglide.core.database.ClimbrateDao
 import com.alpsfly.aeroglide.core.database.PressureDao
 import com.alpsfly.aeroglide.core.database.SensorDataDao
 import com.alpsfly.aeroglide.core.database.UserDao
@@ -47,6 +49,11 @@ class DatabaseModule {
     @Provides
     fun provideSensorDataDao(appDatabase: AppDatabase): SensorDataDao {
         return appDatabase.sensorDataDao()
+    }
+
+    @Provides
+    fun provideActivityDao(appDatabase: AppDatabase): ActivityDao {
+        return appDatabase.activityDao()
     }
 
     @Provides

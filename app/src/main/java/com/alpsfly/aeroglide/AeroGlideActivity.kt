@@ -1,8 +1,8 @@
 package com.alpsfly.aeroglide
 
-import android.os.Bundle
 import android.Manifest
 import android.content.Intent
+import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
@@ -33,10 +33,10 @@ import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.theme.AeroGlideTheme
-import com.alpsfly.aeroglide.feature.disclaimer.presentation.WelcomeDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import com.alpsfly.aeroglide.core.ui.R
 
 @AndroidEntryPoint
 class AeroGlideActivity : ComponentActivity() {
@@ -111,10 +111,17 @@ class AeroGlideActivity : ComponentActivity() {
                                     else
                                         viewModel.startRecording()
                                 }) {
-                                    Icon(
-                                        imageVector = Icons.Default.PlayArrow,
-                                        contentDescription = "Mark as favorite"
-                                    )
+                                    if (isRecording){
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.outline_stop_circle_24),
+                                            contentDescription = "Mark as favorite"
+                                        )
+                                    } else {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.outline_play_arrow_24),
+                                            contentDescription = "Mark as favorite"
+                                        )
+                                    }
                                 }
                                 IconButton(onClick = {
                                     beepGenerator.setFrequency(500f) // Set frequency to 880 Hz

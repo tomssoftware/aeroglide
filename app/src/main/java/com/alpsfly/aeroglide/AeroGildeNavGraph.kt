@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.alpsfly.aeroglide.core.Screen
+import com.alpsfly.aeroglide.core.presentation.ActivityHistoryScreen
 import com.alpsfly.aeroglide.feature.devicestatus.presentation.DeviceStatusScreen
 import com.alpsfly.aeroglide.feature.diagnosis.presentation.DiagnosisDetailScreen
 import com.alpsfly.aeroglide.feature.variometer.presentation.VariometerScreen
@@ -38,9 +39,9 @@ fun AeroGlideNavGraph(navController: NavHostController) {
             DiagnosisDetailScreen(navController = navController)
         }
         composable(
-            route = Screen.DetailScreen.route
+            route = Screen.ActivityHistoryScreen.route
         ) {
-            //DetailScreen(navController = navController)
+            ActivityHistoryScreen(navController = navController)
         }
     }
 }
