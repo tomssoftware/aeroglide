@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.database.di
+package com.alpsfly.aeroglide.core.database
 
 import androidx.room.Dao
 import androidx.room.Insert

@@ -1,12 +1,17 @@
 package com.alpsfly.aeroglide
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.StartRecordActivityUseCase
+import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,10 +26,26 @@ class AeroGlideViewModel @Inject constructor(
     fun startRecording() {
         recordSensorDataUseCase.startRecording(sensorType = SensorType.Altitude)
         recordSensorDataUseCase.startRecording(sensorType = SensorType.Climbrate)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            dataRepository.addActivity(Activity(
+                trackId = System.currentTimeMillis(),
+                userId = "Thomas",
+                begin = System.currentTimeMillis()
+            ))
+        }
     }
 
     fun stopRecording() {
         recordSensorDataUseCase.stopRecording(sensorType = SensorType.Altitude)
         recordSensorDataUseCase.stopRecording(sensorType = SensorType.Climbrate)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            dataRepository.updateActivity(
+                Activity(
+                    end = System.currentTimeMillis()
+                )
+            )
+        }
     }
 }

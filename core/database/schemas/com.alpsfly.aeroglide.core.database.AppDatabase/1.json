@@ -2,12 +2,18 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "a73b3d4c93b169504870c2036b2d81d3",
+    "identityHash": "1ac885c35ce5c3690b46f28a7431dec5",
     "entities": [
       {
-        "tableName": "user",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`user_id` TEXT NOT NULL, `fore_name` TEXT NOT NULL, `last_name` TEXT NOT NULL, `licence` TEXT NOT NULL, `glider` TEXT NOT NULL, `phone` TEXT NOT NULL, `email` TEXT NOT NULL, PRIMARY KEY(`user_id`))",
+        "tableName": "activity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activity_id` INTEGER NOT NULL, `user_id` TEXT NOT NULL, `begin` INTEGER NOT NULL, `end` INTEGER NOT NULL, `distance` REAL NOT NULL, `duration` INTEGER NOT NULL, `ascent` REAL NOT NULL, `descent` REAL NOT NULL, `min_altitude` REAL NOT NULL, `max_altitude` REAL NOT NULL, `min_speed` REAL NOT NULL, `max_speed` REAL NOT NULL, `max_climbrate` REAL NOT NULL, `min_climbrate` REAL NOT NULL, `max_grade` REAL NOT NULL, `min_grade` REAL NOT NULL, `max_heartrate` INTEGER NOT NULL, `min_heartrate` INTEGER NOT NULL, PRIMARY KEY(`activity_id`))",
         "fields": [
+          {
+            "fieldPath": "trackId",
+            "columnName": "activity_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "userId",
             "columnName": "user_id",
@@ -15,46 +21,138 @@
             "notNull": true
           },
           {
-            "fieldPath": "foreName",
-            "columnName": "fore_name",
-            "affinity": "TEXT",
+            "fieldPath": "begin",
+            "columnName": "begin",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "lastName",
-            "columnName": "last_name",
-            "affinity": "TEXT",
+            "fieldPath": "end",
+            "columnName": "end",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "licence",
-            "columnName": "licence",
-            "affinity": "TEXT",
+            "fieldPath": "distance",
+            "columnName": "distance",
+            "affinity": "REAL",
             "notNull": true
           },
           {
-            "fieldPath": "glider",
-            "columnName": "glider",
-            "affinity": "TEXT",
+            "fieldPath": "duration",
+            "columnName": "duration",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "phone",
-            "columnName": "phone",
-            "affinity": "TEXT",
+            "fieldPath": "ascent",
+            "columnName": "ascent",
+            "affinity": "REAL",
             "notNull": true
           },
           {
-            "fieldPath": "email",
-            "columnName": "email",
-            "affinity": "TEXT",
+            "fieldPath": "descent",
+            "columnName": "descent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minAltitude",
+            "columnName": "min_altitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxAltitude",
+            "columnName": "max_altitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minSpeed",
+            "columnName": "min_speed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxSpeed",
+            "columnName": "max_speed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxClimbrate",
+            "columnName": "max_climbrate",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minClimbrate",
+            "columnName": "min_climbrate",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxGrade",
+            "columnName": "max_grade",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minGrade",
+            "columnName": "min_grade",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxHeartrate",
+            "columnName": "max_heartrate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minHeartrate",
+            "columnName": "min_heartrate",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "user_id"
+            "activity_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "altitude",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `altitude` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frequency",
+            "columnName": "frequency",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitude",
+            "columnName": "altitude",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
           ]
         },
         "indices": [],
@@ -111,6 +209,70 @@
         "foreignKeys": []
       },
       {
+        "tableName": "climbrate",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `climbrate` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frequency",
+            "columnName": "frequency",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbrate",
+            "columnName": "climbrate",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "pressure",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `pressure` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frequency",
+            "columnName": "frequency",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pressure",
+            "columnName": "pressure",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
         "tableName": "sensor_data",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `values` TEXT NOT NULL, PRIMARY KEY(`type`, `timestamp`))",
         "fields": [
@@ -148,12 +310,68 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "user",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`user_id` TEXT NOT NULL, `fore_name` TEXT NOT NULL, `last_name` TEXT NOT NULL, `licence` TEXT NOT NULL, `glider` TEXT NOT NULL, `phone` TEXT NOT NULL, `email` TEXT NOT NULL, PRIMARY KEY(`user_id`))",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "foreName",
+            "columnName": "fore_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastName",
+            "columnName": "last_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "licence",
+            "columnName": "licence",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "glider",
+            "columnName": "glider",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phone",
+            "columnName": "phone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "user_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a73b3d4c93b169504870c2036b2d81d3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1ac885c35ce5c3690b46f28a7431dec5')"
     ]
   }
 }

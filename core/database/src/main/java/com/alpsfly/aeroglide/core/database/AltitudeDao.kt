@@ -12,6 +12,9 @@ interface AltitudeDao {
     @Query("select * from altitude")
     fun getAllAltitude(): Flow<List<Altitude>>
 
+    @Query("select * from altitude")
+    fun getAllAltitudeAsFlow(): Flow<Altitude>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addAltitude(altitude: Altitude)
 }

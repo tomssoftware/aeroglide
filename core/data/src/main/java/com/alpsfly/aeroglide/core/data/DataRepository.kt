@@ -16,13 +16,15 @@
 
 package com.alpsfly.aeroglide.core.data
 
+import com.alpsfly.aeroglide.core.database.ActivityDao
 import com.alpsfly.aeroglide.core.database.AltitudeDao
 import com.alpsfly.aeroglide.core.database.CalibrationDao
 import com.alpsfly.aeroglide.core.database.PressureDao
 import com.alpsfly.aeroglide.core.database.SensorDataDao
 import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.database.UserDao
-import com.alpsfly.aeroglide.core.database.di.ClimbrateDao
+import com.alpsfly.aeroglide.core.database.ClimbrateDao
+import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Pressure
@@ -32,13 +34,17 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 interface DataRepository {
+    suspend fun addActivity(activity: Activity)
     suspend fun addAltitude(altitude: Altitude)
     suspend fun addCalibration(calibration: Calibration)
     suspend fun addClimbrate(climbrate: Climbrate)
     suspend fun addPressure(pressure: Pressure)
     suspend fun addSensorData(sensorData: SensorData)
     suspend fun addUser(user: User)
+    suspend fun updateActivity(activity: Activity)
 
+    val activity: Flow<List<Activity>>
+    val altitudeAsFlow: Flow<Altitude>
     val altitude: Flow<List<Altitude>>
     val calibration: Flow<List<Calibration>>
     val climbrate: Flow<List<Climbrate>>
@@ -48,6 +54,7 @@ interface DataRepository {
 }
 
 class LocalDataRepository @Inject constructor(
+    private val activityDao: ActivityDao,
     private val altitudeDao: AltitudeDao,
     private val calibrationDao: CalibrationDao,
     private val climbrateDao: ClimbrateDao,
@@ -55,6 +62,10 @@ class LocalDataRepository @Inject constructor(
     private val sensorDataDao: SensorDataDao,
     private val userDao: UserDao,
 ) : DataRepository {
+
+    override suspend fun addActivity(activity: Activity) {
+        activityDao.addActivity(activity)
+    }
 
     override suspend fun addAltitude(altitude: Altitude) {
         altitudeDao.addAltitude(altitude)
@@ -79,6 +90,16 @@ class LocalDataRepository @Inject constructor(
     override suspend fun addUser(user: User) {
         userDao.addUser(user)
     }
+
+    override suspend fun updateActivity(activity: Activity) {
+        activityDao.updateActivity(activity)
+    }
+
+    override val activity: Flow<List<Activity>> =
+        activityDao.getAllActivity()
+
+    override val altitudeAsFlow: Flow<Altitude> =
+        altitudeDao.getAllAltitudeAsFlow()
 
     override val altitude: Flow<List<Altitude>> =
         altitudeDao.getAllAltitude()
