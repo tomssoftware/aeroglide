@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Activities -->
+    <string name="sid_accel_x">Accel. X</string>
+    <string name="sid_accel_y">Accel. Y</string>
+    <string name="sid_accel_z">Accel. Z</string>
+    <string name="sid_accuracy_result">Vario accuracy is: </string>
+    <string name="sid_device_status_activity_check_acceleration_sensor">Acceleration sensor</string>
+    <string name="sid_device_status_activity_check_location_sensor">Location sensor</string>
+    <string name="sid_device_status_activity_check_pressure_sensor">Pressure sensor</string>
+
+    <!-- General -->
+    <string name="sid_accuracy_high">High accuracy</string>
+    <string name="sid_accuracy_low">Checking sensors</string>
+    <string name="sid_accuracy_mid">Medium accuracy</string>
+    <string name="sid_accuracy_none">Search GPS</string>
+    <string name="sid_high">High</string>
+    <string name="sid_list">List</string>
+    <string name="sid_low">Low</string>
+    <string name="sid_mid">Mid</string>
+    <string name="sid_none">None</string>
+    <string name="sid_x_axis">x-axis</string>
+    <string name="sid_y_axis">y-axis</string>
+    <string name="sid_z_axis">z-axis</string>
+
+    <!-- General -->
+    <string name="sid_acceleration">Acceleration</string>
+    <string name="sid_accept">Accept</string>
+    <string name="sid_account">Account</string>
+    <string name="sid_accuracy">Accuracy</string>
+    <string name="sid_activities">Activities</string>
+    <string name="sid_aircraft">Aircraft</string>
+    <string name="sid_altitude">Altitude</string>
+    <string name="sid_ascent">Ascent</string>
+    <string name="sid_avg_speed">Avg. Speed</string>
+    <string name="sid_climbrate">Climbrate</string>
+    <string name="sid_cockpit">Cockpit</string>
+    <string name="sid_compass">Compass</string>
+    <string name="sid_date">Date</string>
+    <string name="sid_decline">Decline</string>
+    <string name="sid_descent">Descent</string>
+    <string name="sid_distance">Distance</string>
+    <string name="sid_dots">…</string>
+    <string name="sid_download_failure">Download failure</string>
+    <string name="sid_download_success">Download finished</string>
+    <string name="sid_duration">Duration</string>
+    <string name="sid_elevation">Elevation</string>
+    <string name="sid_email">E-Mail</string>
+    <string name="sid_error">Error</string>
+    <string name="sid_exit">Exit</string>
+    <string name="sid_flight_time">Flight Time</string>
+    <string name="sid_flight_time_val">00:00</string>
+    <string name="sid_flights">Flights</string>
+    <string name="sid_forename">Fore Name</string>
+    <string name="sid_fullscreen">Fullscreen</string>
+    <string name="sid_glide_ratio">Glide Ratio</string>
+    <string name="sid_glider_id">Glider ID</string>
+    <string name="sid_glider_type">Glide Type</string>
+    <string name="sid_grade">Grade</string>
+    <string name="sid_heading">Heading</string>
+    <string name="sid_info">Info</string>
+    <string name="sid_lastname">Last Name</string>
+    <string name="sid_licence">Licence</string>
+    <string name="sid_location">Location</string>
+    <string name="sid_map">Map</string>
+    <string name="sid_map_manager">Map manager</string>
+    <string name="sid_max_altitude">Max. Altitude</string>-
+    <string name="sid_max_climbrate">Max. Climbrate</string>
+    <string name="sid_max_grade">Max. Grade</string>
+    <string name="sid_max_speed">Max. Speed</string>
+    <string name="sid_min_altitude">Min. Altitude</string>-
+    <string name="sid_min_climbrate">Min. Climbrate</string>
+    <string name="sid_min_grade">Min. Grade</string>
+    <string name="sid_min_speed">Min. Speed</string>
+    <string name="sid_minus">-</string>
+    <string name="sid_name">Name</string>
+    <string name="sid_phone">Phone</string>
+    <string name="sid_pilot">Pilot</string>
+    <string name="sid_premium">Premium</string>
+    <string name="sid_pressure">Pressure</string>
+    <string name="sid_progress_deleting">Deleting…</string>
+    <string name="sid_progress_downloading">Downloading…</string>
+    <string name="sid_progress_uploading">Uploading…</string>
+    <string name="sid_recording">Recording activity</string>
+    <string name="sid_region">Region</string>
+    <string name="sid_safety_note">Safety note</string>
+    <string name="sid_safety_notice">Safety notice</string>
+    <string name="sid_satellites">Satellites</string>
+    <string name="sid_sensor_status">Sensor status</string>
+    <string name="sid_sensor_status_none">---</string>
+    <string name="sid_settings">Settings</string>
+    <string name="sid_share">Share</string>
+    <string name="sid_shutdown">Shutdown</string>
+    <string name="sid_sign_in">Sign in</string>
+    <string name="sid_sign_out">Sign out</string>
+    <string name="sid_size">Size</string>
+    <string name="sid_speed">Speed</string>
+    <string name="sid_status">Status</string>
+    <string name="sid_summary">Summary</string>
+    <string name="sid_thermal">Thermal</string>
+    <string name="sid_thermal_spot">Thermal Spot</string>
+    <string name="sid_time">Time</string>
+    <string name="sid_upload_failure">Upload failed</string>\
+    <string name="sid_upload_success">Upload finished</string>
+    <string name="sid_vario">Vario</string>
+    <string name="sid_vario_tone">Vario Tone</string>
+    <string name="sid_variotone">Variotone</string>
+    <string name="sid_welcome">Welcome</string>
+    <string name="sid_wind">Wind</string>
+
+    <!-- Instructions -->
+    <string name="sid_exit_app_instruction">"Press again to exit"</string>
+    <string name="sid_select_share_format">"Select a format"</string>
+    <string name="sid_notification_subsection">Calculating of climbrate is turned on</string>
+    <string name="sid_notification_content">Press the back button to exit vario</string>
+    <string name="sid_sign_in_instruction">Please sign in, in order to generate an IGC file</string>
+
+    <!-- Information -->
+    <string name="sid_no_location_access_permission">"Variometer is not allowed to access device's location"</string>
+    <string name="sid_low_climbrate_accuracy">"No pressure sensor available! The rate of climb and descent is therefore imprecise!"</string>
+    <string name="sid_authentication_failed">"Authentication failed! Please log in!"</string>
+    <string name="sid_igc_hint">"(*) Mandatory for IGC export"</string>
+
+    <!-- Multilingual assets -->
+    <string name="beep">beep</string>
+    <string name="sid_url_alpsfly">"https://www.alpsfly.com"</string>
+    <string name="sid_url_safety">"safety.htm"</string>
+    <string name="sid_url_tac">"tac.htm"</string>
+    <string name="sid_url_privacy">"privacy.htm"</string>
+
+    <!-- Abbreviation -->
+    <string name="sid_abbr_acc" translatable="false">ACC</string>
+    <string name="sid_abbr_agl" translatable="false">AGL</string>
+    <string name="sid_abbr_atm" translatable="false">ATM</string>
+    <string name="sid_abbr_gps" translatable="false">GPS</string>
+    <string name="sid_abbr_ms" translatable="false">m/s</string>
+
+    <!-- Number -->
+    <string name="sid_number_zero" translatable="false">0</string>
+    <string name="sid_number_zero_1_1" translatable="false">0.0</string>
+    <string name="sid_number_zero_1_2" translatable="false">0.00</string>
+    <string name="sid_time_zero_hh_mm" translatable="false">00:00</string>
+    <string name="sid_time_zero_hh_mm_ss" translatable="false">00:00:00</string>
+
+    <!-- Misc -->
+    <string name="sid_icon_description" translatable="false">icon</string>
+
+    <!-- Settings keys -->
+    <string name="spk_accel_sensor_enable" translatable="false">accel_sensor_enable</string>
+    <string name="spk_accel_sensor_q_acceleration" translatable="false">q_acceleration</string>
+    <string name="spk_accel_sensor_r_altitude" translatable="false">r_altitude</string>
+    <string name="spk_altitude_calibration_enable" translatable="false">altitude_calibration_enable</string>
+    <string name="spk_altitude_calibration_value" translatable="false">altitude0_calibration_value</string>
+    <string name="spk_auto_start_enable" translatable="false">auto_start_enable</string>
+    <string name="spk_auto_start_agl" translatable="false">setting_auto_start_agl</string>
+    <string name="spk_auto_start_climbrate" translatable="false">auto_start_climbrate</string>
+    <string name="spk_auto_start_speed" translatable="false">auto_start_speed</string>
+    <string name="spk_vario_tone_threshold_climb" translatable="false">vario_tone_threshold_climb</string>
+    <string name="spk_vario_tone_threshold_sink" translatable="false">vario_tone_threshold_sink</string>
+
+    <!-- App shared preferences -->
+    <string name="spk_volume_level" translatable="false">volume_level</string>
+    <string name="spk_vario_uuid" translatable="false">spk_vario_uuid</string>
+    <string name="spk_general_session_pid" translatable="false">general_session_pid</string>
+
+    <!-- Data storage folder -->
+    <string name="app_map_folder" translatable="false">maptiles</string>
+    <string name="app_srtm_folder" translatable="false">srtmtiles</string>
+    <string name="app_thml_folder" translatable="false">thmltiles</string>
+
+    <!-- Crashlytics keys -->
+    <string name="clkPressureSensorAvailable" translatable="false">PressureSensorAvailable</string>
+    <string name="clkLocationProviderAvailable" translatable="false">LocationProviderAvailable</string>
+
+    <!-- Application keys -->
+    <string name="spk_policy_confirmation" translatable="false">policy_confirmation</string>
+</resources>

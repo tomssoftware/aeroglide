@@ -1,0 +1,137 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="de">
+
+    <!-- Device Status Activity -->
+    <string name="sid_device_status_activity_check_location_sensor">GPS Sensor</string>
+    <string name="sid_device_status_activity_check_acceleration_sensor">Beschleunigungssensor</string>
+    <string name="sid_device_status_activity_check_pressure_sensor">Drucksensor</string>
+    <string name="sid_accuracy_result">Vario Genauigkeit: </string>
+    <string name="sid_accel_x">Beschl. X</string>
+    <string name="sid_accel_y">Beschl. Y</string>
+    <string name="sid_accel_z">Beschl. Z</string>
+
+    <!-- General -->
+    <string name="sid_accuracy_none">Suche GPS</string>
+    <string name="sid_accuracy_high">Hohe Genauigkeit</string>
+    <string name="sid_accuracy_low">Suche Sensoren</string>
+    <string name="sid_accuracy_mid">Mittlere Genauigkeit</string>
+    <string name="sid_high">Hoch</string>
+    <string name="sid_list">Liste</string>
+    <string name="sid_low">Niedrig</string>
+    <string name="sid_mid">Mittel</string>
+    <string name="sid_none">Unbekannt</string>
+
+    <!-- Abkürzungen -->
+    <string name="sid_abbr_acc">ACC</string>
+    <string name="sid_abbr_agl">AGL</string>
+    <string name="sid_abbr_atm">ATM</string>
+    <string name="sid_abbr_gps">GPS</string>
+    <string name="sid_abbr_ms">m/s</string>
+
+    <!-- Allgemein -->
+    <string name="sid_acceleration">Beschleunigung</string>
+    <string name="sid_accept">Annehmen</string>
+    <string name="sid_account">Konto</string>
+    <string name="sid_accuracy">Genauigkeit</string>
+    <string name="sid_activities">Aktivitäten</string>
+    <string name="sid_aircraft">Fluggerät</string>
+    <string name="sid_altitude">Höhe</string>
+    <string name="sid_ascent">Anstieg</string>
+    <string name="sid_avg_speed">Durchsch. Geschw.</string>
+    <string name="sid_climbrate">Steigrate</string>
+    <string name="sid_cockpit">Cockpit</string>
+    <string name="sid_compass">Kompass</string>
+    <string name="sid_date">Datum</string>
+    <string name="sid_decline">Ablehnen</string>
+    <string name="sid_descent">Abstieg</string>
+    <string name="sid_distance">Distanz</string>
+    <string name="sid_dots">…</string>
+    <string name="sid_download_failure">Download fehlgeschlagen</string>
+    <string name="sid_download_success">Download beendet</string>
+    <string name="sid_duration">Dauer</string>
+    <string name="sid_email">E-Mail</string>
+    <string name="sid_error">Fehler</string>
+    <string name="sid_exit">Beenden</string>
+    <string name="sid_flight_time">Flugzeit</string>
+    <string name="sid_flight_time_val">00:00</string>
+    <string name="sid_flights">Flüge</string>
+    <string name="sid_forename">Vorname</string>
+    <string name="sid_fullscreen">Vollbild</string>
+    <string name="sid_glide_ratio">Gleitzahl</string>
+    <string name="sid_glider_id">Glider ID</string>
+    <string name="sid_glider_type">Glide Type</string>
+    <string name="sid_grade">Neigung</string>
+    <string name="sid_heading">Richtung</string>
+    <string name="sid_info">Info</string>
+    <string name="sid_lastname">Nachname</string>
+    <string name="sid_licence">Lizenz</string>
+    <string name="sid_location">Standort</string>
+    <string name="sid_map">Karte</string>
+    <string name="sid_map_manager">Kartenverwaltung</string>
+    <string name="sid_max_altitude">Max. Höhe</string>
+    <string name="sid_max_climbrate">Max. Steigrate</string>
+    <string name="sid_max_grade">Max. Neigung</string>
+    <string name="sid_max_speed">Max. Geschw.</string>
+    <string name="sid_min_altitude">Min. Höhe</string>
+    <string name="sid_min_climbrate">Min. Steigrate</string>
+    <string name="sid_min_grade">Min. Neigung</string>
+    <string name="sid_min_speed">Min. Geschw.</string>
+    <string name="sid_minus">-</string>
+    <string name="sid_name">Name</string>
+    <string name="sid_phone">Telefon</string>
+    <string name="sid_pilot">Pilot</string>
+    <string name="sid_premium">Premium</string>
+    <string name="sid_pressure">Druck</string>
+    <string name="sid_progress_deleting">Lösche…</string>
+    <string name="sid_progress_downloading">Downloading…</string>
+    <string name="sid_progress_uploading">Uploading…</string>
+    <string name="sid_recording">Zeichne Aktivität auf</string>
+    <string name="sid_region">Region</string>
+    <string name="sid_safety_note">Sicherheitshinweis</string>
+    <string name="sid_safety_notice">Sicherheitshinweis</string>
+    <string name="sid_satellites">Satelliten</string>
+    <string name="sid_sensor_status">Sensorstatus</string>
+    <string name="sid_sensor_status_none">---</string>
+    <string name="sid_settings">Einstellungen</string>
+    <string name="sid_share">Teilen</string>
+    <string name="sid_shutdown">Herunterfahren</string>
+    <string name="sid_sign_in">Anmelden</string>
+    <string name="sid_sign_out">Abmelden</string>
+    <string name="sid_size">Größe</string>
+    <string name="sid_speed">Geschw.</string>
+    <string name="sid_status">Status</string>
+    <string name="sid_summary">Zusammenfassung</string>
+    <string name="sid_thermal">Thermal</string>
+    <string name="sid_thermal_spot">Thermikquellen</string>
+    <string name="sid_time">Zeit</string>
+    <string name="sid_upload_failure">Upload fehlgeschlagen</string>
+    <string name="sid_upload_success">Upload beendet</string>
+    <string name="sid_vario">Vario</string>
+    <string name="sid_vario_tone">Vario Ton</string>
+    <string name="sid_variotone">Varioton</string>
+    <string name="sid_welcome">Willkommen</string>
+    <string name="sid_wind">Wind</string>
+
+    <!-- Anweisungen -->
+    <string name="sid_exit_app_instruction">"Erneut drücken zum Beenden"</string>
+    <string name="sid_select_share_format">"Format wählen"</string>
+    <string name="sid_notification_subsection">Berechnung der Steigrate ist aktiv</string>
+    <string name="sid_notification_content">Zum Beenden Backbutton drücken</string>
+    <string name="sid_sign_in_instruction">Bitte melden Sie sich an, um eine IGC-Datei zu erstellen</string>
+
+    <!-- Informationen -->
+    <string name="sid_no_location_access_permission">"Variometer darf nicht auf den Standort des Geräts zugreifen"</string>
+    <string name="sid_low_climbrate_accuracy">Kein Drucksensor vorhanden! Steig- und Sinkrate ist deshalb ungenau!</string>
+    <string name="sid_authentication_failed">"Authentifizierung fehlgeschlagen! Bitte loggen Sie sich ein!"</string>
+    <string name="sid_igc_hint">"(*) Mandatory for IGC export"</string>
+
+    <!-- Mulitlanguage assets -->
+    <string name="beep">beep</string>
+    <string name="sid_url_alpsfly">"https://www.alpsfly.com"</string>
+    <string name="sid_url_privacy" translatable="true">"privacy-de.htm"</string>
+    <string name="sid_url_safety" translatable="true">"safety-de.htm"</string>
+    <string name="sid_url_tac" translatable="true">"tac-de.htm"</string>
+    <string name="sid_x_axis">X-Achse</string>
+    <string name="sid_y_axis">Y-Achse</string>
+    <string name="sid_z_axis">Z-Achse</string>
+    <string name="sid_elevation">Höhenmodell</string>
+</resources>

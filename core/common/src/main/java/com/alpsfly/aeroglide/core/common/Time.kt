@@ -6,8 +6,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-fun toLocalDateString(timestamp: Long): String {
+fun toLocalTimeString(timestamp: Long): String {
     val dd = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
-    val strDate = dd.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)).toString()
-    return strDate
+    val strTime = dd.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)).toString()
+    return strTime
 }
