@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.presentation
+package com.alpsfly.aeroglide.feature.activityhistory
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -19,19 +19,18 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.alpsfly.aeroglide.core.Screen
 import com.alpsfly.aeroglide.core.common.toLocalDateString
 import com.alpsfly.aeroglide.core.common.toLocalTimeString
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
-import com.alpsfly.aeroglide.core.viewmodel.ActivityHistoryData
-import com.alpsfly.aeroglide.core.viewmodel.ActivityHistoryUiState
-import com.alpsfly.aeroglide.core.viewmodel.ActivityHistoryViewModel
 import com.alpsfly.aeroglide.core.ui.R
 
 @Composable
-fun ActivityHistoryScreen(
+fun ActivityHistoryListScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
+    id: Long = 0L,
     viewModel: ActivityHistoryViewModel = hiltViewModel()
 ) {
     val activityHistoryUiState by viewModel.activityHistoryUiState.collectAsStateWithLifecycle()
@@ -50,7 +49,10 @@ fun ActivityHistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(activityHistoryList) { activity ->
-                    CardItem(activity = activity)
+                    CardItem(
+                        navController = navController,
+                        activity = activity
+                    )
                 }
             }
         }
@@ -58,12 +60,19 @@ fun ActivityHistoryScreen(
 }
 
 @Composable
-fun CardItem(activity: ActivityHistoryData) {
+fun CardItem(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    activity: ActivityHistoryData
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        elevation = cardElevation()
+        elevation = cardElevation(),
+        onClick = {
+            navController.navigateToActivityHistoryDetail(activity.date)
+        }
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
