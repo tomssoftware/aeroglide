@@ -19,7 +19,6 @@ import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.Screen
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
-import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.feature.diagnosis.viewmodel.DiagnosisViewModel
 
 @Composable

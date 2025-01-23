@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$/core/model" />
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/feature" />
+            <option value="$PROJECT_DIR$/feature/activityhistory" />
             <option value="$PROJECT_DIR$/feature/devicestatus" />
             <option value="$PROJECT_DIR$/feature/diagnosis" />
             <option value="$PROJECT_DIR$/feature/disclaimer" />
