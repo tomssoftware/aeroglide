@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.alpsfly.aeroglide.core.Screen
+import com.alpsfly.aeroglide.feature.activityhistory.navigateToActivityHistoryList
 
 @Composable
 fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerState, onClick: () -> Unit) {
@@ -52,7 +53,7 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                     selected = false,
                     onClick = {
                         onClick()
-                        navController.navigate(route = Screen.ActivityHistoryScreen.route)
+                        navController.navigateToActivityHistoryList(0L)
                     }
                 )
             }

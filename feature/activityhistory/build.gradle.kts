@@ -1,5 +1,3 @@
-import com.android.utils.TraceUtils.simpleId
-
 /*
  * Copyright (C) 2022 The Android Open Source Project
  *
@@ -26,14 +24,11 @@ plugins {
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.core.ui"
+    namespace = "com.alpsfly.aeroglide.feature.activityhistory"
     compileSdk = 35
 
     defaultConfig {
         minSdk = 26
-
-        testInstrumentationRunner = "com.alpsfly.aeroglide.core.testing.HiltTestRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildFeatures {
@@ -51,10 +46,8 @@ android {
 }
 
 dependencies {
+    api(project(":core:ui"))
     api(project(":core:data"))
-    api(project(":core:common"))
-    api(project(":core:model"))
-    api(project(":core:domain"))
 
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)

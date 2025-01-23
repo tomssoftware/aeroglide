@@ -74,10 +74,11 @@ dependencies {
     api(project(":core:firebase"))
     api(project(":core:ui"))
 
-    api(project(":feature:variometer"))
+    api(project(":feature:activityhistory"))
     api(project(":feature:devicestatus"))
-    api(project(":feature:disclaimer"))
     api(project(":feature:diagnosis"))
+    api(project(":feature:disclaimer"))
+    api(project(":feature:variometer"))
 
 
     // Core Android dependencies
