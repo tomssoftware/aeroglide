@@ -13,6 +13,9 @@ interface ActivityDao {
     @Query("select * from activity")
     fun getAllActivity(): Flow<List<Activity>>
 
+    @Query("SELECT * FROM activity WHERE activity_id = :activityId")
+    fun getActivity(activityId: Long): Flow<Activity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addActivity(activity: Activity)
 
