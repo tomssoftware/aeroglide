@@ -73,7 +73,7 @@ interface DataModule {
 
 class FakeDataRepository @Inject constructor(
     override val altitudeAsFlow: Flow<Altitude>,
-    override val activity: Flow<List<Activity>>
+    override val allActivities: Flow<List<Activity>>
 ) : DataRepository {
     override val altitude: Flow<List<Altitude>> = flowOf(fakeAltitude)
     override val calibration: Flow<List<Calibration>> = flowOf(fakeCalibration)
@@ -99,6 +99,10 @@ class FakeDataRepository @Inject constructor(
 
     override suspend fun addUser(user: User) {
         throw NotImplementedError()
+    }
+
+    override fun getActivity(activityId: Long): Flow<Activity> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun updateActivity(activity: Activity) {

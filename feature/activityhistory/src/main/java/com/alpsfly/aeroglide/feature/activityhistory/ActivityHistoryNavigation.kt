@@ -24,7 +24,7 @@ fun NavGraphBuilder.activityHistoryList(navController: NavController) {
 }
 
 fun NavController.navigateToActivityHistoryDetail(activityId: Long, navOptions: NavOptionsBuilder.() -> Unit = {}) {
-    navigate(route = ActivityHistoryListRoute(activityId)) {
+    navigate(route = ActivityHistoryDetailRoute(activityId)) {
         navOptions()
     }
 }
