@@ -11,7 +11,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +30,6 @@ import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.viewmodel.FlightStatusViewModel
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FlightStatusScreen(
     modifier: Modifier = Modifier,

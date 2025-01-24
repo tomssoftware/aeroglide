@@ -41,9 +41,11 @@ interface DataRepository {
     suspend fun addPressure(pressure: Pressure)
     suspend fun addSensorData(sensorData: SensorData)
     suspend fun addUser(user: User)
+    fun getActivity(activityId: Long): Flow<Activity>
+
     suspend fun updateActivity(activity: Activity)
 
-    val activity: Flow<List<Activity>>
+    val allActivities: Flow<List<Activity>>
     val altitudeAsFlow: Flow<Altitude>
     val altitude: Flow<List<Altitude>>
     val calibration: Flow<List<Calibration>>
@@ -91,11 +93,15 @@ class LocalDataRepository @Inject constructor(
         userDao.addUser(user)
     }
 
+    override fun getActivity(activityId: Long): Flow<Activity> {
+        return activityDao.getActivity(activityId)
+    }
+
     override suspend fun updateActivity(activity: Activity) {
         activityDao.updateActivity(activity)
     }
 
-    override val activity: Flow<List<Activity>> =
+    override val allActivities: Flow<List<Activity>> =
         activityDao.getAllActivity()
 
     override val altitudeAsFlow: Flow<Altitude> =

@@ -19,11 +19,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.core.Screen
 import com.alpsfly.aeroglide.core.common.toLocalDateString
 import com.alpsfly.aeroglide.core.common.toLocalTimeString
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
+import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.ui.R
 
 @Composable
@@ -33,16 +33,16 @@ fun ActivityHistoryListScreen(
     id: Long = 0L,
     viewModel: ActivityHistoryViewModel = hiltViewModel()
 ) {
-    val activityHistoryUiState by viewModel.activityHistoryUiState.collectAsStateWithLifecycle()
+    val activityHistoryUiState by viewModel.allActivitiesUiState.collectAsStateWithLifecycle()
 
     when (activityHistoryUiState) {
-        ActivityHistoryUiState.Loading -> {
+        ActivityListUiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         }
-        is ActivityHistoryUiState.Success -> {
-            val activityHistoryList = (activityHistoryUiState as ActivityHistoryUiState.Success).activityHistory
+        is ActivityListUiState.Success -> {
+            val activityHistoryList = (activityHistoryUiState as ActivityListUiState.Success).activityHistory
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
@@ -63,7 +63,7 @@ fun ActivityHistoryListScreen(
 fun CardItem(
     modifier: Modifier = Modifier,
     navController: NavController,
-    activity: ActivityHistoryData
+    activity: Activity
 ) {
     Card(
         modifier = Modifier
@@ -71,7 +71,7 @@ fun CardItem(
             .padding(8.dp),
         elevation = cardElevation(),
         onClick = {
-            navController.navigateToActivityHistoryDetail(activity.date)
+            navController.navigateToActivityHistoryDetail(activity.trackId)
         }
     ) {
         Row(
@@ -87,11 +87,11 @@ fun CardItem(
             Column(modifier = Modifier.weight(1f)) {
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                     Text(text = stringResource(R.string.sid_date), fontSize = 16.sp)
-                    Text(text = toLocalDateString(activity.date), fontSize = 16.sp)
+                    Text(text = toLocalDateString(activity.begin), fontSize = 16.sp)
                 }
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                     Text(text = stringResource(R.string.sid_time), fontSize = 16.sp)
-                    Text(text = toLocalTimeString(activity.time), fontSize = 16.sp)
+                    Text(text = toLocalTimeString(activity.end), fontSize = 16.sp)
                 }
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                     Text(text = stringResource(R.string.sid_distance), fontSize = 16.sp)
