@@ -18,6 +18,7 @@ import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
 import com.alpsfly.aeroglide.core.item.DataField
 import com.alpsfly.aeroglide.core.model.database.Activity
+import com.alpsfly.aeroglide.core.ui.R as uiR
 
 @Composable
 fun ActivityDetailScreen(
@@ -35,23 +36,23 @@ fun ActivityDetailScreen(
         }
         is ActivityUiState.Success -> {
             val uiElementList = (activityUiState.value as ActivityUiState.Success).activity
-            ActivityDataRow(uiElementList, R.drawable.timer_24px)
+            ActivityDataRow(uiElementList)
         }
     }
 }
 
 @Composable
-fun ActivityDataRow(activity: Activity, drawableRes: Int) {
+fun ActivityDataRow(activity: Activity) {
     Column(modifier = Modifier.padding(8.dp)) {
         Row {
             DataField(
-                caption = stringResource(com.alpsfly.aeroglide.core.ui.R.string.sid_date),
+                caption = stringResource(uiR.string.sid_date),
                 value = toLocalDateString(activity.begin),
                 drawableRes = R.drawable.calendar_month_24px,
                 modifier = Modifier.weight(1f)
             )
             DataField(
-                caption = stringResource(com.alpsfly.aeroglide.core.ui.R.string.sid_time),
+                caption = stringResource(uiR.string.sid_time),
                 value = toLocalTimeString(activity.begin),
                 drawableRes = R.drawable.nest_clock_farsight_digital_24px,
                 modifier = Modifier.weight(1f)
@@ -59,19 +60,19 @@ fun ActivityDataRow(activity: Activity, drawableRes: Int) {
         }
         Row {
             DataField(
-                caption = stringResource(com.alpsfly.aeroglide.core.ui.R.string.sid_duration),
+                caption = stringResource(uiR.string.sid_duration),
                 value = toLocalTimeString(activity.end - activity.begin),
                 drawableRes = R.drawable.timer_24px,
                 modifier = Modifier.weight(1f)
             )
             DataField(
-                caption = stringResource(com.alpsfly.aeroglide.core.ui.R.string.sid_distance),
+                caption = stringResource(uiR.string.sid_distance),
                 value = LocalUnit
                     .of(activity.distance, UnitConverter.Unit.KM)
                     .withDigits(0)
                     .withSymbol(false)
                     .toLocalString(),
-                unit = "km",
+                unit = LocalUnit.of(UnitConverter.Unit.KM).toLocalSymbol(),
                 drawableRes = R.drawable.straighten_24px,
                 modifier = Modifier.weight(1f)
             )
