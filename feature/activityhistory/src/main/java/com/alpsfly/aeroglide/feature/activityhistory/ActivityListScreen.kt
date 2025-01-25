@@ -1,17 +1,29 @@
 package com.alpsfly.aeroglide.feature.activityhistory
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Text
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults.cardElevation
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -24,7 +36,6 @@ import com.alpsfly.aeroglide.core.common.toLocalTimeString
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
 import com.alpsfly.aeroglide.core.model.database.Activity
-import com.alpsfly.aeroglide.core.ui.R
 
 @Composable
 fun ActivityListScreen(
@@ -45,8 +56,8 @@ fun ActivityListScreen(
             val activityHistoryList = (activityHistoryUiState as ActivityListUiState.Success).activityHistory
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(activityHistoryList) { activity ->
                     CardItem(
@@ -68,33 +79,34 @@ fun CardItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        elevation = cardElevation(),
+            .padding(4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         onClick = {
             navController.navigateToActivityHistoryDetail(activity.trackId)
         }
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.outline_play_arrow_24),
+            Icon(
+                painter = painterResource(id = R.drawable.check_small_24px),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = stringResource(R.string.sid_date), fontSize = 16.sp)
+                    Text(text = stringResource(com.alpsfly.aeroglide.core.ui.R.string.sid_date), fontSize = 16.sp)
                     Text(text = toLocalDateString(activity.begin), fontSize = 16.sp)
                 }
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = stringResource(R.string.sid_time), fontSize = 16.sp)
+                    Text(text = stringResource(com.alpsfly.aeroglide.core.ui.R.string.sid_time), fontSize = 16.sp)
                     Text(text = toLocalTimeString(activity.end), fontSize = 16.sp)
                 }
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = stringResource(R.string.sid_distance), fontSize = 16.sp)
+                    Text(text = stringResource(com.alpsfly.aeroglide.core.ui.R.string.sid_distance), fontSize = 16.sp)
                     Text(
                         text = LocalUnit
                             .of(activity.distance/1000f, UnitConverter.Unit.KM)
@@ -105,8 +117,8 @@ fun CardItem(
                 }
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Image(
-                painter = painterResource(id = R.drawable.outline_stop_24),
+            Icon(
+                painter = painterResource(id = R.drawable.share_24px),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp)
             )
