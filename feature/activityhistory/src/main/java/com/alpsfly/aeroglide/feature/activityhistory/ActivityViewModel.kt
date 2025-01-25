@@ -27,12 +27,7 @@ class ActivityHistoryViewModel @Inject constructor(
 
     fun getActivityUiState(id: Long): StateFlow<ActivityUiState> {
         return dataRepository.getActivity(id).map { activity ->
-            val uiItems: List<UiActivityItem> = listOf(
-                UiActivityItem(R.drawable.timer_24px, "Begin", activity.begin.toString()),
-                UiActivityItem(R.drawable.timer_24px, "End", activity.end.toString()),
-                UiActivityItem(R.drawable.timer_24px, "Distance", activity.distance.toString()),
-            )
-            ActivityUiState.Success(uiItems)
+            ActivityUiState.Success(activity)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -41,16 +36,10 @@ class ActivityHistoryViewModel @Inject constructor(
     }
 }
 
-data class UiActivityItem(
-    val drawableId: Int,
-    val caption: String,
-    val value: String
-)
-
 sealed interface ActivityUiState {
     data object Loading : ActivityUiState
     data class Success(
-        val uiElementList: List<UiActivityItem>
+        val activity: Activity
     ) : ActivityUiState
 }
 

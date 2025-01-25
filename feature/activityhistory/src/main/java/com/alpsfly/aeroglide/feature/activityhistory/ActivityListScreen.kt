@@ -27,7 +27,7 @@ import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.ui.R
 
 @Composable
-fun ActivityHistoryListScreen(
+fun ActivityListScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
     id: Long = 0L,
