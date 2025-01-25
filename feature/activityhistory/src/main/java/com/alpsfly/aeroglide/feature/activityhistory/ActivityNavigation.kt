@@ -19,7 +19,7 @@ fun NavController.navigateToActivityHistoryList(activityId: Long, navOptions: Na
 fun NavGraphBuilder.activityHistoryList(navController: NavController) {
     composable<ActivityHistoryListRoute> { backStackEntry ->
         val args: ActivityHistoryListRoute = backStackEntry.toRoute()
-        ActivityHistoryListScreen(navController = navController)
+        ActivityListScreen(navController = navController)
     }
 }
 
@@ -32,6 +32,6 @@ fun NavController.navigateToActivityHistoryDetail(activityId: Long, navOptions: 
 fun NavGraphBuilder.activityHistoryDetail(navController: NavController) {
     composable<ActivityHistoryDetailRoute> { backStackEntry ->
         val args: ActivityHistoryDetailRoute = backStackEntry.toRoute()
-        ActivityHistoryDetailScreen(navController = navController, id = args.activityId)
+        ActivityDetailScreen(navController = navController, id = args.activityId)
     }
 }
