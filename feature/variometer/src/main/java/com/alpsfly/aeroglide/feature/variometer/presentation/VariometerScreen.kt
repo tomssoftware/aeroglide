@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,23 +31,27 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.alpsfly.aeroglide.core.MenuItem
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
-import com.alpsfly.aeroglide.core.model.hardware.SensorData
+import com.alpsfly.aeroglide.core.mapbox.data.MapScreen
+import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.presentation.AeroGlideBottomBar
 import com.alpsfly.aeroglide.core.presentation.AltitudeProfileScreen
 import com.alpsfly.aeroglide.core.presentation.ClimbrateProfileScreen
 import com.alpsfly.aeroglide.core.presentation.FlightStatusScreen
 import com.alpsfly.aeroglide.core.presentation.centered
-import com.alpsfly.aeroglide.core.presentation.AeroGlideBottomBar
-import com.alpsfly.aeroglide.core.MenuItem
-import com.alpsfly.aeroglide.core.mapbox.data.MapScreen
-import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.feature.variometer.viewmodel.VarioViewModel
+import com.alpsfly.aeroglide.core.ui.R as uiR
 
 private var startScaleAngle = 180f
 private var climbrateAverage = 0f
@@ -81,28 +85,28 @@ fun VariometerScreen(
     )
     val items: List<MenuItem> = listOf(
         MenuItem(
-            id = "home",
-            title = "Home",
-            contentDescription = "Go to home screen",
-            icon = Icons.Default.Home
+            id = uiR.string.sid_vario.toString(),
+            title = stringResource(uiR.string.sid_vario),
+            contentDescription = stringResource(uiR.string.sid_vario),
+            icon = ImageVector.vectorResource(uiR.drawable.swap_vertical_circle_24px)
         ),
         MenuItem(
-            id = "settings",
-            title = "Settings",
-            contentDescription = "Go to settings screen",
-            icon = Icons.Default.Settings
+            id = uiR.string.sid_altitude.toString(),
+            title = stringResource(uiR.string.sid_altitude),
+            contentDescription = stringResource(uiR.string.sid_altitude),
+            icon = ImageVector.vectorResource(uiR.drawable.altitude_24px)
         ),
         MenuItem(
-            id = "help",
-            title = "Help",
-            contentDescription = "Get help",
-            icon = Icons.Default.Info
+            id = uiR.string.sid_climbrate.toString(),
+            title = stringResource(uiR.string.sid_climbrate),
+            contentDescription = stringResource(uiR.string.sid_climbrate),
+            icon = ImageVector.vectorResource(uiR.drawable.stairs_24px)
         ),
         MenuItem(
-            id = "map",
-            title = "Map",
-            contentDescription = "Map",
-            icon = Icons.Default.MailOutline
+            id = uiR.string.sid_map.toString(),
+            title = stringResource(uiR.string.sid_map),
+            contentDescription = stringResource(uiR.string.sid_map),
+            icon = ImageVector.vectorResource(uiR.drawable.map_24px)
         ),
     )
 
@@ -125,7 +129,7 @@ fun VariometerScreen(
             Spacer(Modifier.weight(2f))
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(it)
             ) {
                 HorizontalPager(state = pagerState) { page ->
@@ -156,7 +160,6 @@ fun VariometerScreen(
                     }
                 }
             }
-
         }
     }
 }
