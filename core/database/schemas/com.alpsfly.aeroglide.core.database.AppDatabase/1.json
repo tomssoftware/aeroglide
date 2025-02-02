@@ -2,14 +2,14 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "18ceb8c46a8e4ee2281756515a9b16bf",
+    "identityHash": "94aeec9ce11d2d17ac9063ab8e4de5df",
     "entities": [
       {
         "tableName": "activity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activity_id` INTEGER NOT NULL, `user_id` TEXT NOT NULL, `begin` INTEGER NOT NULL, `end` INTEGER NOT NULL, `distance` REAL NOT NULL, `duration` INTEGER NOT NULL, `ascent` REAL NOT NULL, `descent` REAL NOT NULL, `min_altitude` REAL NOT NULL, `max_altitude` REAL NOT NULL, `min_speed` REAL NOT NULL, `max_speed` REAL NOT NULL, `max_climbrate` REAL NOT NULL, `min_climbrate` REAL NOT NULL, `max_grade` REAL NOT NULL, `min_grade` REAL NOT NULL, `max_heartrate` INTEGER NOT NULL, `min_heartrate` INTEGER NOT NULL, PRIMARY KEY(`activity_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activity_id` INTEGER NOT NULL, `user_id` TEXT NOT NULL, `begin` INTEGER NOT NULL, `end` INTEGER NOT NULL, `distance` REAL NOT NULL, `duration` INTEGER NOT NULL, `ascent` REAL NOT NULL, `descent` REAL NOT NULL, `min_pressure` REAL NOT NULL, `max_pressure` REAL NOT NULL, `min_altitude` REAL NOT NULL, `max_altitude` REAL NOT NULL, `min_speed` REAL NOT NULL, `max_speed` REAL NOT NULL, `max_climbrate` REAL NOT NULL, `min_climbrate` REAL NOT NULL, `max_grade` REAL NOT NULL, `min_grade` REAL NOT NULL, `max_heartrate` INTEGER NOT NULL, `min_heartrate` INTEGER NOT NULL, PRIMARY KEY(`activity_id`))",
         "fields": [
           {
-            "fieldPath": "trackId",
+            "fieldPath": "activityId",
             "columnName": "activity_id",
             "affinity": "INTEGER",
             "notNull": true
@@ -53,6 +53,18 @@
           {
             "fieldPath": "descent",
             "columnName": "descent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minPressure",
+            "columnName": "min_pressure",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxPressure",
+            "columnName": "max_pressure",
             "affinity": "REAL",
             "notNull": true
           },
@@ -332,7 +344,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '18ceb8c46a8e4ee2281756515a9b16bf')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '94aeec9ce11d2d17ac9063ab8e4de5df')"
     ]
   }
 }
