@@ -93,6 +93,10 @@ class FakeDataRepository @Inject constructor(
     override val climbrate: Flow<List<Climbrate>> = flowOf(fakeClimbrate)
     override val pressure: Flow<List<Pressure>> = flowOf(fakePressure)
     override val users: Flow<List<User>> = flowOf(fakeUsers)
+    override fun setActivityId(activityId: Long) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun addActivity(activity: Activity) {
         throw NotImplementedError()
     }
@@ -111,6 +115,10 @@ class FakeDataRepository @Inject constructor(
 
     override suspend fun addUser(user: User) {
         throw NotImplementedError()
+    }
+
+    override fun getActivity(): Flow<Activity?> {
+        TODO("Not yet implemented")
     }
 
     override fun getActivity(activityId: Long): Flow<Activity> {
