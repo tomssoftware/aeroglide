@@ -69,6 +69,9 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                 )
                 NavigationDrawerItem(
                     label = { Text(text = "Debug Screen") },
+                    icon = {
+                        Icon(painter = painterResource(id = uiR.drawable.adb_24px), contentDescription = null)
+                    },
                     selected = false,
                     onClick = {
                         onClick()

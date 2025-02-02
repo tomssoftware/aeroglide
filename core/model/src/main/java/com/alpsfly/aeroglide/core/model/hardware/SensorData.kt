@@ -1,11 +1,5 @@
 package com.alpsfly.aeroglide.core.model.hardware
 
-import androidx.room.Entity
-
-@Entity(
-    tableName = "sensor_data",
-    primaryKeys = ["type", "timestamp"]
-)
 data class SensorData(
     val type: SensorType = SensorType.Unknown,
     val timestamp: Long = System.currentTimeMillis(),
