@@ -34,6 +34,7 @@ import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
@@ -122,6 +123,10 @@ class FakeDataRepository @Inject constructor(
 
     override suspend fun addCalibration(calibration: Calibration) {
         throw NotImplementedError()
+    }
+
+    override suspend fun addLocation(location: Location) {
+        TODO("Not yet implemented")
     }
 }
 

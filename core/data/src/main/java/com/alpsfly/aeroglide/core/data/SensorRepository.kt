@@ -3,7 +3,7 @@ package com.alpsfly.aeroglide.core.data
 import android.content.Context
 import android.hardware.SensorEventCallback
 import android.hardware.SensorManager
-import android.location.Location
+import android.location.Location as SensorLocation
 import android.location.LocationManager
 import com.alpsfly.aeroglide.core.common.Limits
 import com.alpsfly.aeroglide.core.common.TimeProvider
@@ -20,9 +20,9 @@ import com.alpsfly.aeroglide.core.hardware.linearAccelerationSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.locationDataFlow
 import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.rotationVectorSensorDataFlow
-import com.alpsfly.aeroglide.core.model.container.AltitudeContainer
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
@@ -44,7 +44,6 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.takeWhile
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.min
 import kotlin.math.pow
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -55,7 +54,8 @@ interface SensorRepository {
     val pressureFlowUi: Flow<Pressure>
 
     /** Location sensor flow with 1000ms delay */
-    val locationDataSource: Flow<Location>
+    val locationDataSource: Flow<SensorLocation>
+    val locationFlowUi: Flow<Location>
 
     val verticalAccelerationFlow: Flow<SensorData>
     val verticalAccelerationFlowUi: Flow<SensorData>
@@ -284,6 +284,27 @@ class SensorRepositoryImpl @Inject constructor(
                     )
                 }
         }
+
+    @OptIn(FlowPreview::class)
+    override val locationFlowUi: Flow<Location>
+        get() {
+            return locationDataSource.map { sensorLocation ->
+                Location(
+                    timestamp = System.currentTimeMillis(),
+                    latitude = sensorLocation.latitude.toFloat(),
+                    longitude = sensorLocation.longitude.toFloat(),
+                    altitude = sensorLocation.altitude.toFloat(),
+                    bearing = sensorLocation.bearing,
+                    speed = sensorLocation.speed,
+                    horizontalAccuracy = sensorLocation.accuracy,
+                    verticalAccuracy = sensorLocation.verticalAccuracyMeters,
+                    bearingAccuracy = sensorLocation.bearingAccuracyDegrees,
+                    speedAccuracy = sensorLocation.speedAccuracyMetersPerSecond,
+                    provider = sensorLocation.provider ?: "unknown"
+                )
+            }.sample(1000.milliseconds)
+        }
+
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
         if (altitude0 in Limits.minAltitude..Limits.maxAltitude &&

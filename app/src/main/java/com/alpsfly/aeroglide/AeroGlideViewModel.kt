@@ -23,10 +23,13 @@ class AeroGlideViewModel @Inject constructor(
 ) : ViewModel() {
 
     val isRecording = appRepository.isRecording
+    private var activityId = 0L
     fun startRecording() {
-        appRepository.startRecording()
+        activityId = System.currentTimeMillis()
+        appRepository.startRecording(activityId)
     }
     fun stopRecording() {
+        activityId = 0L
         appRepository.stopRecording()
     }
 
@@ -34,7 +37,7 @@ class AeroGlideViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             isRecording.collect {
                 if (it) {
-                    recordSensorDataUseCase.startRecording()
+                    recordSensorDataUseCase.startRecording(activityId)
                 } else {
                     recordSensorDataUseCase.stopRecording()
                 }
