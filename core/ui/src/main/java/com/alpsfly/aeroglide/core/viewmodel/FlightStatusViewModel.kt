@@ -3,12 +3,14 @@ package com.alpsfly.aeroglide.core.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
 import com.alpsfly.aeroglide.core.presentation.CalibrationUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -17,8 +19,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FlightStatusViewModel @Inject constructor(
-    sensorRepository: SensorRepository,
     appRepository: AppRepository,
+    dataRepository: DataRepository,
+    sensorRepository: SensorRepository,
     calibrationUseCase: CalibrationUseCase,
 ) : ViewModel() {
 
@@ -52,7 +55,7 @@ class FlightStatusViewModel @Inject constructor(
         initialValue = null
     )
 
-    val locationFlow = combine(sensorRepository.locationDataSource, appRepository.isRecording) { location, isRecording ->
+    val locationFlow = combine(sensorRepository.locationFlowUi, appRepository.isRecording) { location, isRecording ->
         if (isRecording) location else null
     }.filterNotNull(
     ).stateIn(
@@ -60,4 +63,6 @@ class FlightStatusViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = null
     )
+
+    val activityFlow = dataRepository.getActivity(appRepository.activityId.value)
 }

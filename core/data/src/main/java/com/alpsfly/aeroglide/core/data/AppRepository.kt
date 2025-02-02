@@ -10,7 +10,8 @@ import javax.inject.Singleton
 
 interface AppRepository {
     val isRecording: StateFlow<Boolean>
-    fun startRecording()
+    val activityId: StateFlow<Long>
+    fun startRecording(activityId: Long)
     fun stopRecording()
 }
 
@@ -19,13 +20,18 @@ class AppRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : AppRepository {
 
+    private val _activityId = MutableStateFlow(0L)
+    override val activityId = _activityId.asStateFlow()
+
     private val _isRecording = MutableStateFlow(false)
     override val isRecording = _isRecording.asStateFlow()
-    override fun startRecording() {
+    override fun startRecording(activityId: Long) {
         _isRecording.value = true
+        _activityId.value = activityId
     }
 
     override fun stopRecording() {
         _isRecording.value = false
+        _activityId.value = 0L
     }
 }
