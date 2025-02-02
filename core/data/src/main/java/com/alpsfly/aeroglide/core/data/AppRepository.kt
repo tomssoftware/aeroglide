@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,7 +20,7 @@ class AppRepositoryImpl @Inject constructor(
 ) : AppRepository {
 
     private val _isRecording = MutableStateFlow(false)
-    override val isRecording: StateFlow<Boolean> = _isRecording
+    override val isRecording = _isRecording.asStateFlow()
     override fun startRecording() {
         _isRecording.value = true
     }
