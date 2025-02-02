@@ -20,6 +20,8 @@ import android.content.Context
 import android.hardware.SensorManager
 import android.location.LocationManager
 import androidx.core.content.getSystemService
+import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.data.AppRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -60,16 +62,26 @@ object LocationManagerModule {
     }
 }
 
+@Module
+@InstallIn(SingletonComponent::class)
+interface AppRepositoryModule {
+    @Singleton
+    @Binds
+    fun bindsAppRepository(
+        appRepository: AppRepositoryImpl
+    ): AppRepository
+}
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface DataModule {
+interface DataRepositoryModule {
     @Singleton
     @Binds
-    fun bindsAeroGlideRepository(
-        aeroGlideRepository: LocalDataRepository
+    fun bindsDataRepository(
+        localDataRepository: LocalDataRepository
     ): DataRepository
 }
+
 
 class FakeDataRepository @Inject constructor(
     override val altitudeAsFlow: Flow<Altitude>,
@@ -79,7 +91,6 @@ class FakeDataRepository @Inject constructor(
     override val calibration: Flow<List<Calibration>> = flowOf(fakeCalibration)
     override val climbrate: Flow<List<Climbrate>> = flowOf(fakeClimbrate)
     override val pressure: Flow<List<Pressure>> = flowOf(fakePressure)
-    override val sensorData: Flow<List<SensorData>> = flowOf(fakeSensorData)
     override val users: Flow<List<User>> = flowOf(fakeUsers)
     override suspend fun addActivity(activity: Activity) {
         throw NotImplementedError()
@@ -112,10 +123,6 @@ class FakeDataRepository @Inject constructor(
     override suspend fun addCalibration(calibration: Calibration) {
         throw NotImplementedError()
     }
-
-    override suspend fun addSensorData(sensorData: SensorData) {
-        throw NotImplementedError()
-    }
 }
 
 val fakeUsers = listOf(
@@ -128,12 +135,6 @@ val fakeCalibration = listOf(
     Calibration(),
     Calibration(),
     Calibration()
-)
-
-val fakeSensorData = listOf(
-    SensorData(),
-    SensorData(),
-    SensorData()
 )
 
 val fakePressure = listOf(Pressure(), Pressure(), Pressure())

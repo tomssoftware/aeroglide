@@ -20,6 +20,7 @@ import com.alpsfly.aeroglide.core.hardware.linearAccelerationSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.locationDataFlow
 import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.rotationVectorSensorDataFlow
+import com.alpsfly.aeroglide.core.model.container.AltitudeContainer
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Pressure
@@ -29,6 +30,7 @@ import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,9 +39,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.takeWhile
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -60,6 +65,8 @@ interface SensorRepository {
     val climbrateFlowUi: Flow<Climbrate>
 
     /** Fused sensor */
+    val calibrationFlow: Flow<Calibration>
+    val calibrationFlowUi: Flow<Calibration>
     val altitudeFlow: Flow<SensorData>
     val altitudeFlowUi: Flow<Altitude>
 
@@ -79,22 +86,22 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * pressure state flow
      */
-    override val pressureDataSource = sensorManager.pressureSensorDataFlow().shareSensorData()
+    override val pressureDataSource = sensorManager.pressureSensorDataFlow() //.shareSensorData()
 
     /**
      * Location state flow
      */
-    override val locationDataSource = locationManager.locationDataFlow(context, 1000).shareSensorData()
+    override val locationDataSource = locationManager.locationDataFlow(context, 1000) //.shareSensorData()
 
     /**
      * Linear acceleration shared flow
      */
-    private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow().shareSensorData()
+    private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow() //.shareSensorData()
 
     /**
      * Rotation vector shared flow
      */
-    private val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow().shareSensorData()
+    private val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow() //.shareSensorData()
 
     /**
      * Vertical acceleration flow
@@ -150,7 +157,7 @@ class SensorRepositoryImpl @Inject constructor(
      */
     private val _altitudeCalibrationStatus = MutableStateFlow(Calibration())
     override val altitudeCalibrationStatus: StateFlow<Calibration> = _altitudeCalibrationStatus.asStateFlow()
-    override val altitudeFlow: Flow<SensorData>
+    override val calibrationFlow: Flow<Calibration>
         get() {
             val sensorFrequency = SensorFrequency()
             return combine(pressureDataSource, locationDataSource) { p, l ->
@@ -164,6 +171,38 @@ class SensorRepositoryImpl @Inject constructor(
                         verticalAccuracy = l.verticalAccuracyMeters
                         horizontalAccuracy = l.verticalAccuracyMeters
                     }
+                    if (altitude0 != 0f && pressure0 != 0f && pressure != 0f) {
+                        altitude = calcAltitude(pressure, pressure0, altitude0)
+                    }
+                }
+                Calibration(
+                    isCalibrated = _altitudeCalibrationStatus.value.isCalibrated,
+                    pressure0 = _altitudeCalibrationStatus.value.pressure0,
+                    altitude0 = _altitudeCalibrationStatus.value.altitude0,
+                    verticalAccuracy = _altitudeCalibrationStatus.value.verticalAccuracy,
+                    horizontalAccuracy = _altitudeCalibrationStatus.value.horizontalAccuracy
+                )
+            }.takeWhile {
+                _altitudeCalibrationStatus.value.isCalibrated
+            }
+        }
+
+    @OptIn(FlowPreview::class)
+    override val calibrationFlowUi: Flow<Calibration>
+        get() {
+            return calibrationFlow.sample(1000.milliseconds).map { it }
+        }
+
+    /**
+     * Altitude flow
+     */
+    override val altitudeFlow: Flow<SensorData>
+        get() {
+            val sensorFrequency = SensorFrequency()
+            return combine(pressureDataSource, locationDataSource) { p, l ->
+                val pressure = p.values[0] * 100f
+                var altitude = l.altitude.toFloat()
+                with(_altitudeCalibrationStatus.value) {
                     if (altitude0 != 0f && pressure0 != 0f && pressure != 0f) {
                         altitude = calcAltitude(pressure, pressure0, altitude0)
                     }

@@ -20,10 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.core.app.ActivityCompat
@@ -32,11 +29,11 @@ import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
+import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.core.ui.theme.AeroGlideTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import com.alpsfly.aeroglide.core.ui.R
 
 @AndroidEntryPoint
 class AeroGlideActivity : ComponentActivity() {
@@ -70,17 +67,8 @@ class AeroGlideActivity : ComponentActivity() {
                 val drawerState = rememberDrawerState(DrawerValue.Closed)
                 val coroutineScope = rememberCoroutineScope()
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-                val viewModel: AeroGlideViewModel = hiltViewModel()
-                val isRecording by viewModel.isRecording.collectAsState()
-                var showDialog by remember { mutableStateOf(true) }
-
-//                if (showDialog) {
-//                    WelcomeDialog(
-//                        onDismiss = { showDialog = false },
-//                        modifier = Modifier,
-//                        navController = navController
-//                    )
-//                }
+                val aeroGlideViewModel: AeroGlideViewModel = hiltViewModel()
+                val isRecording by aeroGlideViewModel.isRecording.collectAsState()
 
                 Scaffold(
                     modifier = Modifier,
@@ -107,11 +95,11 @@ class AeroGlideActivity : ComponentActivity() {
                             actions = {
                                 IconButton(onClick = {
                                     if (isRecording)
-                                        viewModel.stopRecording()
+                                        aeroGlideViewModel.stopRecording()
                                     else
-                                        viewModel.startRecording()
+                                        aeroGlideViewModel.startRecording()
                                 }) {
-                                    if (isRecording){
+                                    if (isRecording) {
                                         Icon(
                                             painter = painterResource(id = R.drawable.outline_stop_circle_24),
                                             contentDescription = "Mark as favorite"

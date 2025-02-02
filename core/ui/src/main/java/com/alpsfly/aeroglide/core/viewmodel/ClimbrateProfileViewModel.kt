@@ -7,12 +7,8 @@ import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
 
 
 @HiltViewModel

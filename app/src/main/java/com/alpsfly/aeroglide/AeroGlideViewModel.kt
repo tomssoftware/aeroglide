@@ -2,6 +2,7 @@ package com.alpsfly.aeroglide
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.StartRecordActivityUseCase
@@ -10,42 +11,34 @@ import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import okhttp3.Dispatcher
 import javax.inject.Inject
 
 @HiltViewModel
 class AeroGlideViewModel @Inject constructor(
-    private val sensorRepository: SensorRepository,
-    private val dataRepository: DataRepository,
+    private val appRepository: AppRepository,
     private val recordSensorDataUseCase: StartRecordActivityUseCase,
 ) : ViewModel() {
 
-    val isRecording: StateFlow<Boolean> = recordSensorDataUseCase.isRecording(SensorType.Altitude)
-
+    val isRecording = appRepository.isRecording
     fun startRecording() {
-        recordSensorDataUseCase.startRecording(sensorType = SensorType.Altitude)
-        recordSensorDataUseCase.startRecording(sensorType = SensorType.Climbrate)
-
-        viewModelScope.launch(Dispatchers.IO) {
-            dataRepository.addActivity(Activity(
-                trackId = System.currentTimeMillis(),
-                userId = "Thomas",
-                begin = System.currentTimeMillis()
-            ))
-        }
+        appRepository.startRecording()
+    }
+    fun stopRecording() {
+        appRepository.stopRecording()
     }
 
-    fun stopRecording() {
-        recordSensorDataUseCase.stopRecording(sensorType = SensorType.Altitude)
-        recordSensorDataUseCase.stopRecording(sensorType = SensorType.Climbrate)
-
+    init {
         viewModelScope.launch(Dispatchers.IO) {
-            dataRepository.updateActivity(
-                Activity(
-                    end = System.currentTimeMillis()
-                )
-            )
+            isRecording.collect {
+                if (it) {
+                    recordSensorDataUseCase.startRecording()
+                } else {
+                    recordSensorDataUseCase.stopRecording()
+                }
+            }
         }
     }
 }
