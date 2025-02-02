@@ -23,9 +23,11 @@ import com.alpsfly.aeroglide.core.database.PressureDao
 import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.database.UserDao
 import com.alpsfly.aeroglide.core.database.ClimbrateDao
+import com.alpsfly.aeroglide.core.database.LocationDao
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
@@ -36,6 +38,7 @@ interface DataRepository {
     suspend fun addActivity(activity: Activity)
     suspend fun addAltitude(altitude: Altitude)
     suspend fun addCalibration(calibration: Calibration)
+    suspend fun addLocation(location: Location)
     suspend fun addClimbrate(climbrate: Climbrate)
     suspend fun addPressure(pressure: Pressure)
     suspend fun addUser(user: User)
@@ -57,6 +60,7 @@ class LocalDataRepository @Inject constructor(
     private val altitudeDao: AltitudeDao,
     private val calibrationDao: CalibrationDao,
     private val climbrateDao: ClimbrateDao,
+    private val locationDao: LocationDao,
     private val pressureDao: PressureDao,
     private val userDao: UserDao,
 ) : DataRepository {
@@ -75,6 +79,10 @@ class LocalDataRepository @Inject constructor(
 
     override suspend fun addClimbrate(climbrate: Climbrate) {
         climbrateDao.addClimbrate(climbrate)
+    }
+
+    override suspend fun addLocation(location: Location) {
+        locationDao.addLocation(location)
     }
 
     override suspend fun addPressure(pressure: Pressure) {

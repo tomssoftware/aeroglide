@@ -28,6 +28,7 @@ import dagger.hilt.components.SingletonComponent
 import com.alpsfly.aeroglide.core.database.AppDatabase
 import com.alpsfly.aeroglide.core.database.CalibrationDao
 import com.alpsfly.aeroglide.core.database.ClimbrateDao
+import com.alpsfly.aeroglide.core.database.LocationDao
 import com.alpsfly.aeroglide.core.database.PressureDao
 import com.alpsfly.aeroglide.core.database.UserDao
 import javax.inject.Singleton
@@ -63,6 +64,11 @@ class DatabaseModule {
     @Provides
     fun provideClimbrateDao(appDatabase: AppDatabase): ClimbrateDao {
         return appDatabase.climbrateDao()
+    }
+
+    @Provides
+    fun provideLocationDao(appDatabase: AppDatabase): LocationDao {
+        return appDatabase.locationDao()
     }
 
     @Provides

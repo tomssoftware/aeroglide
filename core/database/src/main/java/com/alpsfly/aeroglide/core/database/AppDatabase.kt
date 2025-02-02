@@ -23,6 +23,7 @@ import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
@@ -33,6 +34,7 @@ import com.alpsfly.aeroglide.core.model.hardware.SensorData
         Altitude::class,
         Calibration::class,
         Climbrate::class,
+        Location::class,
         Pressure::class,
         User::class,
     ],
@@ -44,6 +46,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun altitudeDao(): AltitudeDao
     abstract fun calibrationDao(): CalibrationDao
     abstract fun climbrateDao(): ClimbrateDao
+    abstract fun locationDao(): LocationDao
     abstract fun pressureDao(): PressureDao
     abstract fun userDao(): UserDao
 }

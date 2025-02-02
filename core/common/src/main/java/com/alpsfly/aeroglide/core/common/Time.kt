@@ -11,3 +11,9 @@ fun toLocalTimeString(timestamp: Long): String {
     val strTime = dd.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)).toString()
     return strTime
 }
+
+fun toLocalDurationString(duration: Long): String {
+    return String.format("%02d:%02d", duration / 3600, (duration % 3600) / 60) // todo: fix
+}
+
+
