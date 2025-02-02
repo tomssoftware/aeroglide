@@ -19,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AeroGlideViewModel @Inject constructor(
     private val appRepository: AppRepository,
+    private val dataRepository: DataRepository,
     private val recordSensorDataUseCase: StartRecordActivityUseCase,
 ) : ViewModel() {
 
@@ -26,6 +27,7 @@ class AeroGlideViewModel @Inject constructor(
     private var activityId = 0L
     fun startRecording() {
         activityId = System.currentTimeMillis()
+        dataRepository.setActivityId(activityId)
         appRepository.startRecording(activityId)
     }
     fun stopRecording() {

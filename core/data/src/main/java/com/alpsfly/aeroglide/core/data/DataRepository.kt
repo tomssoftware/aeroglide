@@ -31,7 +31,13 @@ import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 interface DataRepository {
@@ -43,6 +49,7 @@ interface DataRepository {
     suspend fun addPressure(pressure: Pressure)
     suspend fun addUser(user: User)
     fun getActivity(activityId: Long): Flow<Activity>
+    fun getActivity(): Flow<Activity?>
 
     suspend fun updateActivity(activity: Activity)
 
@@ -53,6 +60,8 @@ interface DataRepository {
     val climbrate: Flow<List<Climbrate>>
     val pressure: Flow<List<Pressure>>
     val users: Flow<List<User>>
+
+    fun setActivityId(activityId: Long)
 }
 
 class LocalDataRepository @Inject constructor(
@@ -121,4 +130,16 @@ class LocalDataRepository @Inject constructor(
 
     override val users: Flow<List<User>> =
         userDao.getAllUsers()
+
+    private val _activityId = MutableStateFlow(0L)
+    private val activityId = _activityId.asStateFlow()
+    override fun setActivityId(activityId: Long) {
+        _activityId.value = activityId
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getActivity(): Flow<Activity> =
+        activityId.filterNotNull().flatMapLatest { id ->
+            activityDao.getActivity(id)
+        }
 }
