@@ -20,7 +20,6 @@ import com.alpsfly.aeroglide.core.database.ActivityDao
 import com.alpsfly.aeroglide.core.database.AltitudeDao
 import com.alpsfly.aeroglide.core.database.CalibrationDao
 import com.alpsfly.aeroglide.core.database.PressureDao
-import com.alpsfly.aeroglide.core.database.SensorDataDao
 import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.database.UserDao
 import com.alpsfly.aeroglide.core.database.ClimbrateDao
@@ -39,7 +38,6 @@ interface DataRepository {
     suspend fun addCalibration(calibration: Calibration)
     suspend fun addClimbrate(climbrate: Climbrate)
     suspend fun addPressure(pressure: Pressure)
-    suspend fun addSensorData(sensorData: SensorData)
     suspend fun addUser(user: User)
     fun getActivity(activityId: Long): Flow<Activity>
 
@@ -51,7 +49,6 @@ interface DataRepository {
     val calibration: Flow<List<Calibration>>
     val climbrate: Flow<List<Climbrate>>
     val pressure: Flow<List<Pressure>>
-    val sensorData: Flow<List<SensorData>>
     val users: Flow<List<User>>
 }
 
@@ -61,7 +58,6 @@ class LocalDataRepository @Inject constructor(
     private val calibrationDao: CalibrationDao,
     private val climbrateDao: ClimbrateDao,
     private val pressureDao: PressureDao,
-    private val sensorDataDao: SensorDataDao,
     private val userDao: UserDao,
 ) : DataRepository {
 
@@ -83,10 +79,6 @@ class LocalDataRepository @Inject constructor(
 
     override suspend fun addPressure(pressure: Pressure) {
         pressureDao.addPressure(pressure)
-    }
-
-    override suspend fun addSensorData(sensorData: SensorData) {
-        sensorDataDao.addSensorData(sensorData)
     }
 
     override suspend fun addUser(user: User) {
@@ -118,9 +110,6 @@ class LocalDataRepository @Inject constructor(
 
     override val pressure: Flow<List<Pressure>> =
         pressureDao.getAllPressure()
-
-    override val sensorData: Flow<List<SensorData>> =
-        sensorDataDao.getAllSensorData()
 
     override val users: Flow<List<User>> =
         userDao.getAllUsers()

@@ -34,18 +34,16 @@ import com.alpsfly.aeroglide.core.model.hardware.SensorData
         Calibration::class,
         Climbrate::class,
         Pressure::class,
-        SensorData::class,
         User::class,
     ],
     version = 1
 )
-@TypeConverters(FloatArrayTypeConverter::class)
+
 abstract class AppDatabase : RoomDatabase() {
     abstract fun activityDao(): ActivityDao
     abstract fun altitudeDao(): AltitudeDao
     abstract fun calibrationDao(): CalibrationDao
     abstract fun climbrateDao(): ClimbrateDao
     abstract fun pressureDao(): PressureDao
-    abstract fun sensorDataDao(): SensorDataDao
     abstract fun userDao(): UserDao
 }

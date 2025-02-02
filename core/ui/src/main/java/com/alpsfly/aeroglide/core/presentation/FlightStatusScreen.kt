@@ -51,12 +51,11 @@ fun FlightStatusScreen(
             DataField(
                 caption = "Climbrate",
                 value = LocalUnit
-                    .of(climbrate.climbrate, UnitConverter.Unit.MS)
+                    .of(climbrate?.climbrate ?: 0f, UnitConverter.Unit.MS)
                     .withDigits(2)
                     .withSymbol(false)
                     .toLocalString(),
-                unit = LocalUnit.of(
-                    climbrate.climbrate,
+                unit = LocalUnit.of(0f,
                     UnitConverter.Unit.MS)
                     .toLocalSymbol(),
                 modifier = Modifier.weight(1f)
@@ -78,7 +77,7 @@ fun FlightStatusScreen(
         ) {
             DataField(
                 caption = "Speed",
-                value = LocalUnit.of(location.speed, UnitConverter.Unit.KMH)
+                value = LocalUnit.of(location?.speed ?: 0f, UnitConverter.Unit.KMH)
                     .withSymbol(flag = false).toLocalString(),
                 unit = "km/h",
                 modifier = Modifier.weight(1f)
