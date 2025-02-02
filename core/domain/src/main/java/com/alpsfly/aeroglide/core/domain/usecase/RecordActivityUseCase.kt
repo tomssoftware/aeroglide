@@ -111,7 +111,7 @@ class StartRecordActivityUseCase @Inject constructor(
                             activity.distance = distance(location)
                             activity.ascent = ascentDescent().first
                             activity.descent = ascentDescent().second
-                            activity.duration = activity.end - activity.begin
+                            activity.duration = (activity.end - activity.begin) / 1000
                             activity.maxSpeed = max(location.speed, activity.maxSpeed)
                             activity.minSpeed = min(location.speed, activity.minSpeed)
                             activity.end = System.currentTimeMillis()

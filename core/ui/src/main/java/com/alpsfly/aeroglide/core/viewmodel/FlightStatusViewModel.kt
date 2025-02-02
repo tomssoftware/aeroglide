@@ -6,6 +6,7 @@ import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
+import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.presentation.CalibrationUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -64,5 +65,11 @@ class FlightStatusViewModel @Inject constructor(
         initialValue = null
     )
 
-    val activityFlow = dataRepository.getActivity(appRepository.activityId.value)
+    val activityFlow = dataRepository.getActivity()
+        .filterNotNull()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = Activity()
+        )
 }
