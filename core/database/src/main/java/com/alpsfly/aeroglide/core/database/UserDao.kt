@@ -18,11 +18,11 @@ interface UserDao {
     fun getUser(id: String): Flow<List<User>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addUser(user: User)
+    suspend fun addUser(user: User)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateUser(user: User)
+    suspend fun updateUser(user: User)
 
     @Query("delete from user")
-    fun removeAllUsers()
+    suspend fun removeAllUsers()
 }

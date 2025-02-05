@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface PressureDao {
     @Query("select * from pressure")
     fun getAllPressure(): Flow<List<Pressure>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addPressure(pressure: Pressure)
+    suspend fun addPressure(pressure: Pressure)
 }

@@ -40,7 +40,7 @@ fun DeviceStatusScreen(
     navController: NavController,
     deviceStatusViewModel: DeviceStatusViewModel = hiltViewModel()
 ) {
-    val calibrationStatus = deviceStatusViewModel.altitudeCalibrationStatus.collectAsState(Calibration())
+    val calibrationStatus = deviceStatusViewModel.calibrationFlow.collectAsState(Calibration())
 
     Box(
         contentAlignment = Alignment.TopCenter,

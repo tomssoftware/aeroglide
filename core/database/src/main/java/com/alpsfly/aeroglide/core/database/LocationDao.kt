@@ -16,5 +16,5 @@ interface LocationDao {
     fun getAllLocationAsFlow(): Flow<Location>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addLocation(location: Location)
+    suspend fun addLocation(location: Location)
 }
