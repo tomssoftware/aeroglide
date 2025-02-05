@@ -29,7 +29,7 @@ fun DiagnosisScreen(
 ) {
     val scrollState = rememberScrollState()
 
-    val calibrationStatus = diagnosisViewModel.altitudeCalibrationStatus.collectAsState(Calibration())
+    val calibrationStatus = diagnosisViewModel.calibrationFlow.collectAsState(Calibration())
     val altitudeFlowRaw = diagnosisViewModel.altitudeFlowRaw.collectAsState(initial = null)
     val climbrateFlowRaw = diagnosisViewModel.climbrateFlowRaw.collectAsState(initial = null)
     val altitudeFlowUi = diagnosisViewModel.altitudeFlowUi.collectAsState(initial = null)

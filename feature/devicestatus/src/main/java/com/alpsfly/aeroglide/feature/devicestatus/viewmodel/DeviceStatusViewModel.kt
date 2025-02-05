@@ -28,7 +28,7 @@ class DeviceStatusViewModel @Inject constructor(
     val climbrateModelProducer = CartesianChartModelProducer()
     private val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
 
-    val altitudeCalibrationStatus = sensorRepository.altitudeCalibrationStatus
+    val calibrationFlow = sensorRepository.calibration
 
     init {
         viewModelScope.launch {

@@ -1,8 +1,8 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
-import com.alpsfly.aeroglide.core.common.Limits
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
+import com.alpsfly.aeroglide.core.domain.usecase.StartRecordActivityUseCase.VarioAccuracy
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
@@ -42,15 +42,10 @@ class StartRecordActivityUseCase @Inject constructor(
         HIGH  // Acceleration and Location and Pressure
     }
 
-    // todo: reset on stop recording
-    private var altC = Limits.invalidAltitude
-    private var altP = Limits.invalidAltitude
-    private var altD = 0f
-    private var ascent = 0f
-    private var descent = 0f
 
     private var location = Location()
     private var activity = Activity()
+    private val verticallyMoving = VerticallyMoving() // todo: reset after activity end
 
     fun startRecording(activityId: Long) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -66,6 +61,7 @@ class StartRecordActivityUseCase @Inject constructor(
     private fun startRecordSensorData() {
         sensorFlows.forEach { (type, flow) ->
             val job = CoroutineScope(Dispatchers.IO).launch {
+                verticallyMoving.reset()
 
                 flow.collect { data ->
                     when (type) {
@@ -79,6 +75,11 @@ class StartRecordActivityUseCase @Inject constructor(
                                 activity.minAltitude = data.altitude
                                 updateActivity(activity)
                             }
+
+                            verticallyMoving.update(data.altitude)
+                            activity.ascent = verticallyMoving.getAscent()
+                            activity.descent = verticallyMoving.getDescent()
+
                             updateActivity(activity)
                         }
 
@@ -109,8 +110,6 @@ class StartRecordActivityUseCase @Inject constructor(
                         RecordingSensorType.LOCATION -> {
                             dataRepository.addLocation(data as Location)
                             activity.distance = distance(location)
-                            activity.ascent = ascentDescent().first
-                            activity.descent = ascentDescent().second
                             activity.duration = (activity.end - activity.begin) / 1000
                             activity.maxSpeed = max(location.speed, activity.maxSpeed)
                             activity.minSpeed = min(location.speed, activity.minSpeed)
@@ -154,23 +153,43 @@ class StartRecordActivityUseCase @Inject constructor(
         }
         return locC.distanceTo(locP)
     }
+}
 
-    private fun ascentDescent(): Pair<Float, Float> {
-        if ((altC - altP).absoluteValue <= INVALID_ALTITUDE_DELTA) {
-            altD += (altC - altP)
+class VerticallyMoving(
+    private var ascent: Float = 0f,
+    private var descent: Float = 0f,
+    private var delta: Float = 0f,
+    private var lastAltitude: Float = 0f
+) {
+    fun update(altitude: Float) {
+        if ((altitude - lastAltitude).absoluteValue <= INVALID_ALTITUDE_DELTA) {
+            delta += altitude - lastAltitude
 
-            if (altD >= getAscentThreshold(VarioAccuracy.HIGH)) { // meter
-                ascent += altD
-                altD = 0f
+            if (delta >= getAscentThreshold(VarioAccuracy.HIGH)) { // meter
+                ascent += delta
+                delta = 0f
             }
-            if (altD <= getDescentThreshold(VarioAccuracy.HIGH)) { // meter
-                descent += altD.absoluteValue
-                altD = 0f
+            if (delta <= getDescentThreshold(VarioAccuracy.HIGH)) { // meter
+                descent += delta.absoluteValue
+                delta = 0f
             }
         }
-        altP = altC
+        lastAltitude = altitude
+    }
 
-        return Pair(ascent, descent)
+    fun getAscent(): Float {
+        return ascent
+    }
+
+    fun getDescent(): Float {
+        return descent
+    }
+
+    fun reset() {
+        ascent = 0f
+        descent = 0f
+        delta = 0f
+        lastAltitude = 0f
     }
 
     private fun getAscentThreshold(accuracy: VarioAccuracy): Float = when (accuracy) {
@@ -191,7 +210,6 @@ class StartRecordActivityUseCase @Inject constructor(
         private const val ASCENT_THRESHOLD_MID_ACCURACY = 10f
         private const val DESCENT_THRESHOLD_MID_ACCURACY = -10f
     }
-
 
 }
 

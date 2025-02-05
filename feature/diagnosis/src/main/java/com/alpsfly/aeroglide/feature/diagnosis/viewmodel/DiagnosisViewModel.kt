@@ -16,5 +16,5 @@ class DiagnosisViewModel @Inject constructor(
     val pressureFlowUi = sensorRepository.pressureFlowUi
     val verticalAccelerationFlowUi = sensorRepository.verticalAccelerationFlowUi
 
-    val altitudeCalibrationStatus = sensorRepository.altitudeCalibrationStatus
+    val calibrationFlow = sensorRepository.calibration
 }

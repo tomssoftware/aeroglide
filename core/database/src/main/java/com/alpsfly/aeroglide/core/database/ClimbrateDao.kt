@@ -14,5 +14,5 @@ interface ClimbrateDao {
     fun getAllClimbrate(): Flow<List<Climbrate>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addClimbrate(climbrate: Climbrate)
+    suspend fun addClimbrate(climbrate: Climbrate)
 }

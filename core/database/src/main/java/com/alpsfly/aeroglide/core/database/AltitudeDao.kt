@@ -16,5 +16,5 @@ interface AltitudeDao {
     fun getAllAltitudeAsFlow(): Flow<Altitude>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addAltitude(altitude: Altitude)
+    suspend fun addAltitude(altitude: Altitude)
 }
