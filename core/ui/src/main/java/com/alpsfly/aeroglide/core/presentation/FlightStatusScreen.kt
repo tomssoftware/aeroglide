@@ -1,13 +1,18 @@
 package com.alpsfly.aeroglide.core.presentation
 
 import android.text.format.DateUtils
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,8 +23,6 @@ import com.alpsfly.aeroglide.core.item.DataField
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Location
-import com.alpsfly.aeroglide.core.model.database.Pressure
-import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.core.viewmodel.FlightStatusViewModel
 
@@ -32,16 +35,28 @@ fun FlightStatusScreen(
     val activity by flightStatusViewModel.activityFlow.collectAsStateWithLifecycle(initialValue = null)
     val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = Altitude())
     val climbrate by flightStatusViewModel.climbrateFlow.collectAsStateWithLifecycle(initialValue = Climbrate())
-    val pressure by flightStatusViewModel.pressureFlow.collectAsStateWithLifecycle(initialValue = Pressure())
     val location by flightStatusViewModel.locationFlow.collectAsStateWithLifecycle(initialValue = Location())
-    val verticalAcceleration by flightStatusViewModel.verticalAccelerationFlow.collectAsStateWithLifecycle(initialValue = SensorData())
-    val calibrationUiState by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle()
+    val calibration by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle(initialValue = CalibrationUiState.Loading)
+
+    var isLoading by remember { mutableStateOf(true) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
+            isLoading = when (calibration) {
+                is CalibrationUiState.Success -> {
+                    //Toast.makeText(LocalContext.current, "Calibration successful", Toast.LENGTH_SHORT).show()
+                    false
+                }
+
+                is CalibrationUiState.Loading -> {
+                    //Toast.makeText(LocalContext.current, "Calibration is running", Toast.LENGTH_SHORT).show()
+                    true
+                }
+            }
+
             DataField(
                 caption = stringResource(R.string.sid_altitude),
                 value = LocalUnit
@@ -86,25 +101,11 @@ fun FlightStatusScreen(
                 unit = LocalUnit.of(UnitConverter.Unit.M).toLocalSymbol(),
                 modifier = Modifier.weight(1f)
             )
-            when (calibrationUiState) {
-                is CalibrationUiState.Success -> {
-                    DataField(
-                        caption = "Alt. Acc.",
-                        value = LocalUnit.of((calibrationUiState as CalibrationUiState.Success).calibration.verticalAccuracy, UnitConverter.Unit.M)
-                            .withSymbol(false).toLocalString(),
-                        unit = "ts",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                is CalibrationUiState.Loading -> {
-                    DataField(
-                        caption = "Alt. Acc.",
-                        value = "-",
-                        unit = "-",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+            DataField(
+                caption = stringResource(R.string.sid_glide_ratio),
+                value = isLoading.toString(),
+                modifier = Modifier.weight(1f)
+            )
             DataField(
                 caption = stringResource(R.string.sid_duration),
                 value = DateUtils.formatElapsedTime(activity?.duration ?: 0L),

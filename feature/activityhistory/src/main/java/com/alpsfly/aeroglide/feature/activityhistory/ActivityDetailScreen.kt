@@ -36,7 +36,7 @@ fun ActivityDetailScreen(
             Toast.makeText(context, "Loading", Toast.LENGTH_SHORT).show()
         }
         is ActivityUiState.Success -> {
-            val uiElementList = (activityUiState.value as ActivityUiState.Success).activity
+            val uiElementList = (activityUiState.value as ActivityUiState.Success).item
             ActivityDataRow(uiElementList)
         }
     }

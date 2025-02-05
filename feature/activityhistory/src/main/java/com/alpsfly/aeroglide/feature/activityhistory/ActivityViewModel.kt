@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -17,35 +18,36 @@ class ActivityHistoryViewModel @Inject constructor(
 ) : ViewModel() {
 
     val allActivitiesUiState: StateFlow<ActivityListUiState> =
-        dataRepository.allActivities.map { list ->
-            ActivityListUiState.Success(list)
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = ActivityListUiState.Loading
-        )
+        dataRepository.allActivities
+            .map { list -> ActivityListUiState.Success(list) }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = ActivityListUiState.Loading
+            )
 
     fun getActivityUiState(id: Long): StateFlow<ActivityUiState> {
-        return dataRepository.getActivity(id).map { activity ->
-            ActivityUiState.Success(activity)
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = ActivityUiState.Loading
-        )
+        return dataRepository.getActivity(id)
+            .map { item -> ActivityUiState.Success(item) }
+            .onStart { ActivityUiState.Loading }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = ActivityUiState.Loading
+            )
     }
 }
 
 sealed interface ActivityUiState {
     data object Loading : ActivityUiState
     data class Success(
-        val activity: Activity
+        val item: Activity
     ) : ActivityUiState
 }
 
 sealed interface ActivityListUiState {
     data object Loading : ActivityListUiState
     data class Success(
-        val activityHistory: List<Activity>,
+        val list: List<Activity>,
     ) : ActivityListUiState
 }

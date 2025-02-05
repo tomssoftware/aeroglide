@@ -17,8 +17,8 @@ interface ActivityDao {
     fun getActivity(activityId: Long): Flow<Activity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addActivity(activity: Activity)
+    suspend fun addActivity(activity: Activity)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateActivity(activity: Activity)
+    suspend fun updateActivity(activity: Activity)
 }

@@ -52,7 +52,7 @@ fun ActivityListScreen(
             }
         }
         is ActivityListUiState.Success -> {
-            val activityHistoryList = (activityHistoryUiState as ActivityListUiState.Success).activityHistory
+            val activityHistoryList = (activityHistoryUiState as ActivityListUiState.Success).list
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(8.dp),

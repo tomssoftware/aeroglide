@@ -16,5 +16,5 @@ interface CalibrationDao {
     fun getLatestCalibration(): Flow<List<Calibration>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addCalibration(calibration: Calibration)
+    suspend fun addCalibration(calibration: Calibration)
 }

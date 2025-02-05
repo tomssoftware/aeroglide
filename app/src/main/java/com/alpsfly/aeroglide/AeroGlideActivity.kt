@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
+import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.core.ui.theme.AeroGlideTheme
@@ -69,12 +70,13 @@ class AeroGlideActivity : ComponentActivity() {
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 val aeroGlideViewModel: AeroGlideViewModel = hiltViewModel()
                 val isRecording by aeroGlideViewModel.isRecording.collectAsState()
+                val calibration by aeroGlideViewModel.calibration.collectAsState(Calibration())
 
                 Scaffold(
                     modifier = Modifier,
                     topBar = {
                         AeroGlideTopAppBar(
-                            title = "AeroGlide",
+                            title = "AeroGlide " + calibration.horizontalAccuracy,
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
