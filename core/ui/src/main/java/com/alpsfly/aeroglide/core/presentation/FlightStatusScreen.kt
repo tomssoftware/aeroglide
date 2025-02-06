@@ -1,18 +1,13 @@
 package com.alpsfly.aeroglide.core.presentation
 
 import android.text.format.DateUtils
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -20,6 +15,7 @@ import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
 import com.alpsfly.aeroglide.core.item.DataField
+import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Location
@@ -32,31 +28,16 @@ fun FlightStatusScreen(
     navController: NavController,
     flightStatusViewModel: FlightStatusViewModel = hiltViewModel()
 ) {
-    val activity by flightStatusViewModel.activityFlow.collectAsStateWithLifecycle(initialValue = null)
+    val activity by flightStatusViewModel.activityFlow.collectAsStateWithLifecycle(initialValue = Activity())
     val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = Altitude())
     val climbrate by flightStatusViewModel.climbrateFlow.collectAsStateWithLifecycle(initialValue = Climbrate())
     val location by flightStatusViewModel.locationFlow.collectAsStateWithLifecycle(initialValue = Location())
-    val calibration by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle(initialValue = CalibrationUiState.Loading)
-
-    var isLoading by remember { mutableStateOf(true) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            isLoading = when (calibration) {
-                is CalibrationUiState.Success -> {
-                    //Toast.makeText(LocalContext.current, "Calibration successful", Toast.LENGTH_SHORT).show()
-                    false
-                }
-
-                is CalibrationUiState.Loading -> {
-                    //Toast.makeText(LocalContext.current, "Calibration is running", Toast.LENGTH_SHORT).show()
-                    true
-                }
-            }
-
             DataField(
                 caption = stringResource(R.string.sid_altitude),
                 value = LocalUnit
@@ -70,7 +51,7 @@ fun FlightStatusScreen(
             DataField(
                 caption = stringResource(R.string.sid_climbrate),
                 value = LocalUnit
-                    .of(climbrate?.climbrate ?: 0f, UnitConverter.Unit.MS)
+                    .of(climbrate.climbrate, UnitConverter.Unit.MS)
                     .withDigits(2)
                     .withSymbol(false)
                     .toLocalString(),
@@ -80,9 +61,9 @@ fun FlightStatusScreen(
             DataField(
                 caption = stringResource(R.string.sid_speed),
                 value = LocalUnit
-                    .of(location?.speed ?: 0f, UnitConverter.Unit.KMH)
-                    .withSymbol(false)
+                    .of(location.speed, UnitConverter.Unit.KMH)
                     .withDigits(0)
+                    .withSymbol( flag = false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
                 modifier = Modifier.weight(1f)
@@ -103,7 +84,7 @@ fun FlightStatusScreen(
             )
             DataField(
                 caption = stringResource(R.string.sid_glide_ratio),
-                value = isLoading.toString(),
+                value = "0",
                 modifier = Modifier.weight(1f)
             )
             DataField(

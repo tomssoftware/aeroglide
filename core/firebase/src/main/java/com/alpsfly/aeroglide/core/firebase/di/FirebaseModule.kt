@@ -24,8 +24,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class FirebaseModule {
-}
+class FirebaseModule
 
 @Module
 @InstallIn(SingletonComponent::class)
