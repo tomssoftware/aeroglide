@@ -1,5 +1,6 @@
 package com.alpsfly.aeroglide.core.presentation
 
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -41,7 +42,7 @@ fun LineChartScreen(modelProducer: CartesianChartModelProducer, modifier: Modifi
             ),
         ),
         modelProducer = modelProducer,
-        modifier = modifier,
+        modifier = modifier.fillMaxHeight(),
         zoomState = rememberVicoZoomState(
             zoomEnabled = false,
             initialZoom = Zoom.x(60.0),

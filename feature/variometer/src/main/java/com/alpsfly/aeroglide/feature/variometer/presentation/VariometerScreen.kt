@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -38,6 +39,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.MenuItem
@@ -126,7 +128,7 @@ fun VariometerScreen(
                 .padding(it)
         ) {
             FlightStatusScreen(Modifier.fillMaxWidth(), navController)
-            Spacer(Modifier.weight(2f))
+            Spacer(Modifier.height(16.dp))
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -184,7 +186,7 @@ fun AnalogVariometer(
     val textMeasurer = rememberTextMeasurer()
 
     Canvas(modifier = modifier.centered()) {
-        val radius = size.minDimension / 2.5f
+        val radius = size.minDimension / 2.25f
         majorOval = Rect(-radius, -radius, radius, radius)
         minorOval = Rect(-radius, -radius, radius, radius)
 
