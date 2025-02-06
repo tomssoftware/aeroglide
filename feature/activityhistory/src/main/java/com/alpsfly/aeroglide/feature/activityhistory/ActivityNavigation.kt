@@ -1,5 +1,6 @@
 package com.alpsfly.aeroglide.feature.activityhistory
 
+import androidx.compose.runtime.remember
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
@@ -7,31 +8,42 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
-@Serializable data class ActivityHistoryListRoute(val activityId: Long)
-@Serializable data class ActivityHistoryDetailRoute(val activityId: Long)
+@Serializable data object ActivityListRoute
+@Serializable data class ActivityDetailRoute(val activityId: Long)
 
-fun NavController.navigateToActivityHistoryList(activityId: Long, navOptions: NavOptionsBuilder.() -> Unit = {}) {
-    navigate(route = ActivityHistoryListRoute(activityId)) {
+fun NavController.navigateToActivityList(navOptions: NavOptionsBuilder.() -> Unit = {}) {
+    navigate(route = ActivityListRoute) {
         navOptions()
     }
 }
 
-fun NavGraphBuilder.activityHistoryList(navController: NavController) {
-    composable<ActivityHistoryListRoute> { backStackEntry ->
-        val args: ActivityHistoryListRoute = backStackEntry.toRoute()
+fun NavGraphBuilder.activityList(navController: NavController) {
+    composable<ActivityListRoute> {
         ActivityListScreen(navController = navController)
     }
 }
 
-fun NavController.navigateToActivityHistoryDetail(activityId: Long, navOptions: NavOptionsBuilder.() -> Unit = {}) {
-    navigate(route = ActivityHistoryDetailRoute(activityId)) {
+fun NavController.navigateToActivityDetail(activityId: Long, navOptions: NavOptionsBuilder.() -> Unit = {}) {
+    navigate(route = ActivityDetailRoute(activityId)) {
         navOptions()
     }
 }
 
-fun NavGraphBuilder.activityHistoryDetail(navController: NavController) {
-    composable<ActivityHistoryDetailRoute> { backStackEntry ->
-        val args: ActivityHistoryDetailRoute = backStackEntry.toRoute()
-        ActivityDetailScreen(navController = navController, id = args.activityId)
+//fun NavGraphBuilder.activityDetail(navController: NavController) {
+//    composable<ActivityDetailRoute> { backStackEntry ->
+//        val args: ActivityDetailRoute = backStackEntry.toRoute()
+//        ActivityDetailScreen(navController = navController, id = args.activityId)
+//    }
+//}
+
+fun NavGraphBuilder.activityDetail(navController: NavController) {
+    composable<ActivityDetailRoute> { backStackEntry ->
+        val args = backStackEntry.toRoute<ActivityDetailRoute>()
+
+        // Ensure that the id remains stable
+        val id = remember { args.activityId }
+
+        ActivityDetailScreen(navController = navController, id = id)
     }
 }
+

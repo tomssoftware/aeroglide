@@ -5,11 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,7 +19,7 @@ class ActivityHistoryViewModel @Inject constructor(
 ) : ViewModel() {
 
     val allActivitiesUiState: StateFlow<ActivityListUiState> =
-        dataRepository.allActivities
+        dataRepository.allActivitiesFlow
             .map { list -> ActivityListUiState.Success(list) }
             .stateIn(
                 scope = viewModelScope,
@@ -26,15 +27,16 @@ class ActivityHistoryViewModel @Inject constructor(
                 initialValue = ActivityListUiState.Loading
             )
 
-    fun getActivityUiState(id: Long): StateFlow<ActivityUiState> {
-        return dataRepository.getActivity(id)
-            .map { item -> ActivityUiState.Success(item) }
-            .onStart { ActivityUiState.Loading }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = ActivityUiState.Loading
+    private val _activity = MutableStateFlow<ActivityUiState>(ActivityUiState.Loading)
+    val activity: StateFlow<ActivityUiState> get() = _activity
+
+    fun loadActivityById(id: Long) {
+        viewModelScope.launch {
+            _activity.value = ActivityUiState.Loading
+            _activity.value = ActivityUiState.Success(
+                dataRepository.getActivity(id)
             )
+        }
     }
 }
 

@@ -11,9 +11,9 @@ fun <T> DocumentReference.addSnapshotListenerFlow(dataType: Class<T>): Flow<Resp
     val listener = EventListener<DocumentSnapshot> { snapshot, error ->
         val response = if (snapshot != null) {
             val data = snapshot.toObject(dataType)
-            com.alpsfly.aeroglide.core.firebase.Response.Success(data)
+            Response.Success(data)
         } else {
-            com.alpsfly.aeroglide.core.firebase.Response.Error(error?.message ?: error.toString())
+            Response.Error(error?.message ?: error.toString())
         }
         trySend(response).isSuccess
     }

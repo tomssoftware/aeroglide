@@ -1,12 +1,11 @@
 package com.alpsfly.aeroglide.feature.activityhistory
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,25 +18,30 @@ import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
 import com.alpsfly.aeroglide.core.item.DataField
 import com.alpsfly.aeroglide.core.model.database.Activity
+import timber.log.Timber
 import com.alpsfly.aeroglide.core.ui.R as uiR
 
 @Composable
 fun ActivityDetailScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    id: Long = 0L,
+    id: Long,
     activityHistoryViewModel: ActivityHistoryViewModel = hiltViewModel(),
 ) {
-    val activityUiState = activityHistoryViewModel.getActivityUiState(id).collectAsStateWithLifecycle()
+    val activityUiState = activityHistoryViewModel.activity.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = id) {
+        activityHistoryViewModel.loadActivityById(id)
+    }
 
     when (activityUiState.value) {
         is ActivityUiState.Loading -> {
-            val context = LocalContext.current
-            Toast.makeText(context, "Loading", Toast.LENGTH_SHORT).show()
+            Timber.d("Loading")
         }
         is ActivityUiState.Success -> {
-            val uiElementList = (activityUiState.value as ActivityUiState.Success).item
-            ActivityDataRow(uiElementList)
+            val activity = (activityUiState.value as ActivityUiState.Success).item
+            Timber.d("Success ${activity.activityId}")
+            ActivityDataRow(activity)
         }
     }
 }
