@@ -82,7 +82,7 @@ fun CardItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         onClick = {
-            navController.navigateToActivityHistoryDetail(activity.activityId)
+            navController.navigateToActivityDetail(activity.activityId)
         }
     ) {
         Row(

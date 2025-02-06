@@ -30,37 +30,48 @@ import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
-import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 interface DataRepository {
+    // Activity
+    val allActivitiesFlow: Flow<List<Activity>>
+    val activityFlow: Flow<Activity>
+    fun activityFlow(activityId: Long): Flow<Activity>
+    suspend fun getActivity(activityId: Long): Activity
     suspend fun addActivity(activity: Activity)
-    suspend fun addAltitude(altitude: Altitude)
-    suspend fun addCalibration(calibration: Calibration)
-    suspend fun addLocation(location: Location)
-    suspend fun addClimbrate(climbrate: Climbrate)
-    suspend fun addPressure(pressure: Pressure)
-    suspend fun addUser(user: User)
-    fun getActivity(activityId: Long): Flow<Activity>
-    fun getActivity(): Flow<Activity?>
-
     suspend fun updateActivity(activity: Activity)
 
-    val allActivities: Flow<List<Activity>>
-    val altitudeAsFlow: Flow<Altitude>
+    // Altitude
+    suspend fun addAltitude(altitude: Altitude)
     val altitude: Flow<List<Altitude>>
+    val altitudeAsFlow: Flow<Altitude>
+
+    // Calibration
+    suspend fun addCalibration(calibration: Calibration)
     val calibration: Flow<List<Calibration>>
+
+    // Climbrate
+    suspend fun addClimbrate(climbrate: Climbrate)
     val climbrate: Flow<List<Climbrate>>
+
+    // Pressure
+    suspend fun addPressure(pressure: Pressure)
     val pressure: Flow<List<Pressure>>
+
+    // Location
+    suspend fun addLocation(location: Location)
+
+    // User
+    suspend fun addUser(user: User)
     val users: Flow<List<User>>
 
+    // Other
     fun setActivityId(activityId: Long)
 }
 
@@ -74,72 +85,47 @@ class LocalDataRepository @Inject constructor(
     private val userDao: UserDao,
 ) : DataRepository {
 
-    override suspend fun addActivity(activity: Activity) {
-        activityDao.addActivity(activity)
-    }
-
-    override suspend fun addAltitude(altitude: Altitude) {
-        altitudeDao.addAltitude(altitude)
-    }
-
-    override suspend fun addCalibration(calibration: Calibration) {
-        calibrationDao.addCalibration(calibration)
-    }
-
-    override suspend fun addClimbrate(climbrate: Climbrate) {
-        climbrateDao.addClimbrate(climbrate)
-    }
-
-    override suspend fun addLocation(location: Location) {
-        locationDao.addLocation(location)
-    }
-
-    override suspend fun addPressure(pressure: Pressure) {
-        pressureDao.addPressure(pressure)
-    }
-
-    override suspend fun addUser(user: User) {
-        userDao.addUser(user)
-    }
-
-    override fun getActivity(activityId: Long): Flow<Activity> {
-        return activityDao.getActivity(activityId)
-    }
-
-    override suspend fun updateActivity(activity: Activity) {
-        activityDao.updateActivity(activity)
-    }
-
-    override val allActivities: Flow<List<Activity>> =
-        activityDao.getAllActivity()
-
-    override val altitudeAsFlow: Flow<Altitude> =
-        altitudeDao.getAllAltitudeAsFlow()
-
-    override val altitude: Flow<List<Altitude>> =
-        altitudeDao.getAllAltitude()
-
-    override val calibration: Flow<List<Calibration>> =
-        calibrationDao.getLatestCalibration()
-
-    override val climbrate: Flow<List<Climbrate>> =
-        climbrateDao.getAllClimbrate()
-
-    override val pressure: Flow<List<Pressure>> =
-        pressureDao.getAllPressure()
-
-    override val users: Flow<List<User>> =
-        userDao.getAllUsers()
-
+    // Other
     private val _activityId = MutableStateFlow(0L)
     private val activityId = _activityId.asStateFlow()
     override fun setActivityId(activityId: Long) {
         _activityId.value = activityId
     }
 
+    // Activity
+    override val allActivitiesFlow: Flow<List<Activity>> = activityDao.allActivitiesFlow()
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun getActivity(): Flow<Activity> =
+    override val activityFlow: Flow<Activity> =
         activityId.filterNotNull().flatMapLatest { id ->
-            activityDao.getActivity(id)
-        }
+        activityDao.activityFlow(id)
+    }
+
+    override fun activityFlow(activityId: Long): Flow<Activity> = activityDao.activityFlow(activityId)
+    override suspend fun getActivity(activityId: Long): Activity = activityDao.getActivity(activityId)
+    override suspend fun addActivity(activity: Activity) = activityDao.addActivity(activity)
+    override suspend fun updateActivity(activity: Activity) = activityDao.updateActivity(activity)
+
+    // Altitude
+    override suspend fun addAltitude(altitude: Altitude) = altitudeDao.addAltitude(altitude)
+    override val altitude: Flow<List<Altitude>> = altitudeDao.getAllAltitude()
+    override val altitudeAsFlow: Flow<Altitude> = altitudeDao.getAllAltitudeAsFlow()
+
+    // Calibration
+    override suspend fun addCalibration(calibration: Calibration) = calibrationDao.addCalibration(calibration)
+    override val calibration: Flow<List<Calibration>> = calibrationDao.getLatestCalibration()
+
+    // Climbrate
+    override suspend fun addClimbrate(climbrate: Climbrate) = climbrateDao.addClimbrate(climbrate)
+    override val climbrate: Flow<List<Climbrate>> = climbrateDao.getAllClimbrate()
+
+    // Pressure
+    override suspend fun addPressure(pressure: Pressure) = pressureDao.addPressure(pressure)
+    override val pressure: Flow<List<Pressure>> = pressureDao.getAllPressure()
+
+    // Location
+    override suspend fun addLocation(location: Location) = locationDao.addLocation(location)
+
+    // User
+    override suspend fun addUser(user: User) = userDao.addUser(user)
+    override val users: Flow<List<User>> = userDao.getAllUsers()
 }

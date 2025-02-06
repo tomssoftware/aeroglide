@@ -11,10 +11,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ActivityDao {
     @Query("select * from activity")
-    fun getAllActivity(): Flow<List<Activity>>
+    fun allActivitiesFlow(): Flow<List<Activity>>
 
     @Query("SELECT * FROM activity WHERE activity_id = :activityId")
-    fun getActivity(activityId: Long): Flow<Activity>
+    fun activityFlow(activityId: Long): Flow<Activity>
+
+    @Query("SELECT * FROM activity WHERE activity_id = :activityId")
+    suspend fun getActivity(activityId: Long): Activity
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addActivity(activity: Activity)
