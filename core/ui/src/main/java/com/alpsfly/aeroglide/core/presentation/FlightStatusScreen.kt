@@ -79,7 +79,7 @@ fun FlightStatusScreen(
             DataField(
                 caption = stringResource(R.string.sid_distance),
                 value = LocalUnit
-                    .of(activity?.distance ?: 0f, UnitConverter.Unit.M)
+                    .of(activity.distance, UnitConverter.Unit.M)
                     .withSymbol(flag = false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.M).toLocalSymbol(),
@@ -92,8 +92,40 @@ fun FlightStatusScreen(
             )
             DataField(
                 caption = stringResource(R.string.sid_duration),
-                value = DateUtils.formatElapsedTime(activity?.duration ?: 0L),
+                value = DateUtils.formatElapsedTime(activity.duration),
                 unit = "",
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            DataField(
+                caption = stringResource(R.string.sid_ascent),
+                value = LocalUnit
+                    .of(activity.positiveAvgClimbrate, UnitConverter.Unit.MS)
+                    .withSymbol(flag = false)
+                    .toLocalString(),
+                unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),
+                modifier = Modifier.weight(1f)
+            )
+            DataField(
+                caption = stringResource(R.string.sid_descent),
+                value = LocalUnit
+                    .of(activity.negativeAvgClimbrate, UnitConverter.Unit.MS)
+                    .withSymbol(flag = false)
+                    .toLocalString(),
+                unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),
+                modifier = Modifier.weight(1f)
+            )
+            DataField(
+                caption = stringResource(R.string.sid_avg_speed),
+                value = LocalUnit
+                    .of(activity.avgSpeed, UnitConverter.Unit.MS)
+                    .withSymbol(flag = false)
+                    .toLocalString(),
+                unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
                 modifier = Modifier.weight(1f)
             )
         }

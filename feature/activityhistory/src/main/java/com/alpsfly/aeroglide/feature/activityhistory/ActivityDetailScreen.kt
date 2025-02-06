@@ -154,6 +154,43 @@ fun ActivityDataRow(activity: Activity) {
                 modifier = Modifier.weight(1f)
             )
         }
+        Row {
+            DataField(
+                caption = stringResource(uiR.string.sid_ascent),
+                value = LocalUnit
+                    .of(activity.positiveAvgClimbrate, UnitConverter.Unit.MS)
+                    .withDigits(1)
+                    .withSymbol(false)
+                    .toLocalString(),
+                unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),
+                drawableRes = R.drawable.swap_vert_24px,
+                modifier = Modifier.weight(1f)
+            )
+            DataField(
+                caption = stringResource(uiR.string.sid_descent),
+                value = LocalUnit
+                    .of(activity.negativeAvgClimbrate, UnitConverter.Unit.MS)
+                    .withDigits(0)
+                    .withSymbol(false)
+                    .toLocalString(),
+                unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),
+                drawableRes = R.drawable.swap_vert_24px,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Row {
+            DataField(
+                caption = stringResource(uiR.string.sid_avg_speed),
+                value = LocalUnit
+                    .of(activity.avgSpeed, UnitConverter.Unit.MS)
+                    .withDigits(0)
+                    .withSymbol(false)
+                    .toLocalString(),
+                unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
+                drawableRes = R.drawable.avg_pace_24px,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
 
