@@ -28,6 +28,7 @@ fun DataField(
     caption: String,
     value: String,
     unit: String? = null,
+    blinking: Boolean = false,
     drawableRes: Int? = null,
     modifier: Modifier = Modifier
 ) {
@@ -71,14 +72,24 @@ fun DataField(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = value,
-                        style = TextStyle(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 20.sp
-                        ),
-                        modifier = Modifier.weight(1f, fill = false)
-                    )
+                    if (blinking) {
+                        BlinkingText(
+                            text = value,
+                            style = TextStyle(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp),
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                    } else {
+                        Text(
+                            text = value,
+                            style = TextStyle(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp
+                            ),
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                    }
                     unit?.let {
                         Text(
                             text = unit,
