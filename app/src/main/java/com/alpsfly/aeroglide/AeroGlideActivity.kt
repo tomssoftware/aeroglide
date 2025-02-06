@@ -70,13 +70,12 @@ class AeroGlideActivity : ComponentActivity() {
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 val aeroGlideViewModel: AeroGlideViewModel = hiltViewModel()
                 val isRecording by aeroGlideViewModel.isRecording.collectAsState()
-                val calibration by aeroGlideViewModel.calibration.collectAsState(Calibration())
 
                 Scaffold(
                     modifier = Modifier,
                     topBar = {
                         AeroGlideTopAppBar(
-                            title = "AeroGlide " + calibration.horizontalAccuracy,
+                            title = "AeroGlide",
                             navigationIcon = {
                                 IconButton(
                                     onClick = {

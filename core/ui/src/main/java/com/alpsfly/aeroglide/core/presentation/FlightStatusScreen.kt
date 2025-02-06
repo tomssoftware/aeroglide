@@ -20,6 +20,7 @@ import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.ui.R
+import com.alpsfly.aeroglide.core.viewmodel.CalibrationUiState
 import com.alpsfly.aeroglide.core.viewmodel.FlightStatusViewModel
 
 @Composable
@@ -32,6 +33,7 @@ fun FlightStatusScreen(
     val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = Altitude())
     val climbrate by flightStatusViewModel.climbrateFlow.collectAsStateWithLifecycle(initialValue = Climbrate())
     val location by flightStatusViewModel.locationFlow.collectAsStateWithLifecycle(initialValue = Location())
+    val calibration by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -46,6 +48,7 @@ fun FlightStatusScreen(
                     .withSymbol(false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.M).toLocalSymbol(),
+                blinking = calibration is CalibrationUiState.Loading,
                 modifier = Modifier.weight(1f)
             )
             DataField(
