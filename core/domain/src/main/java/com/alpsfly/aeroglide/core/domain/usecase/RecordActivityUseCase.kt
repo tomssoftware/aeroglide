@@ -2,7 +2,7 @@ package com.alpsfly.aeroglide.core.domain.usecase
 
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
-import com.alpsfly.aeroglide.core.domain.usecase.StartRecordActivityUseCase.VarioAccuracy
+import com.alpsfly.aeroglide.core.domain.usecase.RecordActivityUseCase.VarioAccuracy
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
@@ -17,7 +17,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
-class StartRecordActivityUseCase @Inject constructor(
+class RecordActivityUseCase @Inject constructor(
     private val sensorRepository: SensorRepository,
     private val dataRepository: DataRepository,
 ) {
