@@ -180,6 +180,17 @@ fun ActivityDataRow(activity: Activity) {
         }
         Row {
             DataField(
+                caption = stringResource(uiR.string.sid_max_speed),
+                value = LocalUnit
+                    .of(activity.maxSpeed, UnitConverter.Unit.MS)
+                    .withDigits(0)
+                    .withSymbol(false)
+                    .toLocalString(),
+                unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
+                drawableRes = R.drawable.shutter_speed_24px,
+                modifier = Modifier.weight(1f)
+            )
+            DataField(
                 caption = stringResource(uiR.string.sid_avg_speed),
                 value = LocalUnit
                     .of(activity.avgSpeed, UnitConverter.Unit.MS)
