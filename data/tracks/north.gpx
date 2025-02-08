@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Copilot">
+  <wpt lat="48.40567" lon="9.05419">
+    <name>Start</name>
+  </wpt>
+  <trk>
+    <name>Example Track</name>
+    <trkseg>
+      <trkpt lat="48.40567" lon="9.05419">
+        <time>2025-02-08T16:05:00Z</time>
+      </trkpt>
+      <trkpt lat="48.40577" lon="9.05419">
+        <time>2025-02-08T16:05:10Z</time>
+      </trkpt>
+      <trkpt lat="48.40587" lon="9.05419">
+        <time>2025-02-08T16:05:20Z</time>
+      </trkpt>
+      <trkpt lat="48.40597" lon="9.05419">
+        <time>2025-02-08T16:05:30Z</time>
+      </trkpt>
+      <trkpt lat="48.40607" lon="9.05419">
+        <time>2025-02-08T16:05:40Z</time>
+      </trkpt>
+      <trkpt lat="48.40617" lon="9.05419">
+        <time>2025-02-08T16:05:50Z</time>
+      </trkpt>
+      <trkpt lat="48.40627" lon="9.05419">
+        <time>2025-02-08T16:06:00Z</time>
+      </trkpt>
+      <trkpt lat="48.40637" lon="9.05419">
+        <time>2025-02-08T16:06:10Z</time>
+      </trkpt>
+      <trkpt lat="48.40647" lon="9.05419">
+        <time>2025-02-08T16:06:20Z</time>
+      </trkpt>
+      <trkpt lat="48.40657" lon="9.05419">
+        <time>2025-02-08T16:06:30Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
