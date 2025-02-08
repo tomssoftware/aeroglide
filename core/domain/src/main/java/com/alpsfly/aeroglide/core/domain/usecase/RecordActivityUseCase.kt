@@ -43,7 +43,6 @@ class RecordActivityUseCase @Inject constructor(
     }
 
 
-    private var location = Location()
     private var activity = Activity()
     private val verticallyMoving = VerticallyMoving() // todo: reset after activity end
 
@@ -59,6 +58,7 @@ class RecordActivityUseCase @Inject constructor(
     }
 
     private fun startRecordSensorData() {
+        sensorRepository.enableLocationUpdates()
         sensorFlows.forEach { (type, flow) ->
             val job = CoroutineScope(Dispatchers.IO).launch {
                 verticallyMoving.reset()
@@ -109,13 +109,15 @@ class RecordActivityUseCase @Inject constructor(
 
                         RecordingSensorType.LOCATION -> {
                             dataRepository.addLocation(data as Location)
-                            activity.distance = distance(location)
+                            activity.distance += distance(data)
                             activity.duration = (activity.end - activity.begin) / 1000
-                            activity.maxSpeed = max(location.speed, activity.maxSpeed)
-                            activity.minSpeed = min(location.speed, activity.minSpeed)
-                            activity.avgSpeed = (activity.distance / activity.duration)
-                            activity.positiveAvgClimbrate = (activity.ascent / activity.duration)
-                            activity.negativeAvgClimbrate = (activity.descent / activity.duration)
+                            activity.maxSpeed = max(data.speed, activity.maxSpeed)
+                            activity.minSpeed = min(data.speed, activity.minSpeed)
+                            if (activity.duration > 0) {
+                                activity.avgSpeed = (activity.distance / activity.duration)
+                                activity.positiveAvgClimbrate = (activity.ascent / activity.duration)
+                                activity.negativeAvgClimbrate = (activity.descent / activity.duration)
+                            }
                             activity.end = System.currentTimeMillis()
                             updateActivity(activity)
                         }
@@ -129,13 +131,17 @@ class RecordActivityUseCase @Inject constructor(
     private fun stopRecordSensorData() {
         recordingJobs.forEach { (_, job) -> job.cancel() }
         recordingJobs.clear()
+        sensorRepository.disableLocationUpdates()
     }
 
     private suspend fun insertActivity(activityId: Long): Activity {
+        val now = System.currentTimeMillis()
         val activity = Activity(
             activityId = activityId,
-            userId = "Thomas",
-            begin = System.currentTimeMillis(),
+            userId = "thomas.fiedler@fn.de",
+            begin = now,
+            end = now,
+            distance = 0f
         )
         dataRepository.addActivity(activity)
         return activity
@@ -145,15 +151,21 @@ class RecordActivityUseCase @Inject constructor(
         dataRepository.updateActivity(activity)
     }
 
+    private var lastLocation = Location()
     private fun distance(currentLocation: Location): Float {
+        if (lastLocation.timestamp == 0L) {
+            lastLocation = currentLocation
+            return 0f
+        }
         val locC = android.location.Location("none").apply {
             latitude = currentLocation.latitude.toDouble()
             longitude = currentLocation.longitude.toDouble()
         }
         val locP = android.location.Location("none").apply {
-            latitude = location.latitude.toDouble()
-            longitude = location.longitude.toDouble()
+            latitude = lastLocation.latitude.toDouble()
+            longitude = lastLocation.longitude.toDouble()
         }
+        lastLocation = currentLocation
         return locC.distanceTo(locP)
     }
 }

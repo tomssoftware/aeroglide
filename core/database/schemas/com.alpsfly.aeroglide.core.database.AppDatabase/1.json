@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "df2a370557af16366864a11fd2239244",
+    "identityHash": "c86f90d62147a39b5575dd070a0cd3ef",
     "entities": [
       {
         "tableName": "activity",
@@ -271,6 +271,38 @@
         "foreignKeys": []
       },
       {
+        "tableName": "glide_ratio",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `glide_ratio` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "fields": [
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frequency",
+            "columnName": "frequency",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "glideRatio",
+            "columnName": "glide_ratio",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "timestamp"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
         "tableName": "location",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `altitude` REAL NOT NULL, `bearing` REAL NOT NULL, `speed` REAL NOT NULL, `horizontal_accuracy` REAL NOT NULL, `vertical_accuracy` REAL NOT NULL, `bearing_accuracy` REAL NOT NULL, `speed_accuracy` REAL NOT NULL, `provider` TEXT NOT NULL, PRIMARY KEY(`timestamp`))",
         "fields": [
@@ -442,7 +474,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'df2a370557af16366864a11fd2239244')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c86f90d62147a39b5575dd070a0cd3ef')"
     ]
   }
 }
