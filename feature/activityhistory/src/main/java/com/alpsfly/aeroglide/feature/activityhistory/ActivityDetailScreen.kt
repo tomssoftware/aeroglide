@@ -146,19 +146,6 @@ fun ActivityDataRow(activity: Activity) {
                 caption = stringResource(uiR.string.sid_min_climbrate),
                 value = LocalUnit
                     .of(activity.minClimbrate, UnitConverter.Unit.MS)
-                    .withDigits(0)
-                    .withSymbol(false)
-                    .toLocalString(),
-                unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),
-                drawableRes = R.drawable.landscape_24px,
-                modifier = Modifier.weight(1f)
-            )
-        }
-        Row {
-            DataField(
-                caption = stringResource(uiR.string.sid_ascent),
-                value = LocalUnit
-                    .of(activity.positiveAvgClimbrate, UnitConverter.Unit.MS)
                     .withDigits(1)
                     .withSymbol(false)
                     .toLocalString(),
@@ -166,11 +153,24 @@ fun ActivityDataRow(activity: Activity) {
                 drawableRes = R.drawable.swap_vert_24px,
                 modifier = Modifier.weight(1f)
             )
+        }
+        Row {
             DataField(
-                caption = stringResource(uiR.string.sid_descent),
+                caption = stringResource(uiR.string.sid_avg_climbrate_pos),
+                value = LocalUnit
+                    .of(activity.positiveAvgClimbrate, UnitConverter.Unit.MS)
+                    .withDigits(2)
+                    .withSymbol(false)
+                    .toLocalString(),
+                unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),
+                drawableRes = R.drawable.swap_vert_24px,
+                modifier = Modifier.weight(1f)
+            )
+            DataField(
+                caption = stringResource(uiR.string.sid_avg_climbrate_neg),
                 value = LocalUnit
                     .of(activity.negativeAvgClimbrate, UnitConverter.Unit.MS)
-                    .withDigits(0)
+                    .withDigits(2)
                     .withSymbol(false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),

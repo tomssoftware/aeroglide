@@ -21,6 +21,7 @@ import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.rotationVectorSensorDataFlow
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.GlideRatio
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
@@ -64,13 +65,18 @@ interface SensorRepository {
     val climbrateFlowUi: Flow<Climbrate>
 
     /** Fused sensor */
-//    val calibrationFlow: Flow<Calibration>
-//    val calibrationFlowUi: Flow<Calibration>
     val altitudeFlow: Flow<SensorData>
     val altitudeFlowUi: Flow<Altitude>
 
+    /** Fused sensor */
+    val glideRatioFlow: Flow<SensorData>
+    val glideRatioFlowUi: Flow<GlideRatio>
+
     val calibration: StateFlow<Calibration>
     fun setCalibration(calibration: Calibration)
+
+    fun enableLocationUpdates()
+    fun disableLocationUpdates()
 }
 
 @Singleton
@@ -90,7 +96,20 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * Location state flow
      */
-    override val locationDataSource = locationManager.locationDataFlow(context, 1000) //.shareSensorData()
+    private val enableLocationUpdates = MutableStateFlow(false)
+    override val locationDataSource = locationManager.locationDataFlow(
+        context = context,
+        enableLocationUpdates = enableLocationUpdates,
+        interval = 1000
+    ).shareSensorData()
+
+    override fun enableLocationUpdates() {
+        enableLocationUpdates.value = true
+    }
+
+    override fun disableLocationUpdates() {
+        enableLocationUpdates.value = false
+    }
 
     /**
      * Linear acceleration shared flow
@@ -150,32 +169,6 @@ class SensorRepositoryImpl @Inject constructor(
                     )
                 }
         }
-
-//    /**
-//     * Altitude flow
-//     */
-//    private var calibration = Calibration()
-//    override val calibrationFlow: Flow<Calibration>
-//        get() {
-//            return combine(pressureDataSource, locationDataSource) { p, l ->
-//                val pressure = p.values[0] * 100f
-//                val altitude = l.altitude.toFloat()
-//                with(calibration) {
-//                    if (l.hasAccuracy() && l.hasVerticalAccuracy() && pressure != 0f && !isCalibrated) {
-//                        isCalibrated = true
-//                        pressure0 = pressure
-//                        altitude0 = altitude
-//                        verticalAccuracy = l.verticalAccuracyMeters
-//                        horizontalAccuracy = l.verticalAccuracyMeters
-//                    }
-//                }
-//                calibration
-//            }/*.takeWhile {
-//                !calibration.isCalibrated
-//            }.timeout(10.seconds)*/
-//        }
-//
-//    override val calibrationFlowUi = calibrationFlow
 
     /**
      * Altitude flow
@@ -251,7 +244,6 @@ class SensorRepositoryImpl @Inject constructor(
                 }
         }
 
-
     override val climbrateFlowUi: Flow<Climbrate>
         get() {
             val sensorFrequency = SensorFrequency()
@@ -287,6 +279,37 @@ class SensorRepositoryImpl @Inject constructor(
             }.sample(1000.milliseconds)
         }
 
+    override val glideRatioFlow: Flow<SensorData>
+        get() {
+            val sensorFrequency = SensorFrequency()
+            return combine(locationDataSource, climbRateFlow) { l, c ->
+                val glideRatio = when (c.values[0] <= -0.3) {
+                    true -> l.speed / c.values[0]
+                    false -> 0f
+                }
+                SensorData(
+                    type = SensorType.GlideRatio,
+                    timestamp = System.currentTimeMillis(),
+                    frequency = sensorFrequency.inc(),
+                    values = floatArrayOf(glideRatio)
+                )
+            }
+        }
+
+    override val glideRatioFlowUi: Flow<GlideRatio>
+        get() {
+            val sensorFrequency = SensorFrequency()
+            return glideRatioFlow
+                .map { s -> s.values[0] }
+                .chunked(1000.milliseconds)
+                .map { l ->
+                    GlideRatio(
+                        timestamp = System.currentTimeMillis(),
+                        frequency = sensorFrequency.inc(),
+                        glideRatio = l.average().toFloat()
+                    )
+                }
+        }
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
         if (altitude0 in Limits.minAltitude..Limits.maxAltitude &&

@@ -149,4 +149,13 @@ class AeroGlideActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.i("DESTROY MAIN ACTIVITY")
+        Intent(applicationContext, LocationService::class.java).apply {
+            action = LocationService.ACTION_STOP
+            stopService(this)
+        }
+    }
 }

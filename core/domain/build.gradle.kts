@@ -49,6 +49,9 @@ dependencies {
     api(project(":core:data"))
     api(project(":core:hardware"))
 
+    // Logging
+    implementation(libs.timber)
+
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

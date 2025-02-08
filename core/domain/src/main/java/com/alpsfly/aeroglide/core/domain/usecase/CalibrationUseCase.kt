@@ -8,8 +8,10 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.timeout
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -18,10 +20,12 @@ class CalibrationUseCase @Inject constructor(
 ) {
     operator fun invoke(): Flow<Calibration> {
         var lastCalibration = Calibration()
+        sensorRepository.enableLocationUpdates()
         return combine(sensorRepository.pressureFlowUi, sensorRepository.locationFlowUi) { p, l ->
+            Timber.i("Calibration: ${l.verticalAccuracy}, ${l.horizontalAccuracy}, ${p.pressure}")
             val pressure = p.pressure * 100f
             val altitude = l.altitude
-            val calibration = if (l.verticalAccuracy < 1 && l.horizontalAccuracy < 10 && pressure > 0f) {
+            val calibration = if (l.verticalAccuracy < 1.5 && l.horizontalAccuracy < 10 && pressure > 0f) {
                 Calibration(
                     timestamp = System.currentTimeMillis(),
                     isCalibrated = true,
@@ -38,6 +42,7 @@ class CalibrationUseCase @Inject constructor(
         }.takeWhile {
             !it.isCalibrated
         }.onCompletion {
+            sensorRepository.disableLocationUpdates()
             emit(lastCalibration)
         }
     }

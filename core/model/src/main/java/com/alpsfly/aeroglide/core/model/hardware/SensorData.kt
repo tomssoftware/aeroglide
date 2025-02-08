@@ -41,7 +41,8 @@ enum class SensorType {
     Pressure,
     RotationVector,
     Altitude,
-    Climbrate
+    Climbrate,
+    GlideRatio
 }
 
 

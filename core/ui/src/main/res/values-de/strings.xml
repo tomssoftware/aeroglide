@@ -37,6 +37,8 @@
     <string name="sid_altitude">Höhe</string>
     <string name="sid_ascent">Anstieg</string>
     <string name="sid_avg_speed">⌀ Geschw.</string>
+    <string name="sid_avg_climbrate_pos">⌀ Steigen</string>
+    <string name="sid_avg_climbrate_neg">⌀ Sinken</string>
     <string name="sid_climbrate">Steigrate</string>
     <string name="sid_cockpit">Cockpit</string>
     <string name="sid_compass">Kompass</string>
