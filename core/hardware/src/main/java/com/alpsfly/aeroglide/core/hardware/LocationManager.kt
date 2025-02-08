@@ -10,12 +10,21 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class LocationException(message: String) : Exception(message)
 
 @SuppressLint("MissingPermission")
-fun LocationManager.locationDataFlow(context: Context, interval: Long) = callbackFlow {
+fun LocationManager.locationDataFlow(
+    context: Context,
+    enableLocationUpdates: Flow<Boolean>,
+    interval: Long
+) = callbackFlow {
     val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
     if (!context.hasLocationPermission()) {
@@ -38,13 +47,20 @@ fun LocationManager.locationDataFlow(context: Context, interval: Long) = callbac
         }
     }
 
-    fusedLocationProviderClient.requestLocationUpdates(
-        request,
-        locationCallback,
-        Looper.getMainLooper()
-    )
+    val job = enableLocationUpdates.onEach { enabled ->
+        if (enabled) {
+            fusedLocationProviderClient.requestLocationUpdates(
+                request,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        } else {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        }
+    }.launchIn(this)
 
     awaitClose {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        job.cancel()
     }
 }

@@ -33,6 +33,8 @@
     <string name="sid_altitude">Altitud</string>
     <string name="sid_ascent">Ascenso</string>
     <string name="sid_avg_speed">Velocidad media</string>
+    <string name="sid_avg_climbrate_pos">⌀ Climb</string>
+    <string name="sid_avg_climbrate_neg">⌀ Sink</string>
     <string name="sid_climbrate">Tasa de ascenso</string>
     <string name="sid_cockpit">Cabina de mando</string>
     <string name="sid_compass">Brújula</string>

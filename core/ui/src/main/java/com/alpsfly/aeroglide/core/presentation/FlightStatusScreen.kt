@@ -18,6 +18,7 @@ import com.alpsfly.aeroglide.core.item.DataField
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.GlideRatio
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.core.viewmodel.CalibrationUiState
@@ -32,6 +33,7 @@ fun FlightStatusScreen(
     val activity by flightStatusViewModel.activityFlow.collectAsStateWithLifecycle(initialValue = Activity())
     val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = Altitude())
     val climbrate by flightStatusViewModel.climbrateFlow.collectAsStateWithLifecycle(initialValue = Climbrate())
+    val glideRatio by flightStatusViewModel.glideRatioFlow.collectAsStateWithLifecycle(initialValue = GlideRatio())
     val location by flightStatusViewModel.locationFlow.collectAsStateWithLifecycle(initialValue = Location())
     val calibration by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle()
 
@@ -64,9 +66,10 @@ fun FlightStatusScreen(
             DataField(
                 caption = stringResource(R.string.sid_speed),
                 value = LocalUnit
-                    .of(location.speed, UnitConverter.Unit.KMH)
+                    .of(location.speed, UnitConverter.Unit.MS)
                     .withDigits(0)
                     .withSymbol( flag = false)
+                    .toUnit(UnitConverter.Unit.KMH)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
                 modifier = Modifier.weight(1f)
@@ -87,7 +90,12 @@ fun FlightStatusScreen(
             )
             DataField(
                 caption = stringResource(R.string.sid_glide_ratio),
-                value = "0",
+                value = LocalUnit
+                    .of(glideRatio.glideRatio, UnitConverter.Unit.M) // none
+                    .withDigits(0)
+                    .withSymbol(flag = false)
+                    .toLocalString(),
+                unit = "", // none
                 modifier = Modifier.weight(1f)
             )
             DataField(
@@ -102,18 +110,20 @@ fun FlightStatusScreen(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             DataField(
-                caption = stringResource(R.string.sid_ascent),
+                caption = stringResource(R.string.sid_avg_climbrate_pos),
                 value = LocalUnit
                     .of(activity.positiveAvgClimbrate, UnitConverter.Unit.MS)
+                    .withDigits(2)
                     .withSymbol(flag = false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),
                 modifier = Modifier.weight(1f)
             )
             DataField(
-                caption = stringResource(R.string.sid_descent),
+                caption = stringResource(R.string.sid_avg_climbrate_neg),
                 value = LocalUnit
                     .of(activity.negativeAvgClimbrate, UnitConverter.Unit.MS)
+                    .withDigits(2)
                     .withSymbol(flag = false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),
@@ -123,7 +133,9 @@ fun FlightStatusScreen(
                 caption = stringResource(R.string.sid_avg_speed),
                 value = LocalUnit
                     .of(activity.avgSpeed, UnitConverter.Unit.MS)
+                    .withDigits(0)
                     .withSymbol(flag = false)
+                    .toUnit(UnitConverter.Unit.KMH)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
                 modifier = Modifier.weight(1f)
