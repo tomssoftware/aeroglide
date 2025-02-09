@@ -1,12 +1,8 @@
 package com.alpsfly.aeroglide.core.presentation
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -19,9 +15,12 @@ fun AltitudeProfileScreen(
     altitudeProfileViewModel: AltitudeProfileViewModel = hiltViewModel()
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxHeight()
+        modifier = Modifier.fillMaxHeight()
     ) {
-        LineChartScreen(altitudeProfileViewModel.altitudeModelProducer, Modifier)
+        LineChartScreen(
+            modelProducer = altitudeProfileViewModel.altitudeModelProducer,
+            rangeProvider = altitudeProfileViewModel.rangeProvider,
+            modifier = Modifier
+        )
     }
 }

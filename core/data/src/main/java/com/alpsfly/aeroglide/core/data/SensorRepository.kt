@@ -75,8 +75,8 @@ interface SensorRepository {
     val calibration: StateFlow<Calibration>
     fun setCalibration(calibration: Calibration)
 
-    fun enableLocationUpdates()
-    fun disableLocationUpdates()
+    fun enableListener()
+    fun disableListener()
 }
 
 @Singleton
@@ -89,37 +89,43 @@ class SensorRepositoryImpl @Inject constructor(
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /**
-     * pressure state flow
-     */
-    override val pressureDataSource = sensorManager.pressureSensorDataFlow() //.shareSensorData()
-
-    /**
      * Location state flow
      */
-    private val enableLocationUpdates = MutableStateFlow(false)
+    private val enableListener = MutableStateFlow(false)
     override val locationDataSource = locationManager.locationDataFlow(
         context = context,
-        enableLocationUpdates = enableLocationUpdates,
+        enableLocationUpdates = enableListener,
         interval = 1000
     ).shareSensorData()
 
-    override fun enableLocationUpdates() {
-        enableLocationUpdates.value = true
+    override fun enableListener() {
+        enableListener.value = true
     }
 
-    override fun disableLocationUpdates() {
-        enableLocationUpdates.value = false
+    override fun disableListener() {
+        enableListener.value = false
     }
+
+    /**
+     * pressure state flow
+     */
+    override val pressureDataSource = sensorManager.pressureSensorDataFlow(
+        enable = enableListener
+    ) //.shareSensorData()
 
     /**
      * Linear acceleration shared flow
      */
-    private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow() //.shareSensorData()
+    private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow(
+      enable = enableListener
+    ) //.shareSensorData()
 
     /**
      * Rotation vector shared flow
      */
-    private val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow() //.shareSensorData()
+    private val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow(
+        enable = enableListener
+    ) //.shareSensorData()
 
     /**
      * Vertical acceleration flow

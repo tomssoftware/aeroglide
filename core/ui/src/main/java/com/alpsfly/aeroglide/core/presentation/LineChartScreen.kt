@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisTickComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
@@ -20,12 +21,16 @@ import com.patrykandpatrick.vico.core.cartesian.Zoom
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 
 
 @Composable
-fun LineChartScreen(modelProducer: CartesianChartModelProducer, modifier: Modifier) {
-
+fun LineChartScreen(
+    rangeProvider: CartesianLayerRangeProvider = CartesianLayerRangeProvider.auto(),
+    modelProducer: CartesianChartModelProducer,
+    modifier: Modifier
+) {
     CartesianChartHost(
         chart = rememberCartesianChart(
             rememberLineCartesianLayer(
@@ -34,11 +39,13 @@ fun LineChartScreen(modelProducer: CartesianChartModelProducer, modifier: Modifi
                         remember { LineCartesianLayer.LineFill.single(fill(Color(0xffa485e0))) }
                     )
                 ),
+                rangeProvider = rangeProvider
             ),
-            startAxis = VerticalAxis.rememberStart(),
+            startAxis = VerticalAxis.rememberStart(
+
+            ),
             bottomAxis = HorizontalAxis.rememberBottom(
-                guideline = null,
-                //itemPlacer = remember { HorizontalAxis.ItemPlacer.aligned(30) },
+                guideline = null
             ),
         ),
         modelProducer = modelProducer,
@@ -49,7 +56,7 @@ fun LineChartScreen(modelProducer: CartesianChartModelProducer, modifier: Modifi
         ),
         scrollState = rememberVicoScrollState(
             scrollEnabled = true,
-            autoScrollCondition = AutoScrollCondition.OnModelSizeIncreased,
+            autoScrollCondition = AutoScrollCondition.OnModelGrowth,
             autoScroll = remember { Scroll.Relative.x(10.0) }
         )
     )

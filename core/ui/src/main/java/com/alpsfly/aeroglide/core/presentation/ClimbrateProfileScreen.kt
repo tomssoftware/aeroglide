@@ -28,7 +28,10 @@ fun ClimbrateProfileScreen(
             verticalArrangement = Arrangement.Center
         )
         {
-            LineChartScreen(climbrateProfileViewModel.climbrateModelProducer, Modifier)
+            LineChartScreen(
+                modelProducer = climbrateProfileViewModel.climbrateModelProducer,
+                modifier = Modifier
+            )
         }
     }
 }
