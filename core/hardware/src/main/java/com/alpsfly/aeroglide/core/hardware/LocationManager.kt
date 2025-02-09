@@ -11,8 +11,6 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -56,7 +54,12 @@ fun LocationManager.locationDataFlow(
             )
         } else {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-        }
+            // todo: check if implementation is correct
+            getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)?.let { it ->
+                it.speed = 0f
+                this@callbackFlow.trySend(it)
+            }
+         }
     }.launchIn(this)
 
     awaitClose {

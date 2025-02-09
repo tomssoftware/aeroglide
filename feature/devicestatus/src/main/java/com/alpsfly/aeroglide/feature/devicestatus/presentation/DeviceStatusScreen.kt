@@ -106,7 +106,7 @@ private fun LineChart(modelProducer: CartesianChartModelProducer, modifier: Modi
         ),
         scrollState = rememberVicoScrollState(
             scrollEnabled = true,
-            autoScrollCondition = AutoScrollCondition.OnModelSizeIncreased,
+            autoScrollCondition = AutoScrollCondition.OnModelGrowth,
             autoScroll = remember { Scroll.Relative.x(10.0) }
         )
     )

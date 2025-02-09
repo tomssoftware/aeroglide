@@ -73,9 +73,10 @@ fun ActivityDataRow(activity: Activity) {
             DataField(
                 caption = stringResource(uiR.string.sid_distance),
                 value = LocalUnit
-                    .of(activity.distance, UnitConverter.Unit.KM)
-                    .withDigits(0)
+                    .of(activity.distance, UnitConverter.Unit.M)
+                    .withDigits(1)
                     .withSymbol(false)
+                    .toUnit(UnitConverter.Unit.KM)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.KM).toLocalSymbol(),
                 drawableRes = R.drawable.straighten_24px,
@@ -185,6 +186,7 @@ fun ActivityDataRow(activity: Activity) {
                     .of(activity.maxSpeed, UnitConverter.Unit.MS)
                     .withDigits(0)
                     .withSymbol(false)
+                    .toUnit(UnitConverter.Unit.KMH)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
                 drawableRes = R.drawable.shutter_speed_24px,
@@ -196,6 +198,7 @@ fun ActivityDataRow(activity: Activity) {
                     .of(activity.avgSpeed, UnitConverter.Unit.MS)
                     .withDigits(0)
                     .withSymbol(false)
+                    .toUnit(UnitConverter.Unit.KMH)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
                 drawableRes = R.drawable.avg_pace_24px,

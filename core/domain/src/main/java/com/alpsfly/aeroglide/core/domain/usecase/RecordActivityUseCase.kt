@@ -1,5 +1,8 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
+import android.content.Context
+import android.os.PowerManager
+import androidx.core.content.ContextCompat.getSystemService
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.RecordActivityUseCase.VarioAccuracy
@@ -8,16 +11,19 @@ import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.time.Duration
 import javax.inject.Inject
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
 class RecordActivityUseCase @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val sensorRepository: SensorRepository,
     private val dataRepository: DataRepository,
 ) {
@@ -42,6 +48,7 @@ class RecordActivityUseCase @Inject constructor(
         HIGH  // Acceleration and Location and Pressure
     }
 
+    private var recordingWakeLock: PowerManager.WakeLock? = null
 
     private var activity = Activity()
     private val verticallyMoving = VerticallyMoving() // todo: reset after activity end
@@ -58,7 +65,13 @@ class RecordActivityUseCase @Inject constructor(
     }
 
     private fun startRecordSensorData() {
-        sensorRepository.enableLocationUpdates()
+        recordingWakeLock = (getSystemService(context, PowerManager::class.java) as PowerManager).run {
+            newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TrackRecorder::lock").apply {
+                acquire(Duration.ofHours(12).toMillis())
+            }
+        }
+
+        sensorRepository.enableListener()
         sensorFlows.forEach { (type, flow) ->
             val job = CoroutineScope(Dispatchers.IO).launch {
                 verticallyMoving.reset()
@@ -129,9 +142,15 @@ class RecordActivityUseCase @Inject constructor(
     }
 
     private fun stopRecordSensorData() {
+        recordingWakeLock?.let {
+            if (it.isHeld) {
+                it.release()
+            }
+        }
+
         recordingJobs.forEach { (_, job) -> job.cancel() }
         recordingJobs.clear()
-        sensorRepository.disableLocationUpdates()
+        sensorRepository.disableListener()
     }
 
     private suspend fun insertActivity(activityId: Long): Activity {

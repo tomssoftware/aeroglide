@@ -1,8 +1,9 @@
 package com.alpsfly.aeroglide
 
-import android.Manifest
+ import android.Manifest
 import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -28,7 +29,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.core.ui.theme.AeroGlideTheme
@@ -54,6 +54,9 @@ class AeroGlideActivity : ComponentActivity() {
             ),
             0
         )
+
+        // todo: keep screen on only while recording
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         beepGenerator = BeepGeneratorImpl()
 
