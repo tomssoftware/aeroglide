@@ -1,26 +1,20 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
-import android.location.Location
 import com.alpsfly.aeroglide.core.data.SensorRepository
-import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.flow.timeout
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 class CalibrationUseCase @Inject constructor(
     private val sensorRepository: SensorRepository
 ) {
     operator fun invoke(): Flow<Calibration> {
         var lastCalibration = Calibration()
-        sensorRepository.enableLocationUpdates()
+        sensorRepository.enableListener()
         return combine(sensorRepository.pressureFlowUi, sensorRepository.locationFlowUi) { p, l ->
             Timber.i("Calibration: ${l.verticalAccuracy}, ${l.horizontalAccuracy}, ${p.pressure}")
             val pressure = p.pressure * 100f
@@ -42,7 +36,7 @@ class CalibrationUseCase @Inject constructor(
         }.takeWhile {
             !it.isCalibrated
         }.onCompletion {
-            sensorRepository.disableLocationUpdates()
+            sensorRepository.disableListener()
             emit(lastCalibration)
         }
     }

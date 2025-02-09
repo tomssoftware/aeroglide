@@ -19,11 +19,11 @@ package com.alpsfly.aeroglide.core.data
 import com.alpsfly.aeroglide.core.database.ActivityDao
 import com.alpsfly.aeroglide.core.database.AltitudeDao
 import com.alpsfly.aeroglide.core.database.CalibrationDao
-import com.alpsfly.aeroglide.core.database.PressureDao
-import com.alpsfly.aeroglide.core.model.common.User
-import com.alpsfly.aeroglide.core.database.UserDao
 import com.alpsfly.aeroglide.core.database.ClimbrateDao
 import com.alpsfly.aeroglide.core.database.LocationDao
+import com.alpsfly.aeroglide.core.database.PressureDao
+import com.alpsfly.aeroglide.core.database.UserDao
+import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
@@ -34,7 +34,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
@@ -96,8 +95,12 @@ class LocalDataRepository @Inject constructor(
     override val allActivitiesFlow: Flow<List<Activity>> = activityDao.allActivitiesFlow()
     @OptIn(ExperimentalCoroutinesApi::class)
     override val activityFlow: Flow<Activity> =
-        activityId.filterNotNull().flatMapLatest { id ->
-        activityDao.activityFlow(id)
+        activityId.flatMapLatest { id ->
+        if (id != 0L) {
+            activityDao.activityFlow(id)
+        } else {
+            MutableStateFlow(Activity())
+        }
     }
 
     override fun activityFlow(activityId: Long): Flow<Activity> = activityDao.activityFlow(activityId)

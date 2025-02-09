@@ -42,24 +42,7 @@ class FlightStatusViewModel @Inject constructor(
                 initialValue = CalibrationUiState.Loading
             )
 
-//    val climbrateFlow = combine(sensorRepository.climbrateFlowUi, appRepository.isRecording) { climbrate, isRecording ->
-//        if (isRecording) climbrate else null
-//    }.filterNotNull(
-//    ).stateIn(
-//        scope = viewModelScope,
-//        started = SharingStarted.WhileSubscribed(5000),
-//        initialValue = null
-//    )
-//
-//    val locationFlow = combine(sensorRepository.locationFlowUi, appRepository.isRecording) { location, isRecording ->
-//        if (isRecording) location else null
-//    }.filterNotNull(
-//    ).stateIn(
-//        scope = viewModelScope,
-//        started = SharingStarted.WhileSubscribed(5000),
-//        initialValue = null
-//    )
-
+    // todo: check if this is still needed
     val activityFlow = dataRepository.activityFlow
         .filterNotNull()
         .stateIn(
