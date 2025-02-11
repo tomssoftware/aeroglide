@@ -9,7 +9,7 @@ import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
 @Serializable data object ActivityListRoute
-@Serializable data class ActivityDetailRoute(val activityId: Long)
+@Serializable data class ActivityMainRoute(val activityId: Long)
 
 fun NavController.navigateToActivityList(navOptions: NavOptionsBuilder.() -> Unit = {}) {
     navigate(route = ActivityListRoute) {
@@ -19,31 +19,24 @@ fun NavController.navigateToActivityList(navOptions: NavOptionsBuilder.() -> Uni
 
 fun NavGraphBuilder.activityList(navController: NavController) {
     composable<ActivityListRoute> {
-        ActivityListScreen(navController = navController)
+        ListHistoryScreen(navController = navController)
     }
 }
 
-fun NavController.navigateToActivityDetail(activityId: Long, navOptions: NavOptionsBuilder.() -> Unit = {}) {
-    navigate(route = ActivityDetailRoute(activityId)) {
+fun NavController.navigateToActivityMain(activityId: Long, navOptions: NavOptionsBuilder.() -> Unit = {}) {
+    navigate(route = ActivityMainRoute(activityId)) {
         navOptions()
     }
 }
 
-//fun NavGraphBuilder.activityDetail(navController: NavController) {
-//    composable<ActivityDetailRoute> { backStackEntry ->
-//        val args: ActivityDetailRoute = backStackEntry.toRoute()
-//        ActivityDetailScreen(navController = navController, id = args.activityId)
-//    }
-//}
-
-fun NavGraphBuilder.activityDetail(navController: NavController) {
-    composable<ActivityDetailRoute> { backStackEntry ->
-        val args = backStackEntry.toRoute<ActivityDetailRoute>()
+fun NavGraphBuilder.activityMain(navController: NavController) {
+    composable<ActivityMainRoute> { backStackEntry ->
+        val args = backStackEntry.toRoute<ActivityMainRoute>()
 
         // Ensure that the id remains stable
         val id = remember { args.activityId }
 
-        ActivityDetailScreen(navController = navController, id = id)
+        MainHistoryScreen(navController = navController, activityId = id)
     }
 }
 

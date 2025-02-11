@@ -2,16 +2,20 @@ package com.alpsfly.aeroglide.core.domain.usecase
 
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.timeout
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 class CalibrationUseCase @Inject constructor(
     private val sensorRepository: SensorRepository
 ) {
+    @OptIn(FlowPreview::class)
     operator fun invoke(): Flow<Calibration> {
         var lastCalibration = Calibration()
         sensorRepository.enableListener()
@@ -19,7 +23,7 @@ class CalibrationUseCase @Inject constructor(
             Timber.i("Calibration: ${l.verticalAccuracy}, ${l.horizontalAccuracy}, ${p.pressure}")
             val pressure = p.pressure * 100f
             val altitude = l.altitude
-            val calibration = if (l.verticalAccuracy < 1.5 && l.horizontalAccuracy < 10 && pressure > 0f) {
+            val calibration = if (l.verticalAccuracy < 1.5 && l.horizontalAccuracy < 12.5 && pressure > 0f) {
                 Calibration(
                     timestamp = System.currentTimeMillis(),
                     isCalibrated = true,
@@ -35,7 +39,13 @@ class CalibrationUseCase @Inject constructor(
             calibration
         }.takeWhile {
             !it.isCalibrated
-        }.onCompletion {
+        }.timeout( // todo: timeout don't work
+            20.seconds
+        ).onCompletion { cause ->
+            if (cause != null) {
+                lastCalibration.isCalibrated = true
+                Timber.i("Calibration timed out")
+            }
             sensorRepository.disableListener()
             emit(lastCalibration)
         }

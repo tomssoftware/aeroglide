@@ -1,9 +1,12 @@
 package com.alpsfly.aeroglide.feature.activityhistory
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,12 +17,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ActivityHistoryViewModel @Inject constructor(
+class ActivityViewModel @Inject constructor(
     private val dataRepository: DataRepository,
 ) : ViewModel() {
 
     val allActivitiesUiState: StateFlow<ActivityListUiState> =
-        dataRepository.allActivitiesFlow
+        dataRepository.allActivities
             .map { list -> ActivityListUiState.Success(list) }
             .stateIn(
                 scope = viewModelScope,
@@ -36,6 +39,28 @@ class ActivityHistoryViewModel @Inject constructor(
             _activity.value = ActivityUiState.Success(
                 dataRepository.getActivity(id)
             )
+        }
+    }
+
+    val altitudeModelProducer = CartesianChartModelProducer()
+    fun loadAltitudes(activityId: Long) {
+        viewModelScope.launch {
+            val activity = dataRepository.getActivity(activityId)
+            val altitudeFlow = dataRepository.getAltitudesBetween(activity.begin, activity.end)
+            val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
+            altitudeFlow.collect { altitudeList ->
+                altitudeList.forEach { altitude ->
+                    altitudePoints.add(Pair(altitudePoints.size, altitude.altitude))
+                    altitudeModelProducer.runTransaction {
+                        lineSeries {
+                            series(
+                                x = altitudePoints.map { it.first },
+                                y = altitudePoints.map { it.second }
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

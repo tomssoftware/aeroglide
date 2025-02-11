@@ -9,11 +9,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AltitudeDao {
-    @Query("select * from altitude")
-    fun getAllAltitude(): Flow<List<Altitude>>
+    @get:Query("select * from altitude")
+    val allAltitudes: Flow<List<Altitude>>
 
-    @Query("select * from altitude")
-    fun getAllAltitudeAsFlow(): Flow<Altitude>
+    @Query("select * from altitude where timestamp = :timestamp")
+    fun getAltitude(timestamp: Long): Flow<Altitude>
+
+    @Query("select * from altitude where timestamp between :start and :end")
+    fun getAltitudesBetween(start: Long, end: Long): Flow<List<Altitude>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addAltitude(altitude: Altitude)

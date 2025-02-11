@@ -10,8 +10,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ClimbrateDao {
-    @Query("select * from climbrate")
-    fun getAllClimbrate(): Flow<List<Climbrate>>
+    @get:Query("select * from climbrate")
+    val allClimbrates: Flow<List<Climbrate>>
+
+    @Query("select * from climbrate where timestamp = :timestamp")
+    fun getClimbrate(timestamp: Long): Flow<Climbrate>
+
+    @Query("select * from climbrate where timestamp between :start and :end")
+    fun getClimbratesBetween(start: Long, end: Long): Flow<List<Climbrate>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addClimbrate(climbrate: Climbrate)

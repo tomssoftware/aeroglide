@@ -8,17 +8,22 @@ import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class FlightStatusViewModel @Inject constructor(
     appRepository: AppRepository,
-    dataRepository: DataRepository,
+    private val dataRepository: DataRepository,
     sensorRepository: SensorRepository,
 ) : ViewModel() {
 
@@ -27,6 +32,9 @@ class FlightStatusViewModel @Inject constructor(
     val climbrateFlow = sensorRepository.climbrateFlowUi
     val glideRatioFlow = sensorRepository.glideRatioFlowUi
     private val calibrationFlow = sensorRepository.calibration
+
+    private val activityId = appRepository.activityId
+    private val isRecording = appRepository.isRecording
 
     val calibrationUiState: StateFlow<CalibrationUiState> =
         calibrationFlow
@@ -42,17 +50,25 @@ class FlightStatusViewModel @Inject constructor(
                 initialValue = CalibrationUiState.Loading
             )
 
-    // todo: check if this is still needed
-    val activityFlow = dataRepository.activityFlow
-        .filterNotNull()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val activityFlow: StateFlow<Activity> = isRecording
+        .flatMapLatest { isRecording ->
+            if (isRecording) {
+                activityId.flatMapLatest { activityId ->
+                    dataRepository.getActivityFlow(activityId)
+                }
+            } else {
+                flowOf() // Emit an empty flow if the boolean state is false
+            }
+        }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Lazily,
+            started = SharingStarted.Lazily, // todo: check if this is the best option
             initialValue = Activity()
         )
 }
 
-sealed interface  CalibrationUiState {
+sealed interface CalibrationUiState {
     data object Loading : CalibrationUiState
     data class Success(
         val calibration: Calibration,

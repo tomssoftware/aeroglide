@@ -27,15 +27,12 @@ class AeroGlideViewModel @Inject constructor(
     private var activityId = 0L
     fun startRecording() {
         activityId = System.currentTimeMillis()
-        dataRepository.setActivityId(activityId)
         appRepository.startRecording(activityId)
     }
     fun stopRecording() {
         activityId = 0L
         appRepository.stopRecording()
     }
-
-    val calibration = sensorRepository.calibration
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
