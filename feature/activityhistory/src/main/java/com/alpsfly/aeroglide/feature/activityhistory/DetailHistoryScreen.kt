@@ -22,16 +22,16 @@ import timber.log.Timber
 import com.alpsfly.aeroglide.core.ui.R as uiR
 
 @Composable
-fun ActivityDetailScreen(
+fun DetailHistoryScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    id: Long,
-    activityHistoryViewModel: ActivityHistoryViewModel = hiltViewModel(),
+    activityId: Long,
+    viewModel: ActivityViewModel = hiltViewModel(),
 ) {
-    val activityUiState = activityHistoryViewModel.activity.collectAsStateWithLifecycle()
+    val activityUiState = viewModel.activity.collectAsStateWithLifecycle()
 
-    LaunchedEffect(key1 = id) {
-        activityHistoryViewModel.loadActivityById(id)
+    LaunchedEffect(key1 = activityId) {
+        viewModel.loadActivityById(activityId)
     }
 
     when (activityUiState.value) {

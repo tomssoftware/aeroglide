@@ -9,11 +9,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LocationDao {
-    @Query("select * from location")
-    fun getAllLocation(): Flow<List<Location>>
+    @get:Query("select * from location")
+    val allLocations: Flow<List<Location>>
 
-    @Query("select * from location")
-    fun getAllLocationAsFlow(): Flow<Location>
+    @Query("select * from location where timestamp = :timestamp")
+    fun getLocation(timestamp: Long): Flow<Location>
+
+    @Query("select * from location where timestamp between :start and :end")
+    fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addLocation(location: Location)
