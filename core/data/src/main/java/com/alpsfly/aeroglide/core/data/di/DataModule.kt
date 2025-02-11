@@ -85,18 +85,31 @@ interface DataRepositoryModule {
 
 
 class FakeDataRepository @Inject constructor(
-    override val altitudeAsFlow: Flow<Altitude>,
-    override val allActivitiesFlow: Flow<List<Activity>>,
-    override val activityFlow: Flow<Activity>
+    override val allActivities: Flow<List<Activity>>,
+    override val allLocations: Flow<List<Location>>,
 ) : DataRepository {
-    override val altitude: Flow<List<Altitude>> = flowOf(fakeAltitude)
-    override val calibration: Flow<List<Calibration>> = flowOf(fakeCalibration)
-    override val climbrate: Flow<List<Climbrate>> = flowOf(fakeClimbrate)
-    override val pressure: Flow<List<Pressure>> = flowOf(fakePressure)
-    override val users: Flow<List<User>> = flowOf(fakeUsers)
-    override fun setActivityId(activityId: Long) {
+    override val allAltitudes: Flow<List<Altitude>> = flowOf(fakeAltitude)
+    override fun getAltitude(timestamp: Long): Flow<Altitude> {
         TODO("Not yet implemented")
     }
+
+    override fun getAltitudesBetween(start: Long, end: Long): Flow<List<Altitude>> {
+        TODO("Not yet implemented")
+    }
+
+    override val calibration: Flow<List<Calibration>> = flowOf(fakeCalibration)
+    override val allClimbrates: Flow<List<Climbrate>> = flowOf(fakeClimbrate)
+    override fun getClimbrate(timestamp: Long): Flow<Climbrate> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getClimbratesBetween(start: Long, end: Long): Flow<List<Climbrate>> {
+        TODO("Not yet implemented")
+    }
+
+    override val pressure: Flow<List<Pressure>> = flowOf(fakePressure)
+    override val users: Flow<List<User>> = flowOf(fakeUsers)
+
 
     override suspend fun addActivity(activity: Activity) {
         throw NotImplementedError()
@@ -118,7 +131,7 @@ class FakeDataRepository @Inject constructor(
         throw NotImplementedError()
     }
 
-    override fun activityFlow(activityId: Long): Flow<Activity> {
+    override fun getActivityFlow(activityId: Long): Flow<Activity> {
         TODO("Not yet implemented")
     }
 
@@ -135,6 +148,14 @@ class FakeDataRepository @Inject constructor(
     }
 
     override suspend fun addLocation(location: Location) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getLocation(timestamp: Long): Flow<Location> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>> {
         TODO("Not yet implemented")
     }
 }

@@ -30,26 +30,22 @@ import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 interface DataRepository {
     // Activity
-    val allActivitiesFlow: Flow<List<Activity>>
-    val activityFlow: Flow<Activity>
-    fun activityFlow(activityId: Long): Flow<Activity>
+    val allActivities: Flow<List<Activity>>
+    fun getActivityFlow(activityId: Long): Flow<Activity>
     suspend fun getActivity(activityId: Long): Activity
     suspend fun addActivity(activity: Activity)
     suspend fun updateActivity(activity: Activity)
 
     // Altitude
     suspend fun addAltitude(altitude: Altitude)
-    val altitude: Flow<List<Altitude>>
-    val altitudeAsFlow: Flow<Altitude>
+    val allAltitudes: Flow<List<Altitude>>
+    fun getAltitude(timestamp: Long): Flow<Altitude>
+    fun getAltitudesBetween(start: Long, end: Long): Flow<List<Altitude>>
 
     // Calibration
     suspend fun addCalibration(calibration: Calibration)
@@ -57,7 +53,9 @@ interface DataRepository {
 
     // Climbrate
     suspend fun addClimbrate(climbrate: Climbrate)
-    val climbrate: Flow<List<Climbrate>>
+    val allClimbrates: Flow<List<Climbrate>>
+    fun getClimbrate(timestamp: Long): Flow<Climbrate>
+    fun getClimbratesBetween(start: Long, end: Long): Flow<List<Climbrate>>
 
     // Pressure
     suspend fun addPressure(pressure: Pressure)
@@ -65,13 +63,13 @@ interface DataRepository {
 
     // Location
     suspend fun addLocation(location: Location)
+    val allLocations: Flow<List<Location>>
+    fun getLocation(timestamp: Long): Flow<Location>
+    fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>>
 
     // User
     suspend fun addUser(user: User)
     val users: Flow<List<User>>
-
-    // Other
-    fun setActivityId(activityId: Long)
 }
 
 class LocalDataRepository @Inject constructor(
@@ -84,34 +82,17 @@ class LocalDataRepository @Inject constructor(
     private val userDao: UserDao,
 ) : DataRepository {
 
-    // Other
-    private val _activityId = MutableStateFlow(0L)
-    private val activityId = _activityId.asStateFlow()
-    override fun setActivityId(activityId: Long) {
-        _activityId.value = activityId
-    }
-
-    // Activity
-    override val allActivitiesFlow: Flow<List<Activity>> = activityDao.allActivitiesFlow()
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val activityFlow: Flow<Activity> =
-        activityId.flatMapLatest { id ->
-        if (id != 0L) {
-            activityDao.activityFlow(id)
-        } else {
-            MutableStateFlow(Activity())
-        }
-    }
-
-    override fun activityFlow(activityId: Long): Flow<Activity> = activityDao.activityFlow(activityId)
+    override val allActivities: Flow<List<Activity>> = activityDao.allActivitiesFlow()
+    override fun getActivityFlow(activityId: Long): Flow<Activity> = activityDao.getActivityFlow(activityId)
     override suspend fun getActivity(activityId: Long): Activity = activityDao.getActivity(activityId)
     override suspend fun addActivity(activity: Activity) = activityDao.addActivity(activity)
     override suspend fun updateActivity(activity: Activity) = activityDao.updateActivity(activity)
 
     // Altitude
     override suspend fun addAltitude(altitude: Altitude) = altitudeDao.addAltitude(altitude)
-    override val altitude: Flow<List<Altitude>> = altitudeDao.getAllAltitude()
-    override val altitudeAsFlow: Flow<Altitude> = altitudeDao.getAllAltitudeAsFlow()
+    override val allAltitudes: Flow<List<Altitude>> = altitudeDao.allAltitudes
+    override fun getAltitude(timestamp: Long): Flow<Altitude> = altitudeDao.getAltitude(timestamp)
+    override fun getAltitudesBetween(start: Long, end: Long) = altitudeDao.getAltitudesBetween(start, end)
 
     // Calibration
     override suspend fun addCalibration(calibration: Calibration) = calibrationDao.addCalibration(calibration)
@@ -119,7 +100,9 @@ class LocalDataRepository @Inject constructor(
 
     // Climbrate
     override suspend fun addClimbrate(climbrate: Climbrate) = climbrateDao.addClimbrate(climbrate)
-    override val climbrate: Flow<List<Climbrate>> = climbrateDao.getAllClimbrate()
+    override val allClimbrates: Flow<List<Climbrate>> = climbrateDao.allClimbrates
+    override fun getClimbrate(timestamp: Long): Flow<Climbrate> = climbrateDao.getClimbrate(timestamp)
+    override fun getClimbratesBetween(start: Long, end: Long) = climbrateDao.getClimbratesBetween(start, end)
 
     // Pressure
     override suspend fun addPressure(pressure: Pressure) = pressureDao.addPressure(pressure)
@@ -127,6 +110,9 @@ class LocalDataRepository @Inject constructor(
 
     // Location
     override suspend fun addLocation(location: Location) = locationDao.addLocation(location)
+    override val allLocations: Flow<List<Location>> = locationDao.allLocations
+    override fun getLocation(timestamp: Long): Flow<Location> = locationDao.getLocation(timestamp)
+    override fun getLocationsBetween(start: Long, end: Long) = locationDao.getLocationsBetween(start, end)
 
     // User
     override suspend fun addUser(user: User) = userDao.addUser(user)

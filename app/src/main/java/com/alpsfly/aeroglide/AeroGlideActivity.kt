@@ -6,7 +6,8 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
+ import androidx.activity.viewModels
+ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -26,7 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
+ import androidx.lifecycle.coroutineScope
+ import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
@@ -54,9 +56,16 @@ class AeroGlideActivity : ComponentActivity() {
             ),
             0
         )
-
-        // todo: keep screen on only while recording
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        val aeroGlideViewModel: AeroGlideViewModel by viewModels()
+        lifecycle.coroutineScope.launch {
+            aeroGlideViewModel.isRecording.collect { isRecording ->
+                if (isRecording) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+            }
+        }
 
         beepGenerator = BeepGeneratorImpl()
 
@@ -71,7 +80,6 @@ class AeroGlideActivity : ComponentActivity() {
                 val drawerState = rememberDrawerState(DrawerValue.Closed)
                 val coroutineScope = rememberCoroutineScope()
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-                val aeroGlideViewModel: AeroGlideViewModel = hiltViewModel()
                 val isRecording by aeroGlideViewModel.isRecording.collectAsState()
 
                 Scaffold(

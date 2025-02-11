@@ -1,7 +1,6 @@
 package com.alpsfly.aeroglide.core.data
 
 import android.content.Context
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,12 +9,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface AppRepository {
-    val isRecording: StateFlow<Boolean>
     val activityId: StateFlow<Long>
-
+    val isRecording: StateFlow<Boolean>
     fun startRecording(activityId: Long)
     fun stopRecording()
-
 }
 
 @Singleton
@@ -25,7 +22,6 @@ class AppRepositoryImpl @Inject constructor(
 
     private val _activityId = MutableStateFlow(0L)
     override val activityId = _activityId.asStateFlow()
-
     private val _isRecording = MutableStateFlow(false)
     override val isRecording = _isRecording.asStateFlow()
     override fun startRecording(activityId: Long) {

@@ -37,11 +37,10 @@ import com.alpsfly.aeroglide.core.common.units.UnitConverter
 import com.alpsfly.aeroglide.core.model.database.Activity
 
 @Composable
-fun ActivityListScreen(
+fun ListHistoryScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    id: Long = 0L,
-    viewModel: ActivityHistoryViewModel = hiltViewModel()
+    viewModel: ActivityViewModel = hiltViewModel()
 ) {
     val activityHistoryUiState by viewModel.allActivitiesUiState.collectAsStateWithLifecycle()
 
@@ -82,7 +81,7 @@ fun CardItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         onClick = {
-            navController.navigateToActivityDetail(activity.activityId)
+            navController.navigateToActivityMain(activity.activityId)
         }
     ) {
         Row(
