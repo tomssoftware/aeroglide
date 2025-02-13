@@ -1,13 +1,15 @@
 package com.alpsfly.aeroglide
 
- import android.Manifest
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
- import androidx.activity.viewModels
- import androidx.compose.foundation.layout.Box
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -26,9 +28,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.core.app.ActivityCompat
-import androidx.hilt.navigation.compose.hiltViewModel
- import androidx.lifecycle.coroutineScope
- import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.coroutineScope
+import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.service.LocationService
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
@@ -51,11 +52,12 @@ class AeroGlideActivity : ComponentActivity() {
         ActivityCompat.requestPermissions(
             this,
             arrayOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION,
+                ACCESS_COARSE_LOCATION,
+                ACCESS_FINE_LOCATION,
             ),
-            0
+            LOCATION_PERMISSION_REQUEST_CODE
         )
+
         val aeroGlideViewModel: AeroGlideViewModel by viewModels()
         lifecycle.coroutineScope.launch {
             aeroGlideViewModel.isRecording.collect { isRecording ->
@@ -68,11 +70,6 @@ class AeroGlideActivity : ComponentActivity() {
         }
 
         beepGenerator = BeepGeneratorImpl()
-
-        Intent(applicationContext, LocationService::class.java).apply {
-            action = LocationService.ACTION_START
-            startService(this)
-        }
 
         setContent {
             AeroGlideTheme {
@@ -161,6 +158,21 @@ class AeroGlideActivity : ComponentActivity() {
         }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray, deviceId: Int) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId)
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            Timber.i("PROCESSING LOCATION PERMISSION REQUEST RESULT")
+            val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            if (permission) {
+                Intent(applicationContext, LocationService::class.java).apply {
+                    action = LocationService.ACTION_START
+                    startService(this)
+                }
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         Timber.i("DESTROY MAIN ACTIVITY")
@@ -168,5 +180,9 @@ class AeroGlideActivity : ComponentActivity() {
             action = LocationService.ACTION_STOP
             stopService(this)
         }
+    }
+
+    companion object {
+        const val LOCATION_PERMISSION_REQUEST_CODE = 1001
     }
 }
