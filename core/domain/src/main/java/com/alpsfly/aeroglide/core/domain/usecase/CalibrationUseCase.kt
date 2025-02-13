@@ -23,7 +23,7 @@ class CalibrationUseCase @Inject constructor(
             Timber.i("Calibration: ${l.verticalAccuracy}, ${l.horizontalAccuracy}, ${p.pressure}")
             val pressure = p.pressure * 100f
             val altitude = l.altitude
-            val calibration = if (l.verticalAccuracy < 1.5 && l.horizontalAccuracy < 12.5 && pressure > 0f) {
+            val calibration = if (l.verticalAccuracy < 1.5 && l.horizontalAccuracy < 15 && pressure > 0f) {
                 Calibration(
                     timestamp = System.currentTimeMillis(),
                     isCalibrated = true,
@@ -38,14 +38,8 @@ class CalibrationUseCase @Inject constructor(
             lastCalibration = calibration
             calibration
         }.takeWhile {
-            !it.isCalibrated
-        }.timeout( // todo: timeout don't work
-            20.seconds
-        ).onCompletion { cause ->
-            if (cause != null) {
-                lastCalibration.isCalibrated = true
-                Timber.i("Calibration timed out")
-            }
+            it.isCalibrated.not()
+        }.onCompletion {
             sensorRepository.disableListener()
             emit(lastCalibration)
         }
