@@ -7,21 +7,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.presentation.LineChartScreen
 
-
 @Composable
-fun AltitudeHistoryScreen(
+fun ClimbrateHistoryScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
     activityId: Long,
     viewModel: ActivityViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(key1 = activityId) {
-        viewModel.loadAltitudes(activityId)
+        viewModel.loadClimbrates(activityId)
     }
 
     LineChartScreen(
-        modelProducer = viewModel.altitudeModelProducer,
-        rangeProvider = viewModel.rangeProvider,
+        modelProducer = viewModel.climbrateModelProducer,
         modifier = Modifier
     )
 }

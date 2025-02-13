@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -42,22 +44,57 @@ class ActivityViewModel @Inject constructor(
         }
     }
 
+    private var minAltitude = 0.0
+    private var maxAltitude = 1.0
+    val rangeProvider =
+        object : CartesianLayerRangeProvider {
+            override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore) = minAltitude - 10.0
+            override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore) = maxAltitude + 10.0
+        }
+
     val altitudeModelProducer = CartesianChartModelProducer()
     fun loadAltitudes(activityId: Long) {
         viewModelScope.launch {
             val activity = dataRepository.getActivity(activityId)
             val altitudeFlow = dataRepository.getAltitudesBetween(activity.begin, activity.end)
             val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
+
+            minAltitude = activity.minAltitude.toDouble()
+            maxAltitude = activity.maxAltitude.toDouble()
+
             altitudeFlow.collect { altitudeList ->
                 altitudeList.forEach { altitude ->
                     altitudePoints.add(Pair(altitudePoints.size, altitude.altitude))
-                    altitudeModelProducer.runTransaction {
-                        lineSeries {
-                            series(
-                                x = altitudePoints.map { it.first },
-                                y = altitudePoints.map { it.second }
-                            )
-                        }
+                }
+                altitudeModelProducer.runTransaction {
+                    lineSeries {
+                        series(
+                            x = altitudePoints.map { it.first },
+                            y = altitudePoints.map { it.second }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    val climbrateModelProducer = CartesianChartModelProducer()
+    fun loadClimbrates(activityId: Long) {
+        viewModelScope.launch {
+            val activity = dataRepository.getActivity(activityId)
+            val climbrateFlow = dataRepository.getClimbratesBetween(activity.begin, activity.end)
+            val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
+
+            climbrateFlow.collect { climbrateList ->
+                climbrateList.forEach { climbrate ->
+                    climbratePoints.add(Pair(climbratePoints.size, climbrate.climbrate))
+                }
+                climbrateModelProducer.runTransaction {
+                    lineSeries {
+                        series(
+                            x = climbratePoints.map { it.first },
+                            y = climbratePoints.map { it.second }
+                        )
                     }
                 }
             }
