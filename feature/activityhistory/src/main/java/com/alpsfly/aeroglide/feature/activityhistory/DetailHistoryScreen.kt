@@ -179,32 +179,32 @@ fun ActivityDataRow(activity: Activity) {
                 modifier = Modifier.weight(1f)
             )
         }
-        Row {
-            DataField(
-                caption = stringResource(uiR.string.sid_max_speed),
-                value = LocalUnit
-                    .of(activity.maxSpeed, UnitConverter.Unit.MS)
-                    .withDigits(0)
-                    .withSymbol(false)
-                    .toUnit(UnitConverter.Unit.KMH)
-                    .toLocalString(),
-                unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
-                drawableRes = R.drawable.shutter_speed_24px,
-                modifier = Modifier.weight(1f)
-            )
-            DataField(
-                caption = stringResource(uiR.string.sid_avg_speed),
-                value = LocalUnit
-                    .of(activity.avgSpeed, UnitConverter.Unit.MS)
-                    .withDigits(0)
-                    .withSymbol(false)
-                    .toUnit(UnitConverter.Unit.KMH)
-                    .toLocalString(),
-                unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
-                drawableRes = R.drawable.avg_pace_24px,
-                modifier = Modifier.weight(1f)
-            )
-        }
+//        Row {
+//            DataField(
+//                caption = stringResource(uiR.string.sid_max_speed),
+//                value = LocalUnit
+//                    .of(activity.maxSpeed, UnitConverter.Unit.MS)
+//                    .withDigits(0)
+//                    .withSymbol(false)
+//                    .toUnit(UnitConverter.Unit.KMH)
+//                    .toLocalString(),
+//                unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
+//                drawableRes = R.drawable.shutter_speed_24px,
+//                modifier = Modifier.weight(1f)
+//            )
+//            DataField(
+//                caption = stringResource(uiR.string.sid_avg_speed),
+//                value = LocalUnit
+//                    .of(activity.avgSpeed, UnitConverter.Unit.MS)
+//                    .withDigits(0)
+//                    .withSymbol(false)
+//                    .toUnit(UnitConverter.Unit.KMH)
+//                    .toLocalString(),
+//                unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
+//                drawableRes = R.drawable.avg_pace_24px,
+//                modifier = Modifier.weight(1f)
+//            )
+//        }
     }
 }
 

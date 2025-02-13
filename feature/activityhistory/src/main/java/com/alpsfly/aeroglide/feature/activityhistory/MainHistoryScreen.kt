@@ -29,7 +29,7 @@ fun MainHistoryScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(
-        pageCount = { 3 }
+        pageCount = { 4 }
     )
     val items: List<MenuItem> = listOf(
         MenuItem(
@@ -49,6 +49,12 @@ fun MainHistoryScreen(
             title = stringResource(R.string.sid_climbrate),
             contentDescription = stringResource(R.string.sid_climbrate),
             icon = ImageVector.vectorResource(R.drawable.stairs_24px)
+        ),
+        MenuItem(
+            id = R.string.sid_map.toString(),
+            title = stringResource(R.string.sid_map),
+            contentDescription = stringResource(R.string.sid_map),
+            icon = ImageVector.vectorResource(R.drawable.map_24px)
         ),
     )
 
@@ -76,6 +82,14 @@ fun MainHistoryScreen(
                     when (page) {
 
                         0 -> {
+                            DetailHistoryScreen(
+                                modifier = Modifier.fillMaxSize(),
+                                navController = navController,
+                                activityId = activityId,
+                            )
+                        }
+
+                        1 -> {
                             AltitudeHistoryScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 navController = navController,
@@ -83,18 +97,18 @@ fun MainHistoryScreen(
                             )
                         }
 
-                        1 -> {
-                            ClimbrateProfileScreen(
+                        2 -> {
+                            ClimbrateHistoryScreen(
                                 modifier = Modifier.fillMaxSize(),
-                                navController = navController
+                                navController = navController,
+                                activityId = activityId
                             )
                         }
 
-                        2 -> {
-                            DetailHistoryScreen(
+                        4 -> {
+                            MapHistoryScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 navController = navController,
-                                activityId = activityId,
                             )
                         }
                     }
