@@ -15,7 +15,6 @@ import kotlin.time.Duration.Companion.seconds
 class CalibrationUseCase @Inject constructor(
     private val sensorRepository: SensorRepository
 ) {
-    @OptIn(FlowPreview::class)
     operator fun invoke(): Flow<Calibration> {
         var lastCalibration = Calibration()
         sensorRepository.enableListener()

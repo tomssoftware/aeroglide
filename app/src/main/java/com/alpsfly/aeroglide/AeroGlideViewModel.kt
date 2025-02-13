@@ -9,11 +9,9 @@ import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordActivityUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@OptIn(FlowPreview::class)
 @HiltViewModel
 class AeroGlideViewModel @Inject constructor(
     private val appRepository: AppRepository,
@@ -36,17 +34,17 @@ class AeroGlideViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
+            calibrationUseCase.invoke().collect { calibration ->
+                sensorRepository.setCalibration(calibration)
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
             isRecording.collect {
                 if (it) {
                     recordSensorDataUseCase.startRecording(activityId)
                 } else {
                     recordSensorDataUseCase.stopRecording()
                 }
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            calibrationUseCase.invoke().collect { calibration ->
-                sensorRepository.setCalibration(calibration)
             }
         }
     }
