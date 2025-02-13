@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.Duration
 import javax.inject.Inject
 import kotlin.math.absoluteValue
@@ -50,6 +51,7 @@ class RecordActivityUseCase @Inject constructor(
 
     private var recordingWakeLock: PowerManager.WakeLock? = null
 
+    private var isRecording = false
     private var activity = Activity()
     private val verticallyMoving = VerticallyMoving() // todo: reset after activity end
 
@@ -58,13 +60,18 @@ class RecordActivityUseCase @Inject constructor(
             activity = insertActivity(activityId)
         }
         startRecordSensorData()
+        isRecording = true
     }
 
     fun stopRecording() {
-        stopRecordSensorData()
+        if (isRecording) {
+            stopRecordSensorData()
+            isRecording = false
+        }
     }
 
     private fun startRecordSensorData() {
+        Timber.i("startRecordSensorData")
         recordingWakeLock = (getSystemService(context, PowerManager::class.java) as PowerManager).run {
             newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TrackRecorder::lock").apply {
                 acquire(Duration.ofHours(12).toMillis())
@@ -142,6 +149,7 @@ class RecordActivityUseCase @Inject constructor(
     }
 
     private fun stopRecordSensorData() {
+        Timber.i("stopRecordSensorData")
         recordingWakeLock?.let {
             if (it.isHeld) {
                 it.release()

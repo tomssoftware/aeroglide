@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.shareIn
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.pow
@@ -99,10 +100,12 @@ class SensorRepositoryImpl @Inject constructor(
     ).shareSensorData()
 
     override fun enableListener() {
+        Timber.i("ENABLE SENSOR LISTENER")
         enableListener.value = true
     }
 
     override fun disableListener() {
+        Timber.i("DISABLE SENSOR LISTENER")
         enableListener.value = false
     }
 
@@ -117,7 +120,7 @@ class SensorRepositoryImpl @Inject constructor(
      * Linear acceleration shared flow
      */
     private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow(
-      enable = enableListener
+        enable = enableListener
     ) //.shareSensorData()
 
     /**
