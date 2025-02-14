@@ -16,31 +16,27 @@ class CalibrationUseCase @Inject constructor(
     private val sensorRepository: SensorRepository
 ) {
     operator fun invoke(): Flow<Calibration> {
-        var lastCalibration = Calibration()
         sensorRepository.enableListener()
         return combine(sensorRepository.pressureFlowUi, sensorRepository.locationFlowUi) { p, l ->
             Timber.i("Calibration: ${l.verticalAccuracy}, ${l.horizontalAccuracy}, ${p.pressure}")
             val pressure = p.pressure * 100f
             val altitude = l.altitude
-            val calibration = if (l.verticalAccuracy < 1.5 && l.horizontalAccuracy < 15 && pressure > 0f) {
-                Calibration(
-                    timestamp = System.currentTimeMillis(),
-                    isCalibrated = true,
-                    altitude0 = altitude,
-                    pressure0 = pressure,
-                    verticalAccuracy = l.verticalAccuracy,
-                    horizontalAccuracy = l.horizontalAccuracy
-                )
-            } else {
-                Calibration()
-            }
-            lastCalibration = calibration
-            calibration
+            val isCalibrated = (l.verticalAccuracy < 1.5 && l.horizontalAccuracy < 15 && pressure > 0f)
+            Calibration(
+                timestamp = System.currentTimeMillis(),
+                isCalibrated = isCalibrated,
+                altitude0 = altitude,
+                pressure0 = pressure,
+                verticalAccuracy = l.verticalAccuracy,
+                horizontalAccuracy = l.horizontalAccuracy
+            )
         }.takeWhile {
             it.isCalibrated.not()
         }.onCompletion {
             sensorRepository.disableListener()
-            emit(lastCalibration)
+            if (it == null) {
+                emit(Calibration())
+            }
         }
     }
 }

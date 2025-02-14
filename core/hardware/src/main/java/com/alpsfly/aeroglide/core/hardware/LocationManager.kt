@@ -33,6 +33,7 @@ fun LocationManager.locationDataFlow(
     if (!isGpsEnabled && !isNetworkEnabled) {
         Timber.w("GPS and network providers are disabled")
     }
+
     val request = LocationRequest.Builder(interval)
         .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
         .build()
