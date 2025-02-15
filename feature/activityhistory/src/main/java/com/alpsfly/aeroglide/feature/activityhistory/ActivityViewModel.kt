@@ -4,7 +4,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
+import com.alpsfly.aeroglide.core.model.configuration.ColorMapping
 import com.alpsfly.aeroglide.core.model.database.Activity
+import com.mapbox.geojson.Point
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
@@ -22,6 +24,8 @@ import javax.inject.Inject
 class ActivityViewModel @Inject constructor(
     private val dataRepository: DataRepository,
 ) : ViewModel() {
+
+
 
     val allActivitiesUiState: StateFlow<ActivityListUiState> =
         dataRepository.allActivities
@@ -96,6 +100,20 @@ class ActivityViewModel @Inject constructor(
                             y = climbratePoints.map { it.second }
                         )
                     }
+                }
+            }
+        }
+    }
+
+    private val trackPoints = mutableListOf<Point>()
+    fun loadLocations(activityId: Long) {
+        viewModelScope.launch {
+            val activity = dataRepository.getActivity(activityId)
+            val locationFlow = dataRepository.getLocationsBetween(activity.begin, activity.end)
+            trackPoints.clear()
+            locationFlow.collect { locationList ->
+                locationList.forEach { location ->
+                    trackPoints.add(Point.fromLngLat(location.longitude.toDouble(), location.latitude.toDouble()))
                 }
             }
         }

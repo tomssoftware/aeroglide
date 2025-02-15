@@ -7,9 +7,12 @@ import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordActivityUseCase
+import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,20 +35,37 @@ class AeroGlideViewModel @Inject constructor(
         appRepository.stopRecording()
     }
 
-    init {
+    private val calibrationJob: Job = viewModelScope.launch(Dispatchers.IO) {
+        calibrationUseCase.invoke().collect { calibration ->
+            sensorRepository.setCalibration(calibration)
+        }
+    }
+    private val recordingJob: Job = viewModelScope.launch(Dispatchers.IO) {
+        isRecording.collect {
+            if (it) {
+                recordSensorDataUseCase.startRecording(activityId)
+            } else {
+                recordSensorDataUseCase.stopRecording()
+            }
+        }
+    }
+
+    fun restartCalibration() {
+        // todo: check if not already running
         viewModelScope.launch(Dispatchers.IO) {
             calibrationUseCase.invoke().collect { calibration ->
                 sensorRepository.setCalibration(calibration)
             }
         }
-        viewModelScope.launch(Dispatchers.IO) {
-            isRecording.collect {
-                if (it) {
-                    recordSensorDataUseCase.startRecording(activityId)
-                } else {
-                    recordSensorDataUseCase.stopRecording()
-                }
-            }
-        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Timber.i("CLEARED VIEWMODEL")
+
+        // todo: this lines seems not necessary, check
+        // sensorRepository.setCalibration(Calibration())
+        // calibrationJob.cancel()
+        // recordingJob.cancel()
     }
 }

@@ -17,26 +17,40 @@ class CalibrationUseCase @Inject constructor(
 ) {
     operator fun invoke(): Flow<Calibration> {
         sensorRepository.enableListener()
+        val startOfCalibration = System.currentTimeMillis()
+        var calibration = Calibration(timestamp = startOfCalibration)
         return combine(sensorRepository.pressureFlowUi, sensorRepository.locationFlowUi) { p, l ->
-            Timber.i("Calibration: ${l.verticalAccuracy}, ${l.horizontalAccuracy}, ${p.pressure}")
             val pressure = p.pressure * 100f
             val altitude = l.altitude
-            val isCalibrated = (l.verticalAccuracy < 1.5 && l.horizontalAccuracy < 15 && pressure > 0f)
-            Calibration(
-                timestamp = System.currentTimeMillis(),
+            val isCalibrated = (l.verticalAccuracy < 1.5 && l.horizontalAccuracy < 10 && pressure > 0f)
+            Timber.i("Calibration: $isCalibrated, ${l.verticalAccuracy}, ${l.horizontalAccuracy}, ${p.pressure}")
+            calibration = Calibration(
+                timestamp = startOfCalibration,
                 isCalibrated = isCalibrated,
                 altitude0 = altitude,
                 pressure0 = pressure,
                 verticalAccuracy = l.verticalAccuracy,
                 horizontalAccuracy = l.horizontalAccuracy
             )
+            calibration
         }.takeWhile {
-            it.isCalibrated.not()
+            doCalibration(it)
         }.onCompletion {
             sensorRepository.disableListener()
-            if (it == null) {
-                emit(Calibration())
-            }
+            emit(calibration)
         }
+    }
+
+    private fun doCalibration(calibration: Calibration): Boolean {
+        val doContinue = (System.currentTimeMillis() - calibration.timestamp) < 30.seconds.inWholeMilliseconds
+        val isAccurate = (calibration.verticalAccuracy < REQUIRED_VERTICAL_ACCURACY
+                && calibration.horizontalAccuracy < REQUIRED_HORIZONTAL_ACCURACY
+                && calibration.pressure0 != 0f)
+        return doContinue && !isAccurate
+    }
+
+    companion object {
+        const val REQUIRED_VERTICAL_ACCURACY = 1.5f
+        const val REQUIRED_HORIZONTAL_ACCURACY = 7.5f
     }
 }

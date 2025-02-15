@@ -42,6 +42,7 @@ import timber.log.Timber
 @AndroidEntryPoint
 class AeroGlideActivity : ComponentActivity() {
 
+    private val aeroGlideViewModel: AeroGlideViewModel by viewModels()
     private lateinit var beepGenerator: BeepGeneratorImpl
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +59,14 @@ class AeroGlideActivity : ComponentActivity() {
             LOCATION_PERMISSION_REQUEST_CODE
         )
 
-        val aeroGlideViewModel: AeroGlideViewModel by viewModels()
+        val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+        if (permission) {
+            Intent(applicationContext, LocationService::class.java).apply {
+                action = LocationService.ACTION_START
+                startService(this)
+            }
+        }
+
         lifecycle.coroutineScope.launch {
             aeroGlideViewModel.isRecording.collect { isRecording ->
                 if (isRecording) {
@@ -169,6 +177,7 @@ class AeroGlideActivity : ComponentActivity() {
                     action = LocationService.ACTION_START
                     startService(this)
                 }
+                aeroGlideViewModel.restartCalibration()
             }
         }
     }
