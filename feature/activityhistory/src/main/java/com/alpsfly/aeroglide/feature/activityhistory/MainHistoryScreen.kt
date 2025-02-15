@@ -105,10 +105,11 @@ fun MainHistoryScreen(
                             )
                         }
 
-                        4 -> {
+                        3 -> {
                             MapHistoryScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 navController = navController,
+                                activityId = activityId
                             )
                         }
                     }

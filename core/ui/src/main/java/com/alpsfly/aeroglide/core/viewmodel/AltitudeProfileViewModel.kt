@@ -14,6 +14,7 @@ import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,6 +52,8 @@ class AltitudeProfileViewModel @Inject constructor(
         activityId.collect { activityId ->
             if (isRecording.value.not())
                 return@collect
+            if (activityId == 0L)
+                return@collect
 
             dataRepository.getActivityFlow(activityId).collect { activity ->
                 if (activity.maxAltitude != Float.MIN_VALUE) {
@@ -81,6 +84,11 @@ class AltitudeProfileViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Timber.i("CLEARED VIEWMODEL")
     }
 }
 
