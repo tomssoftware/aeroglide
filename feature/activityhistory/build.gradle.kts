@@ -48,6 +48,7 @@ android {
 dependencies {
     api(project(":core:ui"))
     api(project(":core:data"))
+    api(project(":core:mapbox"))
 
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)
@@ -81,4 +82,8 @@ dependencies {
     implementation(libs.vico.core)
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m3)
+
+    // Mapbox
+    implementation (libs.mapbox.android)
+    implementation (libs.mapbox.compose)
 }
