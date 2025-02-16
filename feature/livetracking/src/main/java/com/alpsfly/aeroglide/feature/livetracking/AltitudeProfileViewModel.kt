@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.viewmodel
+package com.alpsfly.aeroglide.feature.livetracking
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
