@@ -78,6 +78,7 @@ dependencies {
     api(project(":feature:devicestatus"))
     api(project(":feature:diagnosis"))
     api(project(":feature:disclaimer"))
+    api(project(":feature:livetracking"))
     api(project(":feature:variometer"))
 
 

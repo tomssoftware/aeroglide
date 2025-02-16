@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.presentation
+package com.alpsfly.aeroglide.feature.livetracking
 
 import android.text.format.DateUtils
 import androidx.compose.foundation.layout.Arrangement
@@ -21,14 +21,12 @@ import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.GlideRatio
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.ui.R
-import com.alpsfly.aeroglide.core.viewmodel.CalibrationUiState
-import com.alpsfly.aeroglide.core.viewmodel.FlightStatusViewModel
 
 @Composable
 fun FlightStatusScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    flightStatusViewModel: FlightStatusViewModel = hiltViewModel()
+    flightStatusViewModel: com.alpsfly.aeroglide.feature.livetracking.FlightStatusViewModel = hiltViewModel()
 ) {
     val activity by flightStatusViewModel.activityFlow.collectAsStateWithLifecycle(initialValue = Activity())
     val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = Altitude())
@@ -50,7 +48,7 @@ fun FlightStatusScreen(
                     .withSymbol(false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.M).toLocalSymbol(),
-                blinking = calibration is CalibrationUiState.Loading,
+                blinking = calibration is com.alpsfly.aeroglide.feature.livetracking.CalibrationUiState.Loading,
                 modifier = Modifier.weight(1f)
             )
             DataField(
