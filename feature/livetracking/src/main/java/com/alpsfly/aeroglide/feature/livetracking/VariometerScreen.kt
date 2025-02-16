@@ -2,7 +2,6 @@ package com.alpsfly.aeroglide.feature.variometer.presentation
 
 import android.graphics.RectF
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -41,14 +40,11 @@ import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.MenuItem
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
-import com.alpsfly.aeroglide.core.mapbox.data.MapScreen
+import com.alpsfly.aeroglide.feature.livetracking.LocationPathScreen
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.presentation.AeroGlideBottomBar
-import com.alpsfly.aeroglide.core.presentation.AltitudeProfileScreen
-import com.alpsfly.aeroglide.core.presentation.ClimbrateProfileScreen
-import com.alpsfly.aeroglide.core.presentation.FlightStatusScreen
 import com.alpsfly.aeroglide.core.presentation.centered
-import com.alpsfly.aeroglide.feature.variometer.viewmodel.VarioViewModel
+import com.alpsfly.aeroglide.feature.variometer.viewmodel.VariometerViewModel
 import com.alpsfly.aeroglide.core.ui.R as uiR
 
 private var startScaleAngle = 180f
@@ -123,7 +119,7 @@ fun VariometerScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            FlightStatusScreen(Modifier.fillMaxWidth(), navController)
+            com.alpsfly.aeroglide.feature.livetracking.FlightStatusScreen(Modifier.fillMaxWidth(), navController)
             Spacer(Modifier.height(16.dp))
             Box(
                 modifier = Modifier
@@ -139,21 +135,24 @@ fun VariometerScreen(
                         }
 
                         1 -> {
-                            AltitudeProfileScreen(
+                            com.alpsfly.aeroglide.feature.livetracking.AltitudeProfileScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 navController = navController
                             )
                         }
 
                         2 -> {
-                            ClimbrateProfileScreen(
+                            com.alpsfly.aeroglide.feature.livetracking.ClimbrateProfileScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 navController = navController
                             )
                         }
 
                         3 -> {
-                            MapScreen()
+                            LocationPathScreen(
+                                modifier = Modifier.fillMaxSize(),
+                                navController = navController,
+                            )
                         }
                     }
                 }
@@ -165,9 +164,9 @@ fun VariometerScreen(
 @Composable
 fun AnalogVariometer(
     modifier: Modifier = Modifier,
-    varioViewModel: VarioViewModel = hiltViewModel()
+    variometerViewModel: VariometerViewModel = hiltViewModel()
 ) {
-    val climbrate by varioViewModel.climbrate.collectAsState(initial = Climbrate())
+    val climbrate by variometerViewModel.climbrate.collectAsState(initial = Climbrate())
 
     var majorOval: Rect
     var minorOval: Rect

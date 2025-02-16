@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.MenuItem
 import com.alpsfly.aeroglide.core.presentation.AeroGlideBottomBar
-import com.alpsfly.aeroglide.core.presentation.ClimbrateProfileScreen
 import com.alpsfly.aeroglide.core.ui.R
 
 @Composable

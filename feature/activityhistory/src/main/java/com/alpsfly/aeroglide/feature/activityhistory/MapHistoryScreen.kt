@@ -81,8 +81,6 @@ fun MapHistoryScreen(
             mapView.mapboxMap.loadStyle(mapStyleContract) { style ->
                 val source = style.getSourceAs<GeoJsonSource>(TRACK_SOURCE_ID)
                 source?.featureCollection(viewModel.mapboxFeatureCollection)
-//              val feature = Feature.fromGeometry(LineString.fromLngLats(viewModel.trackPoints))
-//              source?.feature(feature)
             }
         }
     }

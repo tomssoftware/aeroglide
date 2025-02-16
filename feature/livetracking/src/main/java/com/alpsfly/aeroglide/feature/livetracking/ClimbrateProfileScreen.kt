@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.presentation
+package com.alpsfly.aeroglide.feature.livetracking
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,14 +9,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.core.viewmodel.ClimbrateProfileViewModel
+import com.alpsfly.aeroglide.core.presentation.LineChartScreen
 
 
 @Composable
 fun ClimbrateProfileScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    climbrateProfileViewModel: ClimbrateProfileViewModel = hiltViewModel()
+    climbrateProfileViewModel: com.alpsfly.aeroglide.feature.livetracking.ClimbrateProfileViewModel = hiltViewModel()
 ) {
     Box(
         modifier = Modifier
