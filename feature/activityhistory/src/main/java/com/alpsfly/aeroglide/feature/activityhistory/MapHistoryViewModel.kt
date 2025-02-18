@@ -1,9 +1,11 @@
 package com.alpsfly.aeroglide.feature.activityhistory
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
+import com.alpsfly.aeroglide.core.mapbox.data.MapBoxLocation
 import com.alpsfly.aeroglide.core.model.configuration.ColorMapping
 import com.mapbox.geojson.FeatureCollection
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,7 +15,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.alpsfly.aeroglide.core.mapbox.data.mapToFeatureCollection
 import com.alpsfly.aeroglide.core.mapbox.data.zipMapBoxLocations
+import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.Location
 import com.mapbox.geojson.Point
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @HiltViewModel
 class MapHistoryViewModel @Inject constructor(
@@ -28,11 +34,24 @@ class MapHistoryViewModel @Inject constructor(
             return _mapboxFeatureCollection
         }
 
+    private var _mapboxLocationCollection = MutableStateFlow<List<MapBoxLocation>>(emptyList())
+    val mapboxLocationCollection: StateFlow<List<MapBoxLocation>>
+        get() {
+            return _mapboxLocationCollection
+        }
+
+
     fun loadFeatureCollection(activityId: Long) {
         viewModelScope.launch {
             val activity = dataRepository.getActivity(activityId)
             getMapboxFeatureCollection(activity.begin, activity.end).collect { featureCollection ->
                 _mapboxFeatureCollection = featureCollection
+            }
+        }
+        viewModelScope.launch {
+            val activity = dataRepository.getActivity(activityId)
+            getMapboxLocationCollection(activity.begin, activity.end).collect { locationCollection ->
+                _mapboxLocationCollection.value = locationCollection
             }
         }
     }
@@ -41,7 +60,17 @@ class MapHistoryViewModel @Inject constructor(
         val locations = dataRepository.getLocationsBetween(begin, end)
         val climbrates = dataRepository.getClimbratesBetween(begin, end)
         return combine(locations, climbrates) { l, c ->
-            mapToFeatureCollection(zipMapBoxLocations(l, c).sortedBy { it.timestamp })
+            mapToFeatureCollection(zipMapBoxLocations(l, c)
+                .sortedBy { it.timestamp })
+        }
+    }
+
+    private fun getMapboxLocationCollection(begin: Long, end: Long): Flow<List<MapBoxLocation>> {
+        val locations = dataRepository.getLocationsBetween(begin, end)
+        val climbrates = dataRepository.getClimbratesBetween(begin, end)
+        return combine(locations, climbrates) { l, c ->
+            zipMapBoxLocations(l, c)
+                .sortedBy { it.timestamp }
         }
     }
 }
