@@ -26,6 +26,7 @@
             <option value="$PROJECT_DIR$/feature/devicestatus" />
             <option value="$PROJECT_DIR$/feature/diagnosis" />
             <option value="$PROJECT_DIR$/feature/disclaimer" />
+            <option value="$PROJECT_DIR$/feature/livetracking" />
             <option value="$PROJECT_DIR$/feature/variometer" />
           </set>
         </option>

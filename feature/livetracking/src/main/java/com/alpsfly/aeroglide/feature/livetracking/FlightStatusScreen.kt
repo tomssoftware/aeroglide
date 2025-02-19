@@ -26,7 +26,7 @@ import com.alpsfly.aeroglide.core.ui.R
 fun FlightStatusScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    flightStatusViewModel: com.alpsfly.aeroglide.feature.livetracking.FlightStatusViewModel = hiltViewModel()
+    flightStatusViewModel: FlightStatusViewModel = hiltViewModel()
 ) {
     val activity by flightStatusViewModel.activityFlow.collectAsStateWithLifecycle(initialValue = Activity())
     val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = Altitude())
@@ -48,7 +48,7 @@ fun FlightStatusScreen(
                     .withSymbol(false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.M).toLocalSymbol(),
-                blinking = calibration is com.alpsfly.aeroglide.feature.livetracking.CalibrationUiState.Loading,
+                blinking = calibration is CalibrationUiState.Loading,
                 modifier = Modifier.weight(1f)
             )
             DataField(
