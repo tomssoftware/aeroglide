@@ -1,6 +1,7 @@
 package com.alpsfly.aeroglide.core.database
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -24,4 +25,7 @@ interface ActivityDao {
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun updateActivity(activity: Activity)
+
+    @Delete
+    suspend fun deleteActivity(activity: Activity)
 }
