@@ -4,6 +4,7 @@ import android.content.Context
 import android.hardware.SensorEventCallback
 import android.hardware.SensorManager
 import android.location.LocationManager
+import androidx.annotation.RequiresPermission
 import com.alpsfly.aeroglide.core.common.Limits
 import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.common.chunked
@@ -15,6 +16,7 @@ import com.alpsfly.aeroglide.core.data.util.Q_ACCELERATION
 import com.alpsfly.aeroglide.core.data.util.R_ALTITUDE
 import com.alpsfly.aeroglide.core.data.util.getVerticalAcceleration
 import com.alpsfly.aeroglide.core.hardware.SensorFrequency
+import com.alpsfly.aeroglide.core.hardware.geoidCorrectionFlow
 import com.alpsfly.aeroglide.core.hardware.linearAccelerationSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.locationDataFlow
 import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
@@ -56,6 +58,8 @@ interface SensorRepository {
 
     /** Location sensor flow with 1000ms delay */
     val locationDataSource: Flow<SensorLocation>
+    val geoidCorrectionDataSource: Flow<Float>
+    val locationFlow: Flow<Location>
     val locationFlowUi: Flow<Location>
 
     val verticalAccelerationFlow: Flow<SensorData>
@@ -98,6 +102,31 @@ class SensorRepositoryImpl @Inject constructor(
         enableLocationUpdates = enableListener,
         interval = 1000
     ).shareSensorData()
+
+    override val geoidCorrectionDataSource = locationManager.geoidCorrectionFlow(
+        context = context,
+        enable = enableListener,
+        interval = 1000
+    ).shareSensorData()
+
+    override val locationFlow: Flow<Location>
+        get() {
+            return combine(locationDataSource, geoidCorrectionDataSource) { l, geoidCorrection ->
+                Location(
+                    timestamp = System.currentTimeMillis(),
+                    latitude = l.latitude.toFloat(),
+                    longitude = l.longitude.toFloat(),
+                    altitude = l.altitude.toFloat() - geoidCorrection,
+                    bearing = l.bearing,
+                    speed = l.speed,
+                    horizontalAccuracy = l.accuracy,
+                    verticalAccuracy = l.verticalAccuracyMeters,
+                    bearingAccuracy = l.bearingAccuracyDegrees,
+                    speedAccuracy = l.speedAccuracyMetersPerSecond,
+                    provider = l.provider ?: "unknown"
+                )
+            }
+        }
 
     override fun enableListener() {
         Timber.i("ENABLE SENSOR LISTENER")
@@ -185,7 +214,7 @@ class SensorRepositoryImpl @Inject constructor(
     override val altitudeFlow: Flow<SensorData>
         get() {
             val sensorFrequency = SensorFrequency()
-            return combine(pressureDataSource, locationDataSource) { p, l ->
+            return combine(pressureDataSource, locationFlow) { p, l ->
                 val pressure = p.values[0] * 100f
                 var altitude = l.altitude.toFloat()
                 if (calibration.value.isCalibrated) {
@@ -271,21 +300,7 @@ class SensorRepositoryImpl @Inject constructor(
     @OptIn(FlowPreview::class)
     override val locationFlowUi: Flow<Location>
         get() {
-            return locationDataSource.map { sensorLocation ->
-                Location(
-                    timestamp = System.currentTimeMillis(),
-                    latitude = sensorLocation.latitude.toFloat(),
-                    longitude = sensorLocation.longitude.toFloat(),
-                    altitude = sensorLocation.altitude.toFloat(),
-                    bearing = sensorLocation.bearing,
-                    speed = sensorLocation.speed,
-                    horizontalAccuracy = sensorLocation.accuracy,
-                    verticalAccuracy = sensorLocation.verticalAccuracyMeters,
-                    bearingAccuracy = sensorLocation.bearingAccuracyDegrees,
-                    speedAccuracy = sensorLocation.speedAccuracyMetersPerSecond,
-                    provider = sensorLocation.provider ?: "unknown"
-                )
-            }.sample(1000.milliseconds)
+            return locationFlow.sample(1000.milliseconds)
         }
 
     override val glideRatioFlow: Flow<SensorData>
