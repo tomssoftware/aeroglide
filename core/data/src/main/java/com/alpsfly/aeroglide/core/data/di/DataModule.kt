@@ -143,6 +143,10 @@ class FakeDataRepository @Inject constructor(
         throw NotImplementedError()
     }
 
+    override suspend fun deleteActivity(activity: Activity) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun addCalibration(calibration: Calibration) {
         throw NotImplementedError()
     }

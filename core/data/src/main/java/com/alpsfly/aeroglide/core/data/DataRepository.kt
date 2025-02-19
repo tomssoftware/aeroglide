@@ -40,6 +40,7 @@ interface DataRepository {
     suspend fun getActivity(activityId: Long): Activity
     suspend fun addActivity(activity: Activity)
     suspend fun updateActivity(activity: Activity)
+    suspend fun deleteActivity(activity: Activity)
 
     // Altitude
     suspend fun addAltitude(altitude: Altitude)
@@ -87,6 +88,7 @@ class LocalDataRepository @Inject constructor(
     override suspend fun getActivity(activityId: Long): Activity = activityDao.getActivity(activityId)
     override suspend fun addActivity(activity: Activity) = activityDao.addActivity(activity)
     override suspend fun updateActivity(activity: Activity) = activityDao.updateActivity(activity)
+    override suspend fun deleteActivity(activity: Activity) = activityDao.deleteActivity(activity)
 
     // Altitude
     override suspend fun addAltitude(altitude: Altitude) = altitudeDao.addAltitude(altitude)

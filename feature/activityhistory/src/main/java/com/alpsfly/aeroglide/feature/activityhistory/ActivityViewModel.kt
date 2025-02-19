@@ -3,6 +3,7 @@ package com.alpsfly.aeroglide.feature.activityhistory
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.model.configuration.ColorMapping
 import com.alpsfly.aeroglide.core.model.database.Activity
@@ -116,6 +117,12 @@ class ActivityViewModel @Inject constructor(
                     trackPoints.add(Point.fromLngLat(location.longitude.toDouble(), location.latitude.toDouble()))
                 }
             }
+        }
+    }
+
+    fun deleteActivity(activity: Activity) {
+        viewModelScope.launch {
+            dataRepository.deleteActivity(activity)
         }
     }
 }
