@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c86f90d62147a39b5575dd070a0cd3ef",
+    "identityHash": "fe61349a9b8045ec4510aff1826dfd02",
     "entities": [
       {
         "tableName": "activity",
@@ -190,7 +190,7 @@
       },
       {
         "tableName": "calibration",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `isCalibrated` INTEGER NOT NULL, `altitude0` REAL NOT NULL, `pressure0` REAL NOT NULL, `verticalAccuracy` REAL NOT NULL, `horizontalAccuracy` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `is_calibrated` INTEGER NOT NULL, `sensor_type` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `altitude0` REAL NOT NULL, `pressure0` REAL NOT NULL, `has_horizontal_accuracy` INTEGER NOT NULL, `horizontal_accuracy` REAL NOT NULL, `has_vertical_accuracy` INTEGER NOT NULL, `vertical_accuracy` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
         "fields": [
           {
             "fieldPath": "timestamp",
@@ -200,8 +200,26 @@
           },
           {
             "fieldPath": "isCalibrated",
-            "columnName": "isCalibrated",
+            "columnName": "is_calibrated",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sensorType",
+            "columnName": "sensor_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
             "notNull": true
           },
           {
@@ -217,14 +235,26 @@
             "notNull": true
           },
           {
-            "fieldPath": "verticalAccuracy",
-            "columnName": "verticalAccuracy",
-            "affinity": "REAL",
+            "fieldPath": "hasHorizontalAccuracy",
+            "columnName": "has_horizontal_accuracy",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
             "fieldPath": "horizontalAccuracy",
-            "columnName": "horizontalAccuracy",
+            "columnName": "horizontal_accuracy",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasVerticalAccuracy",
+            "columnName": "has_vertical_accuracy",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "verticalAccuracy",
+            "columnName": "vertical_accuracy",
             "affinity": "REAL",
             "notNull": true
           }
@@ -304,7 +334,7 @@
       },
       {
         "tableName": "location",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `altitude` REAL NOT NULL, `bearing` REAL NOT NULL, `speed` REAL NOT NULL, `horizontal_accuracy` REAL NOT NULL, `vertical_accuracy` REAL NOT NULL, `bearing_accuracy` REAL NOT NULL, `speed_accuracy` REAL NOT NULL, `provider` TEXT NOT NULL, PRIMARY KEY(`timestamp`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `altitude` REAL NOT NULL, `bearing` REAL NOT NULL, `speed` REAL NOT NULL, `geoid_correction` REAL NOT NULL, `has_horizontal_accuracy` INTEGER NOT NULL, `horizontal_accuracy` REAL NOT NULL, `has_vertical_accuracy` INTEGER NOT NULL, `vertical_accuracy` REAL NOT NULL, `bearing_accuracy` REAL NOT NULL, `speed_accuracy` REAL NOT NULL, `provider` TEXT NOT NULL, PRIMARY KEY(`timestamp`))",
         "fields": [
           {
             "fieldPath": "timestamp",
@@ -343,9 +373,27 @@
             "notNull": true
           },
           {
+            "fieldPath": "geoidCorrection",
+            "columnName": "geoid_correction",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasHorizontalAccuracy",
+            "columnName": "has_horizontal_accuracy",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "horizontalAccuracy",
             "columnName": "horizontal_accuracy",
             "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasVerticalAccuracy",
+            "columnName": "has_vertical_accuracy",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -474,7 +522,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c86f90d62147a39b5575dd070a0cd3ef')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fe61349a9b8045ec4510aff1826dfd02')"
     ]
   }
 }

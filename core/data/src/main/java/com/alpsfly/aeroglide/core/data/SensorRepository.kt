@@ -4,7 +4,6 @@ import android.content.Context
 import android.hardware.SensorEventCallback
 import android.hardware.SensorManager
 import android.location.LocationManager
-import androidx.annotation.RequiresPermission
 import com.alpsfly.aeroglide.core.common.Limits
 import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.common.chunked
@@ -80,8 +79,8 @@ interface SensorRepository {
     val calibration: StateFlow<Calibration>
     fun setCalibration(calibration: Calibration)
 
-    fun enableListener()
-    fun disableListener()
+    fun enableSensorListener()
+    fun disableSensorListener()
 }
 
 @Singleton
@@ -93,19 +92,29 @@ class SensorRepositoryImpl @Inject constructor(
 ) : SensorRepository, SensorEventCallback() {
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    private val enableSensorListener = MutableStateFlow(false)
+    override fun enableSensorListener() {
+        Timber.i("ENABLE SENSOR LISTENER")
+        enableSensorListener.value = true
+    }
+
+    override fun disableSensorListener() {
+        Timber.i("DISABLE SENSOR LISTENER")
+        enableSensorListener.value = false
+    }
+
     /**
      * Location state flow
      */
-    private val enableListener = MutableStateFlow(false)
     override val locationDataSource = locationManager.locationDataFlow(
         context = context,
-        enableLocationUpdates = enableListener,
+        enable = enableSensorListener,
         interval = 1000
     ).shareSensorData()
 
     override val geoidCorrectionDataSource = locationManager.geoidCorrectionFlow(
         context = context,
-        enable = enableListener,
+        enable = enableSensorListener,
         interval = 1000
     ).shareSensorData()
 
@@ -119,7 +128,10 @@ class SensorRepositoryImpl @Inject constructor(
                     altitude = l.altitude.toFloat() - geoidCorrection,
                     bearing = l.bearing,
                     speed = l.speed,
+                    geoidCorrection = geoidCorrection,
+                    hasHorizontalAccuracy = l.hasAccuracy(),
                     horizontalAccuracy = l.accuracy,
+                    hasVerticalAccuracy = l.hasVerticalAccuracy(),
                     verticalAccuracy = l.verticalAccuracyMeters,
                     bearingAccuracy = l.bearingAccuracyDegrees,
                     speedAccuracy = l.speedAccuracyMetersPerSecond,
@@ -128,36 +140,26 @@ class SensorRepositoryImpl @Inject constructor(
             }
         }
 
-    override fun enableListener() {
-        Timber.i("ENABLE SENSOR LISTENER")
-        enableListener.value = true
-    }
-
-    override fun disableListener() {
-        Timber.i("DISABLE SENSOR LISTENER")
-        enableListener.value = false
-    }
-
     /**
      * pressure state flow
      */
     override val pressureDataSource = sensorManager.pressureSensorDataFlow(
-        enable = enableListener
-    ) //.shareSensorData()
+        enable = enableSensorListener
+    )
 
     /**
      * Linear acceleration shared flow
      */
     private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow(
-        enable = enableListener
-    ) //.shareSensorData()
+        enable = enableSensorListener
+    )
 
     /**
      * Rotation vector shared flow
      */
     private val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow(
-        enable = enableListener
-    ) //.shareSensorData()
+        enable = enableSensorListener
+    )
 
     /**
      * Vertical acceleration flow

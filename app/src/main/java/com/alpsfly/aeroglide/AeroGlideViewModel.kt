@@ -7,7 +7,6 @@ import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordActivityUseCase
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,6 +34,14 @@ class AeroGlideViewModel @Inject constructor(
         appRepository.stopRecording()
     }
 
+    fun enableSensorListener() {
+        sensorRepository.enableSensorListener()
+    }
+
+    fun disableSensorListener() {
+        sensorRepository.disableSensorListener()
+    }
+
     private val calibrationJob: Job = viewModelScope.launch(Dispatchers.IO) {
         calibrationUseCase.invoke().collect { calibration ->
             sensorRepository.setCalibration(calibration)
@@ -51,10 +58,12 @@ class AeroGlideViewModel @Inject constructor(
     }
 
     fun restartCalibration() {
+        Timber.i("RESTART CALIBRATION")
         // todo: check if not already running
         viewModelScope.launch(Dispatchers.IO) {
             calibrationUseCase.invoke().collect { calibration ->
                 sensorRepository.setCalibration(calibration)
+                // todo: store calibration in database
             }
         }
     }
