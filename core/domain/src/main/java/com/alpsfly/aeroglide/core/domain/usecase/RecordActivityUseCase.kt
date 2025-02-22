@@ -3,6 +3,7 @@ package com.alpsfly.aeroglide.core.domain.usecase
 import android.content.Context
 import android.os.PowerManager
 import androidx.core.content.ContextCompat.getSystemService
+import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.RecordActivityUseCase.VarioAccuracy
@@ -25,6 +26,7 @@ import kotlin.math.min
 
 class RecordActivityUseCase @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val appRepository: AppRepository,
     private val sensorRepository: SensorRepository,
     private val dataRepository: DataRepository,
 ) {
@@ -78,7 +80,7 @@ class RecordActivityUseCase @Inject constructor(
             }
         }
 
-        sensorRepository.enableListener()
+        sensorRepository.enableSensorListener()
         sensorFlows.forEach { (type, flow) ->
             val job = CoroutineScope(Dispatchers.IO).launch {
                 verticallyMoving.reset()
@@ -158,7 +160,7 @@ class RecordActivityUseCase @Inject constructor(
 
         recordingJobs.forEach { (_, job) -> job.cancel() }
         recordingJobs.clear()
-        sensorRepository.disableListener()
+        sensorRepository.disableSensorListener()
     }
 
     private suspend fun insertActivity(activityId: Long): Activity {

@@ -35,7 +35,7 @@ data class SensorData(
 
 enum class SensorType {
     Unknown,
-    Acceleration,
+    Location,
     LinearAcceleration,
     VerticalAcceleration,
     Pressure,

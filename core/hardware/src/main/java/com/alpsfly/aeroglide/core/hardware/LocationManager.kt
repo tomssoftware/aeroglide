@@ -1,22 +1,18 @@
 package com.alpsfly.aeroglide.core.hardware
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.location.OnNmeaMessageListener
 import android.os.Handler
 import android.os.Looper
-import androidx.annotation.RequiresPermission
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -28,7 +24,7 @@ import java.util.concurrent.Executors
 @SuppressLint("MissingPermission")
 fun LocationManager.locationDataFlow(
     context: Context,
-    enableLocationUpdates: Flow<Boolean>,
+    enable: Flow<Boolean>,
     interval: Long
 ) = callbackFlow {
     val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
@@ -61,7 +57,7 @@ fun LocationManager.locationDataFlow(
         }
     }
 
-    val job = enableLocationUpdates.onEach { enabled ->
+    val job = enable.onEach { enabled ->
         if (enabled) {
             fusedLocationProviderClient.requestLocationUpdates(
                 request,
@@ -80,11 +76,21 @@ fun LocationManager.locationDataFlow(
     }
 }
 
+@SuppressLint("MissingPermission")
 fun LocationManager.geoidCorrectionFlow(
     context: Context,
     enable: Flow<Boolean>,
     interval: Long
 ): Flow<Float> = callbackFlow {
+
+    if (!context.hasLocationPermission()) {
+        Timber.w("NMEA location permission is not granted")
+    }
+    val isGpsEnabled = isProviderEnabled(LocationManager.GPS_PROVIDER)
+    val isNetworkEnabled = isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    if (!isGpsEnabled && !isNetworkEnabled) {
+        Timber.w("GPS and network providers are disabled")
+    }
 
     val handler = Handler(Looper.getMainLooper())
     val executor = Executors.newSingleThreadExecutor()
@@ -93,15 +99,10 @@ fun LocationManager.geoidCorrectionFlow(
         executor.execute {
             val geoidCorrection = parseGeoidCorrection(message)
             // Only send if the value is valid
-            if (geoidCorrection != null) {
-                trySend(geoidCorrection)
+            geoidCorrection?.let {
+                trySend(it)
             }
         }
-    }
-
-    // todo: see above
-    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-        return@callbackFlow
     }
 
     val job = enable.onEach { enabled ->
@@ -110,7 +111,7 @@ fun LocationManager.geoidCorrectionFlow(
         } else {
             removeNmeaListener(listener)
         }
-        Timber.i("Location updates enabled: $enabled")
+        Timber.i("NMEA location updates enabled: $enabled")
     }.launchIn(this)
 
     awaitClose {
@@ -121,6 +122,8 @@ fun LocationManager.geoidCorrectionFlow(
 
 private fun parseGeoidCorrection(message: String?): Float? {
     if (message == null) return null
+
+    Timber.v("NMEA Message: $message")
 
     // Check if the message is a GNGGA or GPGGA message
     if (!message.startsWith("\$GNGGA") && !message.startsWith("\$GPGGA")) {

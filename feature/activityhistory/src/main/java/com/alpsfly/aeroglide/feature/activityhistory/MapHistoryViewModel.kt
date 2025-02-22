@@ -1,25 +1,20 @@
 package com.alpsfly.aeroglide.feature.activityhistory
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.mapbox.data.MapBoxLocation
-import com.alpsfly.aeroglide.core.model.configuration.ColorMapping
+import com.alpsfly.aeroglide.core.mapbox.data.mapToFeatureCollection
+import com.alpsfly.aeroglide.core.mapbox.data.zipMapBoxLocations
 import com.mapbox.geojson.FeatureCollection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.alpsfly.aeroglide.core.mapbox.data.mapToFeatureCollection
-import com.alpsfly.aeroglide.core.mapbox.data.zipMapBoxLocations
-import com.alpsfly.aeroglide.core.model.database.Climbrate
-import com.alpsfly.aeroglide.core.model.database.Location
-import com.mapbox.geojson.Point
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 @HiltViewModel
 class MapHistoryViewModel @Inject constructor(
