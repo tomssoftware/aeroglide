@@ -43,6 +43,7 @@ import timber.log.Timber
 class AeroGlideActivity : ComponentActivity() {
 
     private val aeroGlideViewModel: AeroGlideViewModel by viewModels()
+
     private lateinit var beepGenerator: BeepGeneratorImpl
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +66,9 @@ class AeroGlideActivity : ComponentActivity() {
                 action = LocationService.ACTION_START
                 startService(this)
             }
+            aeroGlideViewModel.enableSensorListener()
+        } else {
+            aeroGlideViewModel.disableSensorListener()
         }
 
         lifecycle.coroutineScope.launch {
@@ -177,6 +181,7 @@ class AeroGlideActivity : ComponentActivity() {
                     action = LocationService.ACTION_START
                     startService(this)
                 }
+                aeroGlideViewModel.enableSensorListener()
                 aeroGlideViewModel.restartCalibration()
             }
         }
