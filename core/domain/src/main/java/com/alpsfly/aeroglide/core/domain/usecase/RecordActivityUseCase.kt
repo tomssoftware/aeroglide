@@ -53,7 +53,6 @@ class RecordActivityUseCase @Inject constructor(
 
     private var recordingWakeLock: PowerManager.WakeLock? = null
 
-    private var isRecording = false
     private var activity = Activity()
     private val verticallyMoving = VerticallyMoving() // todo: reset after activity end
 
@@ -62,13 +61,14 @@ class RecordActivityUseCase @Inject constructor(
             activity = insertActivity(activityId)
         }
         startRecordSensorData()
-        isRecording = true
+
+        appRepository.startRecording(activityId)
     }
 
     fun stopRecording() {
-        if (isRecording) {
+        if (appRepository.isRecording.value) {
             stopRecordSensorData()
-            isRecording = false
+            appRepository.stopRecording()
         }
     }
 
