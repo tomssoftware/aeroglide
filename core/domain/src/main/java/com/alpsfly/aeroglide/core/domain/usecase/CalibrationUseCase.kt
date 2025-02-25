@@ -1,5 +1,6 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
+import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
@@ -13,10 +14,17 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
 class CalibrationUseCase @Inject constructor(
+    private val appRepository: AppRepository,
     private val sensorRepository: SensorRepository
 ) {
     operator fun invoke(): Flow<Calibration> {
+        if (appRepository.isCalibrationRunning.value) {
+            Timber.w("Calibration already running")
+            return sensorRepository.calibration
+        }
+
         sensorRepository.enableSensorListener()
+        appRepository.startCalibration()
         accuracyProcessor.reset()
         val startOfCalibration = System.currentTimeMillis()
         var calibration = Calibration(timestamp = startOfCalibration)
@@ -43,6 +51,8 @@ class CalibrationUseCase @Inject constructor(
             !isLocationAccuracySufficient(it)
         }.onCompletion {
             sensorRepository.disableSensorListener()
+            sensorRepository.setCalibration(calibration)
+            appRepository.stopCalibration()
             with(calibration) {
                 timestamp = System.currentTimeMillis()
                 isCalibrated = accuracyProcessor.isCalibrated

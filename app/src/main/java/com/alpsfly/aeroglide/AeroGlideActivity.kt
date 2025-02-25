@@ -51,24 +51,17 @@ class AeroGlideActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Timber.i("CREATE MAIN ACTIVITY")
 
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                ACCESS_COARSE_LOCATION,
-                ACCESS_FINE_LOCATION,
-            ),
-            LOCATION_PERMISSION_REQUEST_CODE
-        )
-
         val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         if (permission) {
+            Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
             Intent(applicationContext, LocationService::class.java).apply {
                 action = LocationService.ACTION_START
                 startService(this)
             }
-            aeroGlideViewModel.enableSensorListener()
+            aeroGlideViewModel.startCalibration()
         } else {
-            aeroGlideViewModel.disableSensorListener()
+            val permissions = arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION)
+            ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
         }
 
         lifecycle.coroutineScope.launch {
@@ -177,12 +170,12 @@ class AeroGlideActivity : ComponentActivity() {
             Timber.i("PROCESSING LOCATION PERMISSION REQUEST RESULT")
             val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
             if (permission) {
+                Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
                 Intent(applicationContext, LocationService::class.java).apply {
                     action = LocationService.ACTION_START
                     startService(this)
                 }
-                aeroGlideViewModel.enableSensorListener()
-                aeroGlideViewModel.restartCalibration()
+                aeroGlideViewModel.startCalibration()
             }
         }
     }

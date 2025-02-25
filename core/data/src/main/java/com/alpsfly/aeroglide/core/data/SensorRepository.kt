@@ -218,7 +218,7 @@ class SensorRepositoryImpl @Inject constructor(
             val sensorFrequency = SensorFrequency()
             return combine(pressureDataSource, locationFlow) { p, l ->
                 val pressure = p.values[0] * 100f
-                var altitude = l.altitude.toFloat()
+                var altitude = l.altitude
                 if (calibration.value.isCalibrated) {
                     altitude = calcAltitude(pressure, calibration.value.pressure0, calibration.value.altitude0)
                 }
