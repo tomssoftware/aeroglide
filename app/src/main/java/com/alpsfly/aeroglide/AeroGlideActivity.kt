@@ -2,13 +2,16 @@ package com.alpsfly.aeroglide
 
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.NonNull
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -60,8 +63,9 @@ class AeroGlideActivity : ComponentActivity() {
             }
             aeroGlideViewModel.startCalibration()
         } else {
+            Timber.i("REQUEST ACCESS_FINE_LOCATION PERMISSION")
             val permissions = arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION)
-            ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
+            requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
         }
 
         lifecycle.coroutineScope.launch {
@@ -191,5 +195,9 @@ class AeroGlideActivity : ComponentActivity() {
 
     companion object {
         const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+
+        fun requestPermissions(activity: Activity, permissions: Array<String>, requestCode: Int) {
+            ActivityCompat.requestPermissions(activity, permissions, requestCode)
+        }
     }
 }

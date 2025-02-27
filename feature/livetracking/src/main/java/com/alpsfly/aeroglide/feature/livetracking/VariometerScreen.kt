@@ -44,6 +44,7 @@ import com.alpsfly.aeroglide.feature.livetracking.LocationPathScreen
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.presentation.AeroGlideBottomBar
 import com.alpsfly.aeroglide.core.presentation.centered
+import com.alpsfly.aeroglide.feature.livetracking.FlightStatusScreen
 import com.alpsfly.aeroglide.feature.variometer.viewmodel.VariometerViewModel
 import com.alpsfly.aeroglide.core.ui.R as uiR
 
@@ -119,7 +120,7 @@ fun VariometerScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            com.alpsfly.aeroglide.feature.livetracking.FlightStatusScreen(Modifier.fillMaxWidth(), navController)
+            FlightStatusScreen(Modifier.fillMaxWidth(), navController)
             Spacer(Modifier.height(16.dp))
             Box(
                 modifier = Modifier
