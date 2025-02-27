@@ -120,21 +120,19 @@ fun LocationManager.geoidCorrectionFlow(
     }
 }
 
-private fun parseGeoidCorrection(message: String?): Float? {
-    if (message == null) return null
+private fun parseGeoidCorrection(nmeaMessage: String?): Float? {
+    nmeaMessage?.let { message ->
+        // Check if the message is a GNGGA or GPGGA message
+        if (!message.startsWith("\$GNGGA") && !message.startsWith("\$GPGGA")) {
+            return null
+        }
 
-    Timber.v("NMEA Message: $message")
-
-    // Check if the message is a GNGGA or GPGGA message
-    if (!message.startsWith("\$GNGGA") && !message.startsWith("\$GPGGA")) {
-        return null
+        // Check if the message has enough parts and if the geoid separation part is a valid number
+        val parts = message.split(",").dropLastWhile { it.isEmpty() }
+        if (parts.size >= 12) {
+            Timber.i("NMEA message: $message")
+            return parts[11].toFloatOrNull()
+        }
     }
-
-    val parts = message.split(",").dropLastWhile { it.isEmpty() }
-    // Check if the message has enough parts and if the geoid separation part is a valid number
-    if (parts.size >= 12) {
-        return parts[11].toFloatOrNull()
-    }
-
     return null
 }

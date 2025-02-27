@@ -31,7 +31,6 @@ class CalibrationUseCase @Inject constructor(
         return combine(sensorRepository.pressureFlowUi, sensorRepository.locationFlowUi) { p, l ->
             val pressure = p.pressure * 100f
             val altitude = l.altitude
-            Timber.v("Process calibration: $pressure, $altitude")
 
             calibration = Calibration(
                 timestamp = startOfCalibration,
