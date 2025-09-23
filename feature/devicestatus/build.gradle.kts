@@ -17,14 +17,14 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt.gradle)
+    alias(libs.plugins.hilt.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.alpsfly.aeroglide.feature.devicestatus"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26

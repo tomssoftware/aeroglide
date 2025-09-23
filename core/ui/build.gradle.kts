@@ -19,7 +19,7 @@ import com.android.utils.TraceUtils.simpleId
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.hilt.gradle)
+    alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialzation)
     alias(libs.plugins.ksp)
@@ -27,7 +27,7 @@ plugins {
 
 android {
     namespace = "com.alpsfly.aeroglide.core.ui"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26

@@ -30,7 +30,7 @@ class FlightStatusViewModel @Inject constructor(
     val glideRatioFlow = sensorRepository.glideRatioFlowUi
     private val calibrationFlow = sensorRepository.calibration
 
-    private val activityId = appRepository.activityId
+    //private val activityId = appRepository.activityId
     private val isRecording = appRepository.isRecording
 
     val calibrationUiState: StateFlow<CalibrationUiState> =
@@ -51,7 +51,7 @@ class FlightStatusViewModel @Inject constructor(
     val activityFlow: StateFlow<Activity> = isRecording
         .flatMapLatest { isRecording ->
             if (isRecording) {
-                activityId.flatMapLatest { activityId ->
+                appRepository.activityId.flatMapLatest { activityId ->
                     dataRepository.getActivityFlow(activityId)
                 }
             } else {
