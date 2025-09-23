@@ -3,8 +3,8 @@ package com.alpsfly.aeroglide.core.firebase
 import com.alpsfly.aeroglide.core.firebase.retrofit.PendingRequestCounter
 import com.alpsfly.aeroglide.core.firebase.retrofit.SubscriptionStatusApiCall
 import com.alpsfly.aeroglide.core.firebase.retrofit.authentication.RetrofitClient
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 
 
 class CloudFunctionsFirebase : CloudFunctions {

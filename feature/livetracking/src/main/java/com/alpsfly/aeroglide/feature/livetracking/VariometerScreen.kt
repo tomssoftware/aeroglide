@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.feature.variometer.presentation
+package com.alpsfly.aeroglide.feature.livetracking
 
 import android.graphics.RectF
 import androidx.compose.foundation.Canvas
@@ -35,16 +35,14 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.MenuItem
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
-import com.alpsfly.aeroglide.feature.livetracking.LocationPathScreen
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.presentation.AeroGlideBottomBar
 import com.alpsfly.aeroglide.core.presentation.centered
-import com.alpsfly.aeroglide.feature.livetracking.FlightStatusScreen
 import com.alpsfly.aeroglide.feature.variometer.viewmodel.VariometerViewModel
 import com.alpsfly.aeroglide.core.ui.R as uiR
 
@@ -136,14 +134,14 @@ fun VariometerScreen(
                         }
 
                         1 -> {
-                            com.alpsfly.aeroglide.feature.livetracking.AltitudeProfileScreen(
+                            AltitudeProfileScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 navController = navController
                             )
                         }
 
                         2 -> {
-                            com.alpsfly.aeroglide.feature.livetracking.ClimbrateProfileScreen(
+                            ClimbrateProfileScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 navController = navController
                             )
