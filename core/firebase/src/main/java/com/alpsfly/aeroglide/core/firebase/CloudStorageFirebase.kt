@@ -1,14 +1,14 @@
 package com.alpsfly.aeroglide.core.firebase
 
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.alpsfly.aeroglide.core.model.common.Pilot
-import com.alpsfly.aeroglide.core.model.common.firebase.User
 import com.alpsfly.aeroglide.core.model.common.firebase.Blacklist
 import com.alpsfly.aeroglide.core.model.common.firebase.Purchase
+import com.alpsfly.aeroglide.core.model.common.firebase.User
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -16,7 +16,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 

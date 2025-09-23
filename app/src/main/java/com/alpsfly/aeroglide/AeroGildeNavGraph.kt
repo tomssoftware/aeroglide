@@ -10,7 +10,7 @@ import com.alpsfly.aeroglide.feature.activityhistory.activityList
 import com.alpsfly.aeroglide.feature.devicestatus.presentation.DeviceStatusScreen
 import com.alpsfly.aeroglide.feature.diagnosis.presentation.DiagnosisDetailScreen
 import com.alpsfly.aeroglide.feature.diagnosis.presentation.DiagnosisScreen
-import com.alpsfly.aeroglide.feature.variometer.presentation.VariometerScreen
+import com.alpsfly.aeroglide.feature.livetracking.VariometerScreen
 
 
 @Composable

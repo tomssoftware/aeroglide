@@ -7,7 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.presentation.LineChartScreen
 
@@ -16,7 +17,7 @@ import com.alpsfly.aeroglide.core.presentation.LineChartScreen
 fun ClimbrateProfileScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    climbrateProfileViewModel: com.alpsfly.aeroglide.feature.livetracking.ClimbrateProfileViewModel = hiltViewModel()
+    climbrateProfileViewModel: ClimbrateProfileViewModel = hiltViewModel()
 ) {
     Box(
         modifier = Modifier
