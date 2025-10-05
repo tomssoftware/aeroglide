@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import com.google.firebase.FirebaseApp
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,7 @@ class AeroGlideApplication @Inject constructor (/*private val database: AeroGlid
 
     override fun onCreate() {
         super.onCreate()
-//        FirebaseApp.initializeApp(this)
+        FirebaseApp.initializeApp(this)
 //        val firestore = Firebase.firestore
 //        val auth = Firebase.auth
 

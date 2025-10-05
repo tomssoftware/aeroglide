@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "77943928945",
+    "project_id": "aeroglide-25123",
+    "storage_bucket": "aeroglide-25123.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77943928945:android:878be5fdd6dcfddef643d0",
+        "android_client_info": {
+          "package_name": "com.alpsfly.aeroglide"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxqdChr5bSTwmh2mXwCaLmv4ZEC0J1svY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
