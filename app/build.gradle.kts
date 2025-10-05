@@ -14,9 +14,22 @@
  * limitations under the License.
  */
 
+import org.gradle.process.ExecResult
+import java.io.ByteArrayOutputStream
+
+val gitVersionName = providers.exec {
+    commandLine("git", "describe", "--tags", "--abbrev=0")
+}.standardOutput.asText.get().trim()
+
+val gitVersionCode = providers.exec {
+    commandLine("git", "tag", "--list")
+}.standardOutput.asText.get().split("\n").size
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.google.services)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
@@ -30,8 +43,8 @@ android {
         applicationId = "com.alpsfly.aeroglide"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = gitVersionCode
+        versionName = gitVersionName
 
         vectorDrawables {
             useSupportLibrary = true
@@ -41,6 +54,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -112,6 +126,7 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     // Import the BoM for Firebase
     implementation(platform(libs.firebase.bom))
