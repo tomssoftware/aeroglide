@@ -151,7 +151,7 @@ fun DismissBackground(dismissState: SwipeToDismissBoxState) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Icon(
-            Icons.Default.Delete,
+            imageVector = Icons.Default.Delete,
             contentDescription = "delete"
         )
         Spacer(modifier = Modifier)
