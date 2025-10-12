@@ -1,18 +1,18 @@
 [versions]
 androidGradlePlugin = "8.13.0"
 androidxActivity = "1.11.0"
-androidxComposeBom = "2025.09.01"
+androidxComposeBom = "2025.10.00"
 androidxCore = "1.17.0"
 androidxHilt = "1.3.0"
 androidxLifecycle = "2.9.4"
 androidxNavigation = "2.9.5"
-androidxRoom = "2.8.1"
+androidxRoom = "2.8.2"
 androidxTestExt = "1.3.0"
 coroutines = "1.10.2"
 espresso = "3.7.0"
-firebase-bom = "34.3.0"
+firebase-bom = "34.4.0"
 firebase-crashlytics = "3.0.6"
-google-services = "4.4.3"
+google-services = "4.4.4"
 gson = "2.13.2"
 hilt = "2.57.2"
 junit = "4.13.2"
@@ -26,13 +26,14 @@ materialIconsExtended = "1.7.8"
 mockitoCore = "5.20.0"
 mockitoJunitJupiter = "5.20.0"
 mockitoKotlin = "6.1.0"
-okhttp = "5.1.0"
+okhttp = "5.2.1"
 play = "21.3.0"
 retrofit = "3.0.0"
 serialization = "1.9.0"
 timber = "5.0.1"
 turbine = "1.2.1"
-vicoVersion = "2.2.0"
+vicoVersion = "2.2.1"
+material3 = "1.4.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
@@ -97,6 +98,7 @@ turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vicoVersion" }
 vico-compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vicoVersion" }
 vico-core = { module = "com.patrykandpatrick.vico:core", version.ref = "vicoVersion" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

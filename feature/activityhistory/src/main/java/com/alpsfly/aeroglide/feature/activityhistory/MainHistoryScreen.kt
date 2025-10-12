@@ -60,7 +60,6 @@ fun MainHistoryScreen(
     Scaffold(
         bottomBar = {
             AeroGlideBottomBar(
-                modifier = Modifier,
                 items = items,
                 pagerState = pagerState,
                 coroutineScope = coroutineScope
