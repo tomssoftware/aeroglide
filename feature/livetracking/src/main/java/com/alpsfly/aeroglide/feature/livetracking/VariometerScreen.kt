@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
@@ -106,7 +108,6 @@ fun VariometerScreen(
     Scaffold(
         bottomBar = {
             AeroGlideBottomBar(
-                modifier = Modifier,
                 items = items,
                 pagerState = pagerState,
                 coroutineScope = coroutineScope
@@ -163,6 +164,8 @@ fun VariometerScreen(
 @Composable
 fun AnalogVariometer(
     modifier: Modifier = Modifier,
+    textColor: Color = MaterialTheme.colorScheme.onBackground,
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
     variometerViewModel: VariometerViewModel = hiltViewModel()
 ) {
     val climbrate by variometerViewModel.climbrate.collectAsState(initial = Climbrate())
@@ -173,7 +176,7 @@ fun AnalogVariometer(
         Paint().apply {
             isAntiAlias = true
             style = PaintingStyle.Fill
-            color = Color.LightGray
+            color = textColor
             strokeWidth = 4f
         }
     }
@@ -184,13 +187,13 @@ fun AnalogVariometer(
         majorOval = Rect(-radius, -radius, radius, radius)
         minorOval = Rect(-radius, -radius, radius, radius)
 
-        drawClimbIndicator(this, climbrate.climbrate)
-        drawVarioScale(this, majorOval, minorOval, climbrate.climbrate)
-        drawVarioText(this, textMeasurer, climbrate.climbrate)
+        drawClimbIndicator(this, climbrate.climbrate, textColor)
+        drawVarioScale(this, majorOval, minorOval, climbrate.climbrate, textColor)
+        drawVarioText(this, textMeasurer, climbrate.climbrate, textColor)
     }
 }
 
-fun DrawScope.drawClimbIndicator(drawScope: DrawScope, climbrate: Float) {
+fun DrawScope.drawClimbIndicator(drawScope: DrawScope, climbrate: Float, textColor: Color) {
     val radius = size.minDimension / 2.5f
     val indicatorScaleFactor = radius / 10f
     val majorOval = RectF().apply {
@@ -213,7 +216,7 @@ fun DrawScope.drawClimbIndicator(drawScope: DrawScope, climbrate: Float) {
         rotate(90f, Offset.Zero)
         scale(indicatorScaleFactor, indicatorScaleFactor, Offset.Zero)
     }) {
-        drawPath(path = trianglePath, color = Color.LightGray)
+        drawPath(path = trianglePath, color = textColor)
     }
 
     withTransform({
@@ -221,7 +224,7 @@ fun DrawScope.drawClimbIndicator(drawScope: DrawScope, climbrate: Float) {
         rotate(-90f, Offset.Zero)
         scale(indicatorScaleFactor, indicatorScaleFactor, Offset.Zero)
     }) {
-        drawPath(path = trianglePath, color = Color.LightGray)
+        drawPath(path = trianglePath, color = textColor)
     }
 }
 
@@ -229,7 +232,8 @@ private fun DrawScope.drawVarioScale(
     drawScope: DrawScope,
     majorOval: Rect,
     minorOval: Rect,
-    climbrate: Float
+    climbrate: Float,
+    textColor: Color
 ) {
     // draw background scale
     val majorScale = Path()
@@ -245,8 +249,8 @@ private fun DrawScope.drawVarioScale(
             minorScale.addArc(minorOval, it.toFloat(), sweepAngle)
         }
     }
-    drawPath(path = majorScale, color = Color.LightGray, style = Stroke(width = 48f))
-    drawPath(path = minorScale, color = Color.LightGray, style = Stroke(width = 24f))
+    drawPath(path = majorScale, color = textColor, style = Stroke(width = 48f))
+    drawPath(path = minorScale, color = textColor, style = Stroke(width = 24f))
 
     // draw vario scale
     val onScaleAngleStart = getOnScaleAngleStart(climbrate = climbrate)
@@ -260,14 +264,15 @@ private fun DrawScope.drawVarioScale(
             minorScale.addArc(minorOval, it.toFloat(), sweepAngle)
         }
     }
-    drawPath(path = majorScale, color = Color.Black, style = Stroke(width = 48f))
-    drawPath(path = minorScale, color = Color.Black, style = Stroke(width = 24f))
+    drawPath(path = majorScale, color = textColor, style = Stroke(width = 48f))
+    drawPath(path = minorScale, color = textColor, style = Stroke(width = 24f))
 }
 
 private fun DrawScope.drawVarioText(
     drawScope: DrawScope,
     textMeasurer: TextMeasurer,
-    climbrate: Float
+    climbrate: Float,
+    textColor: Color
 ) {
     val climbrateString = LocalUnit
         .of(climbrate, UnitConverter.Unit.MS)
@@ -279,6 +284,6 @@ private fun DrawScope.drawVarioText(
     withTransform({
         translate(-measuredText.size.width / 2f, -measuredText.size.height / 2f)
     }) {
-        drawText(textMeasurer, climbrateString)
+        drawText(textMeasurer = textMeasurer, text = climbrateString, style = TextStyle(color = textColor))
     }
 }
