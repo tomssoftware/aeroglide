@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,21 +24,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+
 @Composable
 fun DataField(
     caption: String,
     value: String,
+    modifier: Modifier = Modifier,
     unit: String? = null,
     blinking: Boolean = false,
-    drawableRes: Int? = null,
-    modifier: Modifier = Modifier
+    drawableRes: Int? = null
 ) {
     Card(
         modifier = modifier
             .padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
+        ) {
         Row(
             modifier = Modifier
                 .padding(16.dp)
@@ -106,21 +106,3 @@ fun DataField(
     }
 }
 
-@Composable
-fun InfoCell2(drawableRes: Int, caption: String, value: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(8.dp)
-    ) {
-        Icon(
-            painter = painterResource(id = drawableRes),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(text = caption, fontWeight = FontWeight.Bold)
-            Text(text = value)
-        }
-    }
-}
