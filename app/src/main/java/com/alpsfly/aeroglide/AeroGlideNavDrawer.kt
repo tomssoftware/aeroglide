@@ -44,19 +44,6 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                     }
                 )
                 NavigationDrawerItem(
-                    label = {
-                        Text(text = stringResource(uiR.string.sid_sensor_status))
-                    },
-                    icon = {
-                        Icon(painter = painterResource(id = uiR.drawable.sensors_24px), contentDescription = null)
-                    },
-                    selected = false,
-                    onClick = {
-                        onClick()
-                        navController.navigate(route = Screen.DeviceStatusScreen.route)
-                    }
-                )
-                NavigationDrawerItem(
                     label = { Text(text = stringResource(uiR.string.sid_flights)) },
                     icon = {
                         Icon(painter = painterResource(id = uiR.drawable.list_alt_24px), contentDescription = null)
@@ -65,17 +52,6 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                     onClick = {
                         onClick()
                         navController.navigateToActivityList()
-                    }
-                )
-                NavigationDrawerItem(
-                    label = { Text(text = "Debug Screen") },
-                    icon = {
-                        Icon(painter = painterResource(id = uiR.drawable.adb_24px), contentDescription = null)
-                    },
-                    selected = false,
-                    onClick = {
-                        onClick()
-                        navController.navigate(route = Screen.DiagnosisScreen.route)
                     }
                 )
             }

@@ -48,7 +48,7 @@ class FlightStatusViewModel @Inject constructor(
             )
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val activityFlow: StateFlow<Activity> = isRecording
+    val activityFlow: StateFlow<Activity?> = isRecording
         .flatMapLatest { isRecording ->
             if (isRecording) {
                 appRepository.activityId.flatMapLatest { activityId ->

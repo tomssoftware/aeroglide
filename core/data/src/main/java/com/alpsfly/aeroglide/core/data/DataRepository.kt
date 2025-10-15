@@ -36,8 +36,8 @@ import javax.inject.Inject
 interface DataRepository {
     // Activity
     val allActivities: Flow<List<Activity>>
-    fun getActivityFlow(activityId: Long): Flow<Activity>
-    suspend fun getActivity(activityId: Long): Activity
+    fun getActivityFlow(activityId: Long): Flow<Activity?>
+    suspend fun getActivity(activityId: Long): Activity?
     suspend fun addActivity(activity: Activity)
     suspend fun updateActivity(activity: Activity)
     suspend fun deleteActivity(activity: Activity)
@@ -45,7 +45,7 @@ interface DataRepository {
     // Altitude
     suspend fun addAltitude(altitude: Altitude)
     val allAltitudes: Flow<List<Altitude>>
-    fun getAltitude(timestamp: Long): Flow<Altitude>
+    fun getAltitude(timestamp: Long): Flow<Altitude?>
     fun getAltitudesBetween(start: Long, end: Long): Flow<List<Altitude>>
 
     // Calibration
@@ -55,7 +55,7 @@ interface DataRepository {
     // Climbrate
     suspend fun addClimbrate(climbrate: Climbrate)
     val allClimbrates: Flow<List<Climbrate>>
-    fun getClimbrate(timestamp: Long): Flow<Climbrate>
+    fun getClimbrate(timestamp: Long): Flow<Climbrate?>
     fun getClimbratesBetween(start: Long, end: Long): Flow<List<Climbrate>>
 
     // Pressure
@@ -65,7 +65,7 @@ interface DataRepository {
     // Location
     suspend fun addLocation(location: Location)
     val allLocations: Flow<List<Location>>
-    fun getLocation(timestamp: Long): Flow<Location>
+    fun getLocation(timestamp: Long): Flow<Location?>
     fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>>
 
     // User
@@ -84,8 +84,8 @@ class LocalDataRepository @Inject constructor(
 ) : DataRepository {
 
     override val allActivities: Flow<List<Activity>> = activityDao.allActivitiesFlow()
-    override fun getActivityFlow(activityId: Long): Flow<Activity> = activityDao.getActivityFlow(activityId)
-    override suspend fun getActivity(activityId: Long): Activity = activityDao.getActivity(activityId)
+    override fun getActivityFlow(activityId: Long): Flow<Activity?> = activityDao.getActivityFlow(activityId)
+    override suspend fun getActivity(activityId: Long): Activity? = activityDao.getActivity(activityId)
     override suspend fun addActivity(activity: Activity) = activityDao.addActivity(activity)
     override suspend fun updateActivity(activity: Activity) = activityDao.updateActivity(activity)
     override suspend fun deleteActivity(activity: Activity) = activityDao.deleteActivity(activity)
@@ -93,7 +93,7 @@ class LocalDataRepository @Inject constructor(
     // Altitude
     override suspend fun addAltitude(altitude: Altitude) = altitudeDao.addAltitude(altitude)
     override val allAltitudes: Flow<List<Altitude>> = altitudeDao.allAltitudes
-    override fun getAltitude(timestamp: Long): Flow<Altitude> = altitudeDao.getAltitude(timestamp)
+    override fun getAltitude(timestamp: Long): Flow<Altitude?> = altitudeDao.getAltitude(timestamp)
     override fun getAltitudesBetween(start: Long, end: Long) = altitudeDao.getAltitudesBetween(start, end)
 
     // Calibration
@@ -103,7 +103,7 @@ class LocalDataRepository @Inject constructor(
     // Climbrate
     override suspend fun addClimbrate(climbrate: Climbrate) = climbrateDao.addClimbrate(climbrate)
     override val allClimbrates: Flow<List<Climbrate>> = climbrateDao.allClimbrates
-    override fun getClimbrate(timestamp: Long): Flow<Climbrate> = climbrateDao.getClimbrate(timestamp)
+    override fun getClimbrate(timestamp: Long): Flow<Climbrate?> = climbrateDao.getClimbrate(timestamp)
     override fun getClimbratesBetween(start: Long, end: Long) = climbrateDao.getClimbratesBetween(start, end)
 
     // Pressure
@@ -113,7 +113,7 @@ class LocalDataRepository @Inject constructor(
     // Location
     override suspend fun addLocation(location: Location) = locationDao.addLocation(location)
     override val allLocations: Flow<List<Location>> = locationDao.allLocations
-    override fun getLocation(timestamp: Long): Flow<Location> = locationDao.getLocation(timestamp)
+    override fun getLocation(timestamp: Long): Flow<Location?> = locationDao.getLocation(timestamp)
     override fun getLocationsBetween(start: Long, end: Long) = locationDao.getLocationsBetween(start, end)
 
     // User

@@ -15,10 +15,10 @@ interface ActivityDao {
     fun allActivitiesFlow(): Flow<List<Activity>>
 
     @Query("SELECT * FROM activity WHERE activity_id = :activityId")
-    fun getActivityFlow(activityId: Long): Flow<Activity>
+    fun getActivityFlow(activityId: Long): Flow<Activity?>
 
     @Query("SELECT * FROM activity WHERE activity_id = :activityId")
-    suspend fun getActivity(activityId: Long): Activity
+    suspend fun getActivity(activityId: Long): Activity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addActivity(activity: Activity)

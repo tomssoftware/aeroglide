@@ -13,7 +13,7 @@ interface LocationDao {
     val allLocations: Flow<List<Location>>
 
     @Query("select * from location where timestamp = :timestamp")
-    fun getLocation(timestamp: Long): Flow<Location>
+    fun getLocation(timestamp: Long): Flow<Location?>
 
     @Query("select * from location where timestamp between :start and :end")
     fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>>

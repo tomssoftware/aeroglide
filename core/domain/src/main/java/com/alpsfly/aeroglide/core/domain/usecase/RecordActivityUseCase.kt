@@ -62,6 +62,7 @@ class RecordActivityUseCase @Inject constructor(
         }
         startRecordSensorData()
 
+        check(activityId != 0L)
         appRepository.startRecording(activityId)
     }
 
