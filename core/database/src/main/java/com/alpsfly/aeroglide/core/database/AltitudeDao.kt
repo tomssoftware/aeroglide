@@ -13,7 +13,7 @@ interface AltitudeDao {
     val allAltitudes: Flow<List<Altitude>>
 
     @Query("select * from altitude where timestamp = :timestamp")
-    fun getAltitude(timestamp: Long): Flow<Altitude>
+    fun getAltitude(timestamp: Long): Flow<Altitude?>
 
     @Query("select * from altitude where timestamp between :start and :end")
     fun getAltitudesBetween(start: Long, end: Long): Flow<List<Altitude>>

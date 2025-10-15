@@ -25,9 +25,6 @@ import javax.inject.Inject
 class ActivityViewModel @Inject constructor(
     private val dataRepository: DataRepository,
 ) : ViewModel() {
-
-
-
     val allActivitiesUiState: StateFlow<ActivityListUiState> =
         dataRepository.allActivities
             .map { list -> ActivityListUiState.Success(list) }
@@ -43,9 +40,11 @@ class ActivityViewModel @Inject constructor(
     fun loadActivityById(id: Long) {
         viewModelScope.launch {
             _activity.value = ActivityUiState.Loading
-            _activity.value = ActivityUiState.Success(
-                dataRepository.getActivity(id)
-            )
+            dataRepository.getActivity(id)?.let { activity ->
+                _activity.value = ActivityUiState.Success(
+                    activity
+                )
+            }
         }
     }
 
@@ -60,23 +59,26 @@ class ActivityViewModel @Inject constructor(
     val altitudeModelProducer = CartesianChartModelProducer()
     fun loadAltitudes(activityId: Long) {
         viewModelScope.launch {
-            val activity = dataRepository.getActivity(activityId)
-            val altitudeFlow = dataRepository.getAltitudesBetween(activity.begin, activity.end)
-            val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
+            dataRepository.getActivity(activityId)?.let { activity ->
+                val altitudeFlow = dataRepository.getAltitudesBetween(activity.begin, activity.end)
+                val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
 
-            minAltitude = activity.minAltitude.toDouble()
-            maxAltitude = activity.maxAltitude.toDouble()
+                minAltitude = activity.minAltitude.toDouble()
+                maxAltitude = activity.maxAltitude.toDouble()
 
-            altitudeFlow.collect { altitudeList ->
-                altitudeList.forEach { altitude ->
-                    altitudePoints.add(Pair(altitudePoints.size, altitude.altitude))
-                }
-                altitudeModelProducer.runTransaction {
-                    lineSeries {
-                        series(
-                            x = altitudePoints.map { it.first },
-                            y = altitudePoints.map { it.second }
-                        )
+                altitudeFlow.collect { altitudeList ->
+                    altitudeList.forEach { altitude ->
+                        altitudePoints.add(Pair(altitudePoints.size, altitude.altitude))
+                    }
+                    if (altitudePoints.size > 1) {
+                        altitudeModelProducer.runTransaction {
+                            lineSeries {
+                                series(
+                                    x = altitudePoints.map { it.first },
+                                    y = altitudePoints.map { it.second }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -86,20 +88,23 @@ class ActivityViewModel @Inject constructor(
     val climbrateModelProducer = CartesianChartModelProducer()
     fun loadClimbrates(activityId: Long) {
         viewModelScope.launch {
-            val activity = dataRepository.getActivity(activityId)
-            val climbrateFlow = dataRepository.getClimbratesBetween(activity.begin, activity.end)
-            val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
+            dataRepository.getActivity(activityId)?.let { activity ->
+                val climbrateFlow = dataRepository.getClimbratesBetween(activity.begin, activity.end)
+                val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
 
-            climbrateFlow.collect { climbrateList ->
-                climbrateList.forEach { climbrate ->
-                    climbratePoints.add(Pair(climbratePoints.size, climbrate.climbrate))
-                }
-                climbrateModelProducer.runTransaction {
-                    lineSeries {
-                        series(
-                            x = climbratePoints.map { it.first },
-                            y = climbratePoints.map { it.second }
-                        )
+                climbrateFlow.collect { climbrateList ->
+                    climbrateList.forEach { climbrate ->
+                        climbratePoints.add(Pair(climbratePoints.size, climbrate.climbrate))
+                    }
+                    if (climbratePoints.size > 1) {
+                        climbrateModelProducer.runTransaction {
+                            lineSeries {
+                                series(
+                                    x = climbratePoints.map { it.first },
+                                    y = climbratePoints.map { it.second }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -109,12 +114,18 @@ class ActivityViewModel @Inject constructor(
     private val trackPoints = mutableListOf<Point>()
     fun loadLocations(activityId: Long) {
         viewModelScope.launch {
-            val activity = dataRepository.getActivity(activityId)
-            val locationFlow = dataRepository.getLocationsBetween(activity.begin, activity.end)
-            trackPoints.clear()
-            locationFlow.collect { locationList ->
-                locationList.forEach { location ->
-                    trackPoints.add(Point.fromLngLat(location.longitude.toDouble(), location.latitude.toDouble()))
+            dataRepository.getActivity(activityId)?.let { activity ->
+                val locationFlow = dataRepository.getLocationsBetween(activity.begin, activity.end)
+                trackPoints.clear()
+                locationFlow.collect { locationList ->
+                    locationList.forEach { location ->
+                        trackPoints.add(
+                            Point.fromLngLat(
+                                location.longitude.toDouble(),
+                                location.latitude.toDouble()
+                            )
+                        )
+                    }
                 }
             }
         }

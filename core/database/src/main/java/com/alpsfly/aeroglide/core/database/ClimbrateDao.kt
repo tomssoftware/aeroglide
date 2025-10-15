@@ -14,7 +14,7 @@ interface ClimbrateDao {
     val allClimbrates: Flow<List<Climbrate>>
 
     @Query("select * from climbrate where timestamp = :timestamp")
-    fun getClimbrate(timestamp: Long): Flow<Climbrate>
+    fun getClimbrate(timestamp: Long): Flow<Climbrate?>
 
     @Query("select * from climbrate where timestamp between :start and :end")
     fun getClimbratesBetween(start: Long, end: Long): Flow<List<Climbrate>>

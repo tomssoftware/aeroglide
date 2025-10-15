@@ -56,11 +56,13 @@ class AltitudeProfileViewModel @Inject constructor(
                 return@collect
 
             dataRepository.getActivityFlow(activityId).collect { activity ->
-                if (activity.maxAltitude != Float.MIN_VALUE) {
-                    maxAltitude = activity.maxAltitude.toInt().toDouble()
-                }
-                if (activity.minAltitude != Float.MAX_VALUE) {
-                    minAltitude = activity.minAltitude.toInt().toDouble()
+                activity?.let { activity ->
+                    if (activity.maxAltitude != Float.MIN_VALUE) {
+                        maxAltitude = activity.maxAltitude.toInt().toDouble()
+                    }
+                    if (activity.minAltitude != Float.MAX_VALUE) {
+                        minAltitude = activity.minAltitude.toInt().toDouble()
+                    }
                 }
             }
         }
