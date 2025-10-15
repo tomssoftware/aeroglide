@@ -32,11 +32,13 @@ class AppRepositoryImpl @Inject constructor(
     override val isCalibrationRunning = _isCalibrationRunning.asStateFlow()
 
     override fun startRecording(activityId: Long) {
+        check(activityId != 0L)
         _isRecording.value = true
         _activityId.value = activityId
     }
 
     override fun stopRecording() {
+        check(activityId.value != 0L)
         _isRecording.value = false
         _activityId.value = 0L
     }

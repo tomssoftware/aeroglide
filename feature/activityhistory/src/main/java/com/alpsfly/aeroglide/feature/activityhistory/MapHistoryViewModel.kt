@@ -38,15 +38,23 @@ class MapHistoryViewModel @Inject constructor(
 
     fun loadFeatureCollection(activityId: Long) {
         viewModelScope.launch {
-            val activity = dataRepository.getActivity(activityId)
-            getMapboxFeatureCollection(activity.begin, activity.end).collect { featureCollection ->
-                _mapboxFeatureCollection = featureCollection
+            dataRepository.getActivity(activityId)?.let { activity ->
+                getMapboxFeatureCollection(
+                    activity.begin,
+                    activity.end
+                ).collect { featureCollection ->
+                    _mapboxFeatureCollection = featureCollection
+                }
             }
         }
         viewModelScope.launch {
-            val activity = dataRepository.getActivity(activityId)
-            getMapboxLocationCollection(activity.begin, activity.end).collect { locationCollection ->
-                _mapboxLocationCollection.value = locationCollection
+            dataRepository.getActivity(activityId)?.let { activity ->
+                getMapboxLocationCollection(
+                    activity.begin,
+                    activity.end
+                ).collect { locationCollection ->
+                    _mapboxLocationCollection.value = locationCollection
+                }
             }
         }
     }

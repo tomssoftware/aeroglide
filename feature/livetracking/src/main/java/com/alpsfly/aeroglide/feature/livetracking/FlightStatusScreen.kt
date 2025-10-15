@@ -80,7 +80,7 @@ fun FlightStatusScreen(
             DataField(
                 caption = stringResource(R.string.sid_distance),
                 value = LocalUnit
-                    .of(activity.distance, UnitConverter.Unit.M)
+                    .of(activity?.distance ?: 0f, UnitConverter.Unit.M)
                     .withSymbol(flag = false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.M).toLocalSymbol(),
@@ -98,7 +98,7 @@ fun FlightStatusScreen(
             )
             DataField(
                 caption = stringResource(R.string.sid_duration),
-                value = DateUtils.formatElapsedTime(activity.duration),
+                value = DateUtils.formatElapsedTime(activity?.duration ?: 0),
                 unit = "",
                 modifier = Modifier.weight(1f)
             )
@@ -110,7 +110,7 @@ fun FlightStatusScreen(
             DataField(
                 caption = stringResource(R.string.sid_avg_climbrate_pos),
                 value = LocalUnit
-                    .of(activity.positiveAvgClimbrate, UnitConverter.Unit.MS)
+                    .of(activity?.positiveAvgClimbrate ?: 0f, UnitConverter.Unit.MS)
                     .withDigits(2)
                     .withSymbol(flag = false)
                     .toLocalString(),
@@ -120,7 +120,7 @@ fun FlightStatusScreen(
             DataField(
                 caption = stringResource(R.string.sid_avg_climbrate_neg),
                 value = LocalUnit
-                    .of(activity.negativeAvgClimbrate, UnitConverter.Unit.MS)
+                    .of(activity?.negativeAvgClimbrate ?: 0f, UnitConverter.Unit.MS)
                     .withDigits(2)
                     .withSymbol(flag = false)
                     .toLocalString(),
@@ -130,7 +130,7 @@ fun FlightStatusScreen(
             DataField(
                 caption = stringResource(R.string.sid_avg_speed),
                 value = LocalUnit
-                    .of(activity.avgSpeed, UnitConverter.Unit.MS)
+                    .of(activity?.avgSpeed ?: 0f, UnitConverter.Unit.MS)
                     .withDigits(0)
                     .withSymbol(flag = false)
                     .toUnit(UnitConverter.Unit.KMH)
