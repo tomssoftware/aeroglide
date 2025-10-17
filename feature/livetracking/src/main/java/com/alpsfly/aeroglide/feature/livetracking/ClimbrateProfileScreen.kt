@@ -31,6 +31,7 @@ fun ClimbrateProfileScreen(
         {
             LineChartScreen(
                 modelProducer = climbrateProfileViewModel.climbrateModelProducer,
+                rangeProvider = climbrateProfileViewModel.rangeProvider,
                 modifier = Modifier
             )
         }
