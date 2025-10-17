@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerState, onClick: () -> Unit) {
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = false,
         drawerContent = {
             ModalDrawerSheet {
                 Text(stringResource(R.string.app_name), modifier = Modifier.padding(16.dp))

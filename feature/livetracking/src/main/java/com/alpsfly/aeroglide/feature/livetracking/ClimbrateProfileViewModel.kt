@@ -1,15 +1,16 @@
 package com.alpsfly.aeroglide.feature.livetracking
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
-import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.viewmodel.LineChartViewModel
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -19,28 +20,35 @@ import javax.inject.Inject
 class ClimbrateProfileViewModel @Inject constructor(
     appRepository: AppRepository,
     sensorRepository: SensorRepository,
-) : ViewModel() {
+    dataRepository: DataRepository
+) : LineChartViewModel(appRepository, dataRepository) {
 
     private val climbrateFlow = sensorRepository.climbrateFlowUi
-    private val isRecording = appRepository.isRecording
-    private val climbrateChartFlow = combine(climbrateFlow, isRecording) { climbrate, isRecording ->
-        ClimbrateChartData(climbrate, isRecording)
-    }
+
+    val rangeProvider =
+        object : CartesianLayerRangeProvider {
+            override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore) = minClimbrate - 0.25
+            override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore) = maxClimbrate + 0.25
+        }
+
+    private val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
+    val climbrateModelProducer = CartesianChartModelProducer()
 
     init {
+        viewModelScope.launch {
+            climbrateModelProducer.runTransaction {
+                lineSeries { series(0, 0, 0, 0, 0, 0, 0, 0, 0, 0) }
+            }
+        }
         viewModelScope.launch {
             collectClimbrate()
         }
     }
 
-    private val climbratePoints = mutableStateListOf<Pair<Int, Float>>()
-    val climbrateModelProducer = CartesianChartModelProducer()
     private suspend fun collectClimbrate() {
-        climbrateChartFlow.collect { climbrateChartData ->
-            climbratePoints.add(Pair(climbratePoints.size, climbrateChartData.climbrate.climbrate))
-            if (climbrateChartData.isRecording.not()) {
-                climbratePoints.clear()
-            } else {
+        climbrateFlow.collect { climbrateChartData ->
+            climbratePoints.add(Pair(climbratePoints.size, climbrateChartData.climbrate))
+            if (isRecording.value) {
                 climbrateModelProducer.runTransaction {
                     lineSeries {
                         series(
@@ -49,6 +57,8 @@ class ClimbrateProfileViewModel @Inject constructor(
                         )
                     }
                 }
+            } else {
+                climbratePoints.clear()
             }
         }
     }
@@ -58,8 +68,3 @@ class ClimbrateProfileViewModel @Inject constructor(
         Timber.i("CLEARED VIEWMODEL")
     }
 }
-
-data class ClimbrateChartData(
-    val climbrate: Climbrate,
-    val isRecording: Boolean
-)
