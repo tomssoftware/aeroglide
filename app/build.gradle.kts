@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-import org.gradle.process.ExecResult
-import java.io.ByteArrayOutputStream
-
 val gitVersionName = providers.exec {
     commandLine("git", "describe", "--tags", "--abbrev=0")
 }.standardOutput.asText.get().trim()
@@ -49,6 +46,13 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "FIREBASE_FUNCTIONS_URL", "\"https://us-central1-thermalscout.cloudfunctions.net/\"")
+        buildConfigField("String", "FIREBASE_EMULATOR_HOST_ADDRESS", "\"10.0.2.2\"")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_AUTH", "9099")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FUNCTIONS", "5001")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FIRESTORE", "8080")
+        buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_PUBSUB", "8085")
     }
 
     buildTypes {
