@@ -76,7 +76,10 @@ fun MainHistoryScreen(
                     .fillMaxHeight()
                     .padding(8.dp)
             ) {
-                HorizontalPager(state = pagerState) { page ->
+                HorizontalPager(
+                    state = pagerState,
+                    userScrollEnabled = false
+                ) { page ->
                     when (page) {
 
                         0 -> {

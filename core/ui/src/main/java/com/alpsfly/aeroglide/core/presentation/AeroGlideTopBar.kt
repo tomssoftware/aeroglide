@@ -15,13 +15,14 @@ fun AeroGlideTopAppBar(
     title: String,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
     scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-
 ) {
     CenterAlignedTopAppBar(
         title = { Text(title) },
         navigationIcon = navigationIcon,
         actions = actions,
+        colors = colors,
         scrollBehavior = scrollBehavior,
     )
 }
