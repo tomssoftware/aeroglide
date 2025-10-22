@@ -39,9 +39,6 @@ import com.alpsfly.aeroglide.core.data.service.LocationService
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.theme.AeroGlideTheme
-import com.google.firebase.Firebase
-import com.google.firebase.analytics.analytics
-import com.google.firebase.crashlytics.crashlytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -52,9 +49,6 @@ class AeroGlideActivity : ComponentActivity() {
     private val aeroGlideViewModel: AeroGlideViewModel by viewModels()
 
     private lateinit var beepGenerator: BeepGeneratorImpl
-
-    private val crashlytics = Firebase.crashlytics
-    private val analytics = Firebase.analytics
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,6 +101,12 @@ class AeroGlideActivity : ComponentActivity() {
                     topBar = {
                         AeroGlideTopAppBar(
                             title = "AeroGlide",
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
                             navigationIcon = {
                                 IconButton(
                                     onClick = {
@@ -181,7 +181,12 @@ class AeroGlideActivity : ComponentActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray, deviceId: Int) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+        deviceId: Int
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId)
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {

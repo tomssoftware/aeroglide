@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,11 +34,11 @@ fun DataField(
 ) {
     Card(
         modifier = modifier
-            .padding(8.dp),
-        ) {
+            .padding(4.dp),
+    ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(12.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -52,8 +50,9 @@ fun DataField(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }
-            Column(modifier = Modifier
-                .weight(1f)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
             ) {
                 Text(
                     text = caption,
@@ -77,7 +76,8 @@ fun DataField(
                             text = value,
                             style = TextStyle(
                                 fontWeight = FontWeight.SemiBold,
-                                fontSize = 20.sp),
+                                fontSize = 20.sp
+                            ),
                             modifier = Modifier.weight(1f, fill = false)
                         )
                     } else {
