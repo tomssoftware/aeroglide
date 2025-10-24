@@ -65,11 +65,14 @@ fun ListHistoryScreen(
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(activityHistoryList) { activity ->
+                items(
+                    items = activityHistoryList,
+                    key = { activity -> activity.activityId }
+                ) { activity ->
                     ActivityItem(
                         navController = navController,
                         activity = activity,
-                        modifier = Modifier,
+                        modifier = Modifier.animateItem(),
                         onRemove = viewModel::deleteActivity
                     )
                 }
