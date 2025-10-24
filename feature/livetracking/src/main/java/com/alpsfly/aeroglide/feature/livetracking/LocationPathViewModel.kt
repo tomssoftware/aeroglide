@@ -6,11 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.mapbox.data.MapBoxLocation
-import com.alpsfly.aeroglide.core.mapbox.data.mapToFeatureCollection
 import com.alpsfly.aeroglide.core.mapbox.data.zipMapBoxLocations
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Location
-import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +23,20 @@ import javax.inject.Inject
 class LocationPathViewModel @Inject constructor(
     private val sensorRepository: SensorRepository,
 ) : ViewModel() {
+
+    private val _zoomLevel = MutableStateFlow(10.0) // Default zoom
+    val zoomLevel: StateFlow<Double> = _zoomLevel
+
+    fun setZoomLevel(zoom: Double) {
+        _zoomLevel.value = zoom
+    }
+
+    private val _isFollowingPuck = MutableStateFlow(true)
+    val isFollowingPuck: StateFlow<Boolean> = _isFollowingPuck
+
+    fun setFollowingPuck(follow: Boolean) {
+        _isFollowingPuck.value = follow
+    }
 
     private val _mapboxPointCollection = MutableStateFlow<List<Point>>(emptyList())
     val mapboxPointCollection: StateFlow<List<Point>> = _mapboxPointCollection
