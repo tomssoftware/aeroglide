@@ -24,20 +24,6 @@ class LocationPathViewModel @Inject constructor(
     private val sensorRepository: SensorRepository,
 ) : ViewModel() {
 
-    private val _zoomLevel = MutableStateFlow(10.0) // Default zoom
-    val zoomLevel: StateFlow<Double> = _zoomLevel
-
-    fun setZoomLevel(zoom: Double) {
-        _zoomLevel.value = zoom
-    }
-
-    private val _isFollowingPuck = MutableStateFlow(true)
-    val isFollowingPuck: StateFlow<Boolean> = _isFollowingPuck
-
-    fun setFollowingPuck(follow: Boolean) {
-        _isFollowingPuck.value = follow
-    }
-
     private val _mapboxPointCollection = MutableStateFlow<List<Point>>(emptyList())
     val mapboxPointCollection: StateFlow<List<Point>> = _mapboxPointCollection
 

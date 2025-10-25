@@ -3,6 +3,11 @@ package com.alpsfly.aeroglide.core.model.configuration
 import android.graphics.Color
 
 class ColorMapping {
+    val baseHueAscent = 90f
+    val baseHueDecline = 150f
+    val maxDecline = -4f
+    val maxAscent = 6f
+    val scale = 30f
     fun hueToColorString(hue: Float): String {
         val saturation = 1.0f
         val value = 1.0f
@@ -12,8 +17,8 @@ class ColorMapping {
     }
 
     fun climbrateToHue(climbrate: Float): Float {
-        val baseHue = if (climbrate < 0) 150f else 90f
-        var hue = baseHue + ((climbrate.coerceIn(-4f, 6f) * -1f) * 30f)
+        val baseHue = if (climbrate < 0) baseHueDecline else baseHueAscent
+        var hue = baseHue + ((climbrate.coerceIn(maxDecline, maxAscent) * -1f) * scale)
         if (hue < 0f) {
             hue += 360f
         }
