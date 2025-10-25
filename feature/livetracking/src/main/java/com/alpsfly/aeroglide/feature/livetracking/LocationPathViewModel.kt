@@ -6,11 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.mapbox.data.MapBoxLocation
-import com.alpsfly.aeroglide.core.mapbox.data.mapToFeatureCollection
 import com.alpsfly.aeroglide.core.mapbox.data.zipMapBoxLocations
 import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Location
-import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
