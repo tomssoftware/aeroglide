@@ -1,6 +1,7 @@
 package com.alpsfly.aeroglide.core.data
 
 import android.content.Context
+import com.tinder.StateMachine
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -8,46 +9,119 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
+sealed class AppState {
+    data object Idle : AppState()
+    data object Calibrating : AppState()
+    data object Ready : AppState()
+    data object Recording : AppState()
+}
+
 interface AppRepository {
     val activityId: StateFlow<Long>
-    val isRecording: StateFlow<Boolean>
-    val isCalibrationRunning: StateFlow<Boolean>
-    fun startRecording(activityId: Long)
-    fun stopRecording()
-    fun startCalibration()
-    fun stopCalibration()
+    val appState: StateFlow<AppState>
+    fun setActivityId(activityId: Long)
+    var onToggleRecording: () -> Unit
+    var onCalibrationFinished: () -> Unit
+    var onCalibrationStarted: () -> Unit
 }
 
 @Singleton
 class AppRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
-) : AppRepository {
+    @param:ApplicationContext private val context: Context,
+
+    ) : AppRepository {
+    // Instantiate the state machine
+    private val stateMachine = createStateMachine()
     private val _activityId = MutableStateFlow(0L)
     override val activityId = _activityId.asStateFlow()
+    private val _appState: MutableStateFlow<AppState> = MutableStateFlow(AppState.Idle)
+    override val appState = _appState.asStateFlow()
 
-    private val _isRecording = MutableStateFlow(false)
-    override val isRecording = _isRecording.asStateFlow()
+    override var onToggleRecording: () -> Unit = {
+        stateMachine.transition(Event.OnToggleRecording)
+    }
 
-    private val _isCalibrationRunning = MutableStateFlow(false)
-    override val isCalibrationRunning = _isCalibrationRunning.asStateFlow()
+    override var onCalibrationStarted: () -> Unit = {
+        stateMachine.transition(Event.OnCalibrationStarted)
+    }
 
-    override fun startRecording(activityId: Long) {
-        check(activityId != 0L)
-        _isRecording.value = true
+    override var onCalibrationFinished: () -> Unit = {
+        stateMachine.transition(Event.OnCalibrationFinished)
+    }
+
+    override fun setActivityId(activityId: Long) {
         _activityId.value = activityId
     }
 
-    override fun stopRecording() {
-        check(activityId.value != 0L)
-        _isRecording.value = false
-        _activityId.value = 0L
+    /* application state machine */
+    private fun createStateMachine(): StateMachine<AppState, Event, SideEffect> {
+        return StateMachine.create {
+            initialState(AppState.Idle)
+
+            state<AppState.Idle> {
+                on<Event.OnCalibrationStarted> {
+                    transitionTo(AppState.Calibrating, SideEffect.CalibrationStarted)
+                }
+            }
+
+            state<AppState.Calibrating> {
+                on<Event.OnCalibrationFinished> {
+                    transitionTo(AppState.Ready, SideEffect.CalibrationFinished)
+                }
+            }
+
+            state<AppState.Ready> {
+                on<Event.OnToggleRecording> {
+                    transitionTo(AppState.Recording, SideEffect.StartRecording)
+                }
+            }
+
+            state<AppState.Recording> {
+                on<Event.OnToggleRecording> {
+                    transitionTo(AppState.Ready, SideEffect.StopRecording)
+                }
+            }
+
+            onTransition {
+                val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
+                when (validTransition.sideEffect) {
+                    SideEffect.CalibrationStarted -> {
+                        _appState.value = AppState.Calibrating
+                    }
+
+                    SideEffect.CalibrationFinished -> {
+                        _appState.value = AppState.Ready
+                    }
+
+                    SideEffect.StartRecording -> {
+                        _appState.value = AppState.Recording
+                    }
+
+                    SideEffect.StopRecording -> {
+                        _appState.value = AppState.Ready
+                    }
+
+                    null -> {
+                        _appState.value = AppState.Idle
+                    }
+                }
+            }
+        }
     }
 
-    override fun startCalibration() {
-        _isCalibrationRunning.value = true
-    }
+    companion object {
 
-    override fun stopCalibration() {
-        _isCalibrationRunning.value = false
+        sealed class Event {
+            data object OnToggleRecording : Event()
+            data object OnCalibrationFinished : Event()
+            data object OnCalibrationStarted : Event()
+        }
+
+        sealed class SideEffect {
+            data object CalibrationStarted : SideEffect()
+            data object CalibrationFinished : SideEffect()
+            data object StartRecording : SideEffect()
+            data object StopRecording : SideEffect()
+        }
     }
 }

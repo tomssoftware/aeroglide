@@ -3,6 +3,7 @@ package com.alpsfly.aeroglide.core.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.data.AppState
 import com.alpsfly.aeroglide.core.data.DataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -17,7 +18,7 @@ open class LineChartViewModel @Inject constructor(
     private val dataRepository: DataRepository
 ) : ViewModel() {
     private val activityId = appRepository.activityId
-    protected val isRecording = appRepository.isRecording
+    protected val appState = appRepository.appState
     protected var minAltitude = 10.0
     protected var maxAltitude = 0.0
     protected var minClimbrate = -0.25
@@ -31,7 +32,7 @@ open class LineChartViewModel @Inject constructor(
 
     private suspend fun collectActivity() {
         activityId.collect { activityId ->
-            if (isRecording.value) {
+            if (appState.value == AppState.Recording) {
                 dataRepository.getActivityFlow(activityId).collect { activity ->
                     activity?.let { activity ->
                         if (maxAltitude == 0.0) {

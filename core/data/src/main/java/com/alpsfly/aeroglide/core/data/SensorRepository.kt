@@ -85,10 +85,10 @@ interface SensorRepository {
 
 @Singleton
 class SensorRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val sensorManager: SensorManager,
-    private val locationManager: LocationManager,
-    @SystemTime private val timeProvider: TimeProvider
+    @param:ApplicationContext private val context: Context,
+    sensorManager: SensorManager,
+    locationManager: LocationManager,
+    @param:SystemTime private val timeProvider: TimeProvider
 ) : SensorRepository, SensorEventCallback() {
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
