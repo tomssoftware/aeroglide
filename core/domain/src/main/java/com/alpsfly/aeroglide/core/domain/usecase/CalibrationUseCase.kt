@@ -1,8 +1,8 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
 import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.data.AppState
 import com.alpsfly.aeroglide.core.data.SensorRepository
-import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import kotlinx.coroutines.flow.Flow
@@ -11,20 +11,19 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.takeWhile
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 class CalibrationUseCase @Inject constructor(
     private val appRepository: AppRepository,
     private val sensorRepository: SensorRepository
 ) {
     operator fun invoke(): Flow<Calibration> {
-        if (appRepository.isCalibrationRunning.value) {
+        if (appRepository.appState.value == AppState.Ready) {
             Timber.w("Calibration already running")
             return sensorRepository.calibration
         }
 
         sensorRepository.enableSensorListener()
-        appRepository.startCalibration()
+        appRepository.onCalibrationStarted()
         accuracyProcessor.reset()
         val startOfCalibration = System.currentTimeMillis()
         var calibration = Calibration(timestamp = startOfCalibration)
@@ -51,13 +50,13 @@ class CalibrationUseCase @Inject constructor(
         }.onCompletion {
             sensorRepository.disableSensorListener()
             sensorRepository.setCalibration(calibration)
-            appRepository.stopCalibration()
             with(calibration) {
                 timestamp = System.currentTimeMillis()
                 isCalibrated = accuracyProcessor.isCalibrated
                 altitude0 = accuracyProcessor.altitude0
                 Timber.i("Calibration finished: $isCalibrated, $pressure0, $altitude0")
             }
+            appRepository.onCalibrationFinished()
             emit(calibration)
         }
     }
@@ -68,7 +67,7 @@ class CalibrationUseCase @Inject constructor(
         else SensorType.Unknown
     }
 
-    private fun isLocationAccuracySufficient(calibration: Calibration): Boolean = with (calibration) {
+    private fun isLocationAccuracySufficient(calibration: Calibration): Boolean = with(calibration) {
         if (hasVerticalAccuracy) {
             accuracyProcessor.isAccuracyProcessed(verticalAccuracy, altitude0)
         } else {
@@ -85,11 +84,11 @@ class AccuracyProcessor {
     var altitude0 = 0f
     var isCalibrated = false
 
-    fun isAccuracyProcessed(accuracy: Float, altitude: Float) : Boolean {
+    fun isAccuracyProcessed(accuracy: Float, altitude: Float): Boolean {
         when (accuracy) {
-            in 0.0f .. 3.5f -> highAccuracy.add(altitude)
-            in 3.5f .. 5.0f -> midAccuracy.add(altitude)
-            in 5.0f .. 20.0f -> lowAccuracy.add(altitude)
+            in 0.0f..3.5f -> highAccuracy.add(altitude)
+            in 3.5f..5.0f -> midAccuracy.add(altitude)
+            in 5.0f..20.0f -> lowAccuracy.add(altitude)
             else -> noAccuracy.add(altitude)
         }
 
@@ -99,21 +98,25 @@ class AccuracyProcessor {
                 isCalibrated = true
                 true
             }
+
             (midAccuracy.size >= 20) -> {
                 altitude0 = midAccuracy.average().toFloat()
                 isCalibrated = true
                 true
             }
+
             (lowAccuracy.size >= 30) -> {
                 altitude0 = lowAccuracy.average().toFloat()
                 isCalibrated = true
                 true
             }
+
             (noAccuracy.size >= 40) -> {
                 altitude0 = noAccuracy.average().toFloat()
                 isCalibrated = true
                 true
             }
+
             else -> {
                 false
             }
@@ -129,4 +132,5 @@ class AccuracyProcessor {
         isCalibrated = false
     }
 }
+
 private val accuracyProcessor = AccuracyProcessor()

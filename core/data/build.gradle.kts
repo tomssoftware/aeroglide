@@ -56,7 +56,11 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
 
+    // Logging
     implementation(libs.timber)
+
+    // State machine
+    implementation(libs.statemachine)
 
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.junit)

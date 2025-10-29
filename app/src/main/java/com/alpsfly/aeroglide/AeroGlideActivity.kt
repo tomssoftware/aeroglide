@@ -35,6 +35,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
+import com.alpsfly.aeroglide.core.data.AppState
 import com.alpsfly.aeroglide.core.data.service.LocationService
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.R
@@ -70,8 +71,8 @@ class AeroGlideActivity : ComponentActivity() {
         }
 
         lifecycle.coroutineScope.launch {
-            aeroGlideViewModel.isRecording.collect { isRecording ->
-                if (isRecording) {
+            aeroGlideViewModel.appState.collect { state ->
+                if (state == AppState.Recording) {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -94,7 +95,8 @@ class AeroGlideActivity : ComponentActivity() {
                 val drawerState = rememberDrawerState(DrawerValue.Closed)
                 val coroutineScope = rememberCoroutineScope()
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-                val isRecording by aeroGlideViewModel.isRecording.collectAsState()
+                val appState by aeroGlideViewModel.appState.collectAsState()
+
 
                 Scaffold(
                     modifier = Modifier,
@@ -125,13 +127,10 @@ class AeroGlideActivity : ComponentActivity() {
                                 }
                             },
                             actions = {
-                                IconButton(onClick = {
-                                    if (isRecording)
-                                        aeroGlideViewModel.stopRecording()
-                                    else
-                                        aeroGlideViewModel.startRecording()
-                                }) {
-                                    if (isRecording) {
+                                IconButton(
+                                    onClick = aeroGlideViewModel.onToggleRecording
+                                ) {
+                                    if (appState == AppState.Recording) {
                                         Icon(
                                             painter = painterResource(id = R.drawable.outline_stop_circle_24),
                                             contentDescription = "Mark as favorite"

@@ -52,6 +52,9 @@ dependencies {
     // Logging
     implementation(libs.timber)
 
+    // State machine
+    implementation(libs.statemachine)
+
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

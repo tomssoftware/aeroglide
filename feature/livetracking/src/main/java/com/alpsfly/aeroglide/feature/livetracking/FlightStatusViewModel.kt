@@ -3,6 +3,7 @@ package com.alpsfly.aeroglide.feature.livetracking
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.data.AppState
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
@@ -31,7 +32,7 @@ class FlightStatusViewModel @Inject constructor(
     private val calibrationFlow = sensorRepository.calibration
 
     //private val activityId = appRepository.activityId
-    private val isRecording = appRepository.isRecording
+    private val appState = appRepository.appState
 
     val calibrationUiState: StateFlow<CalibrationUiState> =
         calibrationFlow
@@ -48,9 +49,9 @@ class FlightStatusViewModel @Inject constructor(
             )
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val activityFlow: StateFlow<Activity?> = isRecording
-        .flatMapLatest { isRecording ->
-            if (isRecording) {
+    val activityFlow: StateFlow<Activity?> = appState
+        .flatMapLatest { state ->
+            if (state == AppState.Recording) {
                 appRepository.activityId.flatMapLatest { activityId ->
                     dataRepository.getActivityFlow(activityId)
                 }

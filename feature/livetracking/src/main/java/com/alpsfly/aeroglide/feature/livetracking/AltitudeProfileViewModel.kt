@@ -3,6 +3,7 @@ package com.alpsfly.aeroglide.feature.livetracking
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.data.AppState
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.viewmodel.LineChartViewModel
@@ -47,7 +48,7 @@ class AltitudeProfileViewModel @Inject constructor(
     private suspend fun collectAltitude() {
         altitudeFlow.collect { altitudeChartData ->
             altitudePoints.add(Pair(altitudePoints.size, altitudeChartData.altitude))
-            if (isRecording.value) {
+            if (appState.value == AppState.Recording) {
                 altitudeModelProducer.runTransaction {
                     lineSeries {
                         series(

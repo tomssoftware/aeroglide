@@ -3,7 +3,7 @@ package com.alpsfly.aeroglide
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
-import com.alpsfly.aeroglide.core.data.SensorRepository
+import com.alpsfly.aeroglide.core.data.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordActivityUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,13 +19,38 @@ class AeroGlideViewModel @Inject constructor(
     private val calibrationUseCase: CalibrationUseCase,
 ) : ViewModel() {
 
-    val isRecording = appRepository.isRecording
+    val appState = appRepository.appState
+    var onToggleRecording = appRepository.onToggleRecording
+
+    init {
+        viewModelScope.launch {
+            appRepository.appState.collect {
+                when (it) {
+                    AppState.Idle -> {}
+                    AppState.Calibrating -> {}
+
+                    AppState.Recording -> {
+                        startRecording()
+                    }
+
+                    AppState.Ready -> {
+                        stopRecording()
+                    }
+                }
+            }
+        }
+    }
 
     fun startRecording() {
-        recordSensorDataUseCase.startRecording(System.currentTimeMillis())
+        Timber.i("START RECORDING")
+        appRepository.setActivityId(System.currentTimeMillis())
+        recordSensorDataUseCase.startRecording(appRepository.activityId.value)
     }
+
     fun stopRecording() {
+        Timber.i("STOP RECORDING")
         recordSensorDataUseCase.stopRecording()
+        appRepository.setActivityId(0)
     }
 
     fun startCalibration() {

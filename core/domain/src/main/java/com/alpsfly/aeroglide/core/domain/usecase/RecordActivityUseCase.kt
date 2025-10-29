@@ -3,7 +3,6 @@ package com.alpsfly.aeroglide.core.domain.usecase
 import android.content.Context
 import android.os.PowerManager
 import androidx.core.content.ContextCompat.getSystemService
-import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.RecordActivityUseCase.VarioAccuracy
@@ -25,8 +24,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 class RecordActivityUseCase @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val appRepository: AppRepository,
+    @param:ApplicationContext private val context: Context,
     private val sensorRepository: SensorRepository,
     private val dataRepository: DataRepository,
 ) {
@@ -52,25 +50,19 @@ class RecordActivityUseCase @Inject constructor(
     }
 
     private var recordingWakeLock: PowerManager.WakeLock? = null
-
-    private var activity = Activity()
+    private var recordingActivity = Activity()
     private val verticallyMoving = VerticallyMoving() // todo: reset after activity end
 
     fun startRecording(activityId: Long) {
+        check(activityId != 0L)
         CoroutineScope(Dispatchers.IO).launch {
-            activity = insertActivity(activityId)
+            recordingActivity = insertActivity(activityId)
         }
         startRecordSensorData()
-
-        check(activityId != 0L)
-        appRepository.startRecording(activityId)
     }
 
     fun stopRecording() {
-        if (appRepository.isRecording.value) {
-            stopRecordSensorData()
-            appRepository.stopRecording()
-        }
+        stopRecordSensorData()
     }
 
     private fun startRecordSensorData() {
@@ -90,59 +82,61 @@ class RecordActivityUseCase @Inject constructor(
                     when (type) {
                         RecordingSensorType.ALTITUDE -> {
                             dataRepository.addAltitude(data as Altitude)
-                            if (data.altitude > activity.maxAltitude) {
-                                activity.maxAltitude = data.altitude
-                                updateActivity(activity)
+                            if (data.altitude > recordingActivity.maxAltitude) {
+                                recordingActivity.maxAltitude = data.altitude
+                                updateActivity(recordingActivity)
                             }
-                            if (data.altitude < activity.minAltitude) {
-                                activity.minAltitude = data.altitude
-                                updateActivity(activity)
+                            if (data.altitude < recordingActivity.minAltitude) {
+                                recordingActivity.minAltitude = data.altitude
+                                updateActivity(recordingActivity)
                             }
 
                             verticallyMoving.update(data.altitude)
-                            activity.ascent = verticallyMoving.getAscent()
-                            activity.descent = verticallyMoving.getDescent()
+                            recordingActivity.ascent = verticallyMoving.getAscent()
+                            recordingActivity.descent = verticallyMoving.getDescent()
 
-                            updateActivity(activity)
+                            updateActivity(recordingActivity)
                         }
 
                         RecordingSensorType.CLIMBRATE -> {
                             dataRepository.addClimbrate(data as Climbrate)
-                            if (data.climbrate > activity.maxClimbrate) {
-                                activity.maxClimbrate = data.climbrate
-                                updateActivity(activity)
+                            if (data.climbrate > recordingActivity.maxClimbrate) {
+                                recordingActivity.maxClimbrate = data.climbrate
+                                updateActivity(recordingActivity)
                             }
-                            if (data.climbrate < activity.minClimbrate) {
-                                activity.minClimbrate = data.climbrate
-                                updateActivity(activity)
+                            if (data.climbrate < recordingActivity.minClimbrate) {
+                                recordingActivity.minClimbrate = data.climbrate
+                                updateActivity(recordingActivity)
                             }
                         }
 
                         RecordingSensorType.PRESSURE -> {
                             dataRepository.addPressure(data as Pressure)
-                            if (data.pressure > activity.maxPressure) {
-                                activity.maxPressure = data.pressure
-                                updateActivity(activity)
+                            if (data.pressure > recordingActivity.maxPressure) {
+                                recordingActivity.maxPressure = data.pressure
+                                updateActivity(recordingActivity)
                             }
-                            if (data.pressure < activity.minPressure) {
-                                activity.minPressure = data.pressure
-                                updateActivity(activity)
+                            if (data.pressure < recordingActivity.minPressure) {
+                                recordingActivity.minPressure = data.pressure
+                                updateActivity(recordingActivity)
                             }
                         }
 
                         RecordingSensorType.LOCATION -> {
                             dataRepository.addLocation(data as Location)
-                            activity.distance += distance(data)
-                            activity.duration = (activity.end - activity.begin) / 1000
-                            activity.maxSpeed = max(data.speed, activity.maxSpeed)
-                            activity.minSpeed = min(data.speed, activity.minSpeed)
-                            if (activity.duration > 0) {
-                                activity.avgSpeed = (activity.distance / activity.duration)
-                                activity.positiveAvgClimbrate = (activity.ascent / activity.duration)
-                                activity.negativeAvgClimbrate = (activity.descent / activity.duration)
+                            recordingActivity.distance += distance(data)
+                            recordingActivity.duration = (recordingActivity.end - recordingActivity.begin) / 1000
+                            recordingActivity.maxSpeed = max(data.speed, recordingActivity.maxSpeed)
+                            recordingActivity.minSpeed = min(data.speed, recordingActivity.minSpeed)
+                            if (recordingActivity.duration > 0) {
+                                recordingActivity.avgSpeed = (recordingActivity.distance / recordingActivity.duration)
+                                recordingActivity.positiveAvgClimbrate =
+                                    (recordingActivity.ascent / recordingActivity.duration)
+                                recordingActivity.negativeAvgClimbrate =
+                                    (recordingActivity.descent / recordingActivity.duration)
                             }
-                            activity.end = System.currentTimeMillis()
-                            updateActivity(activity)
+                            recordingActivity.end = System.currentTimeMillis()
+                            updateActivity(recordingActivity)
                         }
                     }
                 }

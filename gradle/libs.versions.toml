@@ -30,6 +30,7 @@ okhttp = "5.2.1"
 play = "21.3.0"
 retrofit = "3.0.0"
 serialization = "1.9.0"
+statemachine = "0.2.0"
 timber = "5.0.1"
 turbine = "1.2.1"
 vicoVersion = "2.2.1"
@@ -92,6 +93,7 @@ retrofitConverterGson = { module = "com.squareup.retrofit2:converter-gson", vers
 retrofitConverterScalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttpLoggingInterceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
+statemachine = { module = "com.tinder.statemachine:statemachine", version.ref = "statemachine" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
@@ -108,5 +110,5 @@ firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-serialzation = {id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization"}
+kotlin-serialzation = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
