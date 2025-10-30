@@ -13,6 +13,9 @@ sealed class AppState {
     data object Idle : AppState()
     data object Calibrating : AppState()
     data object Ready : AppState()
+
+    data object AutoStart : AppState()
+
     data object Recording : AppState()
 }
 
@@ -23,6 +26,8 @@ interface AppRepository {
     var onToggleRecording: () -> Unit
     var onCalibrationFinished: () -> Unit
     var onCalibrationStarted: () -> Unit
+    var onAutoStartEnabled: () -> Unit
+    var onAutoStartDisabled: () -> Unit
 }
 
 @Singleton
@@ -49,6 +54,14 @@ class AppRepositoryImpl @Inject constructor(
         stateMachine.transition(Event.OnCalibrationFinished)
     }
 
+    override var onAutoStartEnabled: () -> Unit = {
+        stateMachine.transition(Event.OnAutoStartEnabled)
+    }
+
+    override var onAutoStartDisabled: () -> Unit = {
+        stateMachine.transition(Event.OnAutoStartDisabled)
+    }
+
     override fun setActivityId(activityId: Long) {
         _activityId.value = activityId
     }
@@ -73,6 +86,20 @@ class AppRepositoryImpl @Inject constructor(
             state<AppState.Ready> {
                 on<Event.OnToggleRecording> {
                     transitionTo(AppState.Recording, SideEffect.StartRecording)
+                }
+
+                on<Event.OnAutoStartEnabled> {
+                    transitionTo(AppState.AutoStart)
+                }
+            }
+
+            state<AppState.AutoStart> {
+                on<Event.OnToggleRecording> {
+                    transitionTo(AppState.Recording, SideEffect.StartRecording)
+                }
+
+                on<Event.OnAutoStartDisabled> {
+                    transitionTo(AppState.Ready, SideEffect.AutoStartDisabled)
                 }
             }
 
@@ -101,6 +128,14 @@ class AppRepositoryImpl @Inject constructor(
                         _appState.value = AppState.Ready
                     }
 
+                    SideEffect.AutoStartEnabled -> {
+                        _appState.value = AppState.AutoStart
+                    }
+
+                    SideEffect.AutoStartDisabled -> {
+                        _appState.value = AppState.Ready
+                    }
+
                     null -> {
                         _appState.value = AppState.Idle
                     }
@@ -115,6 +150,8 @@ class AppRepositoryImpl @Inject constructor(
             data object OnToggleRecording : Event()
             data object OnCalibrationFinished : Event()
             data object OnCalibrationStarted : Event()
+            data object OnAutoStartEnabled : Event()
+            data object OnAutoStartDisabled : Event()
         }
 
         sealed class SideEffect {
@@ -122,6 +159,8 @@ class AppRepositoryImpl @Inject constructor(
             data object CalibrationFinished : SideEffect()
             data object StartRecording : SideEffect()
             data object StopRecording : SideEffect()
+            data object AutoStartEnabled : SideEffect()
+            data object AutoStartDisabled : SideEffect()
         }
     }
 }

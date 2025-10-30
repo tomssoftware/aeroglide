@@ -1,5 +1,6 @@
 package com.alpsfly.aeroglide
 
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -12,15 +13,13 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.alpsfly.aeroglide.core.Screen
 import com.alpsfly.aeroglide.feature.activityhistory.navigateToActivityList
 import com.alpsfly.aeroglide.core.ui.R as uiR
-
-
-import androidx.compose.ui.res.painterResource
 
 @Composable
 fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerState, onClick: () -> Unit) {
@@ -36,7 +35,10 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                         Text(text = stringResource(uiR.string.sid_vario))
                     },
                     icon = {
-                        Icon(painter = painterResource(id = uiR.drawable.swap_vertical_circle_24px), contentDescription = null)
+                        Icon(
+                            painter = painterResource(id = uiR.drawable.swap_vertical_circle_24px),
+                            contentDescription = null
+                        )
                     },
                     selected = false,
                     onClick = {
@@ -53,6 +55,17 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                     onClick = {
                         onClick()
                         navController.navigateToActivityList()
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text(text = stringResource(uiR.string.sid_settings)) },
+                    icon = {
+                        Icon(painter = painterResource(id = uiR.drawable.adb_24px), contentDescription = null)
+                    },
+                    selected = false,
+                    onClick = {
+                        onClick()
+                        navController.navigate(route = Screen.SettingsScreen.route)
                     }
                 )
             }
