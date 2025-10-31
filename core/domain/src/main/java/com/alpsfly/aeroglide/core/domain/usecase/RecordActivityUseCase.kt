@@ -55,6 +55,7 @@ class RecordActivityUseCase @Inject constructor(
 
     fun startRecording(activityId: Long) {
         check(activityId != 0L)
+        Timber.d("startRecording")
         CoroutineScope(Dispatchers.IO).launch {
             recordingActivity = insertActivity(activityId)
         }
@@ -62,11 +63,11 @@ class RecordActivityUseCase @Inject constructor(
     }
 
     fun stopRecording() {
+        Timber.d("stopRecording")
         stopRecordSensorData()
     }
 
     private fun startRecordSensorData() {
-        Timber.i("startRecordSensorData")
         recordingWakeLock = (getSystemService(context, PowerManager::class.java) as PowerManager).run {
             newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TrackRecorder::lock").apply {
                 acquire(Duration.ofHours(12).toMillis())
@@ -146,7 +147,6 @@ class RecordActivityUseCase @Inject constructor(
     }
 
     private fun stopRecordSensorData() {
-        Timber.i("stopRecordSensorData")
         recordingWakeLock?.let {
             if (it.isHeld) {
                 it.release()

@@ -17,11 +17,9 @@ class CalibrationUseCase @Inject constructor(
     private val sensorRepository: SensorRepository
 ) {
     operator fun invoke(): Flow<Calibration> {
-        if (appRepository.appState.value == AppState.Ready) {
-            Timber.w("Calibration already running")
-            return sensorRepository.calibration
-        }
+        check(appRepository.appState.value != AppState.Calibrating)
 
+        Timber.d("Starting calibration")
         sensorRepository.enableSensorListener()
         appRepository.onCalibrationStarted()
         accuracyProcessor.reset()
@@ -54,7 +52,7 @@ class CalibrationUseCase @Inject constructor(
                 timestamp = System.currentTimeMillis()
                 isCalibrated = accuracyProcessor.isCalibrated
                 altitude0 = accuracyProcessor.altitude0
-                Timber.i("Calibration finished: $isCalibrated, $pressure0, $altitude0")
+                Timber.d("Calibration finished: $isCalibrated, $pressure0, $altitude0")
             }
             appRepository.onCalibrationFinished()
             emit(calibration)

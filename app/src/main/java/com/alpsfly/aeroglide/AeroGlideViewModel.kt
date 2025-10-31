@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.AppState
+import com.alpsfly.aeroglide.core.domain.usecase.AutoStartUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordActivityUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,49 +18,76 @@ class AeroGlideViewModel @Inject constructor(
     private val appRepository: AppRepository,
     private val recordSensorDataUseCase: RecordActivityUseCase,
     private val calibrationUseCase: CalibrationUseCase,
+    private val autoStartUseCase: AutoStartUseCase
 ) : ViewModel() {
 
     val appState = appRepository.appState
     var onToggleRecording = appRepository.onToggleRecording
 
+    var onAutoStartEnabled = appRepository.onAutoStartEnabled
+
+    fun doStartCalibration() = appRepository.doStartCalibration()
+    fun doStopCalibration() = appRepository.doStopCalibration()
+
     init {
         viewModelScope.launch {
             appRepository.appState.collect {
                 when (it) {
-                    AppState.Idle -> {}
-                    AppState.Calibrating -> {}
+                    AppState.Idle -> {
+                        Timber.i("AppState.Idle")
+                        startCalibration()
+                    }
 
-                    AppState.Recording -> {
-                        startRecording()
+                    AppState.Calibrating -> {
+                        Timber.i("AppState.Calibrating")
                     }
 
                     AppState.Ready -> {
+                        Timber.i("AppState.Ready")
                         stopRecording()
+                    }
+
+                    AppState.AutoStart -> {
+                        Timber.i("AppState.AutoStart")
+                        enableAutoStart()
+                    }
+
+                    AppState.Recording -> {
+                        Timber.i("AppState.Recording")
+                        startRecording()
                     }
                 }
             }
         }
     }
 
-    fun startRecording() {
-        Timber.i("START RECORDING")
+    private fun startRecording() {
+        Timber.d("startRecording")
         appRepository.setActivityId(System.currentTimeMillis())
         recordSensorDataUseCase.startRecording(appRepository.activityId.value)
     }
 
-    fun stopRecording() {
-        Timber.i("STOP RECORDING")
+    private fun stopRecording() {
+        Timber.d("stopRecording")
         recordSensorDataUseCase.stopRecording()
         appRepository.setActivityId(0)
     }
 
-    fun startCalibration() {
-        Timber.i("START CALIBRATION")
+    private fun startCalibration() {
+        Timber.d("startCalibration")
         viewModelScope.launch(Dispatchers.IO) {
             calibrationUseCase.invoke().collect {
-                Timber.i("PROCESSING CALIBRATION: ${it.isCalibrated}")
+                Timber.d("processCalibration: ${it.isCalibrated}")
             }
         }
+    }
+
+    private fun enableAutoStart() {
+        autoStartUseCase.enableAutoStart()
+    }
+
+    private fun disableAutoStart() {
+        autoStartUseCase.disableAutoStart()
     }
 
     override fun onCleared() {

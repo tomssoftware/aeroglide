@@ -40,21 +40,14 @@ class SettingsViewModel @Inject constructor(
     val varioSinkThreshold = _varioSinkThreshold.asStateFlow()
 
     var onAutoStartEnabled = appRepository.onAutoStartEnabled
-    var onAutoStartDisabled = appRepository.onAutoStartDisabled
-
-    // Add other states for your EditText and Switch preferences here...
-
-    init {
-        loadSettings()
-    }
 
     fun setAutoStartEnabled(enabled: Boolean) {
         _autoStartEnabled.value = enabled
-        if (enabled) {
-            onAutoStartEnabled()
-        } else {
-            onAutoStartDisabled()
-        }
+        onAutoStartEnabled(enabled)
+    }
+
+    init {
+        loadSettings()
     }
 
     private fun loadSettings() {

@@ -63,7 +63,7 @@ class AeroGlideActivity : ComponentActivity() {
                 action = LocationService.ACTION_START
                 startService(this)
             }
-            aeroGlideViewModel.startCalibration()
+            aeroGlideViewModel.doStartCalibration()
         } else {
             Timber.i("REQUEST ACCESS_FINE_LOCATION PERMISSION")
             val permissions = arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION)
@@ -96,7 +96,6 @@ class AeroGlideActivity : ComponentActivity() {
                 val coroutineScope = rememberCoroutineScope()
                 val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
                 val appState by aeroGlideViewModel.appState.collectAsState()
-
 
                 Scaffold(
                     modifier = Modifier,
@@ -197,7 +196,7 @@ class AeroGlideActivity : ComponentActivity() {
                     action = LocationService.ACTION_START
                     startService(this)
                 }
-                aeroGlideViewModel.startCalibration()
+                aeroGlideViewModel.doStopCalibration()
             }
         }
     }

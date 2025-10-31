@@ -6,6 +6,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,9 +14,7 @@ sealed class AppState {
     data object Idle : AppState()
     data object Calibrating : AppState()
     data object Ready : AppState()
-
     data object AutoStart : AppState()
-
     data object Recording : AppState()
 }
 
@@ -26,8 +25,9 @@ interface AppRepository {
     var onToggleRecording: () -> Unit
     var onCalibrationFinished: () -> Unit
     var onCalibrationStarted: () -> Unit
-    var onAutoStartEnabled: () -> Unit
-    var onAutoStartDisabled: () -> Unit
+    var onAutoStartEnabled: (enabled: Boolean) -> Unit
+    fun doStartCalibration() = onCalibrationStarted()
+    fun doStopCalibration() = onCalibrationFinished()
 }
 
 @Singleton
@@ -54,12 +54,12 @@ class AppRepositoryImpl @Inject constructor(
         stateMachine.transition(Event.OnCalibrationFinished)
     }
 
-    override var onAutoStartEnabled: () -> Unit = {
-        stateMachine.transition(Event.OnAutoStartEnabled)
-    }
-
-    override var onAutoStartDisabled: () -> Unit = {
-        stateMachine.transition(Event.OnAutoStartDisabled)
+    override var onAutoStartEnabled: (enabled: Boolean) -> Unit = { enabled ->
+        if (enabled) {
+            stateMachine.transition(Event.OnAutoStartEnabled)
+        } else {
+            stateMachine.transition(Event.OnAutoStartDisabled)
+        }
     }
 
     override fun setActivityId(activityId: Long) {
@@ -69,6 +69,7 @@ class AppRepositoryImpl @Inject constructor(
     /* application state machine */
     private fun createStateMachine(): StateMachine<AppState, Event, SideEffect> {
         return StateMachine.create {
+            lateinit var recordingReturnState: AppState
             initialState(AppState.Idle)
 
             state<AppState.Idle> {
@@ -85,16 +86,18 @@ class AppRepositoryImpl @Inject constructor(
 
             state<AppState.Ready> {
                 on<Event.OnToggleRecording> {
+                    recordingReturnState = AppState.Ready
                     transitionTo(AppState.Recording, SideEffect.StartRecording)
                 }
 
                 on<Event.OnAutoStartEnabled> {
-                    transitionTo(AppState.AutoStart)
+                    transitionTo(AppState.AutoStart, SideEffect.AutoStartEnabled)
                 }
             }
 
             state<AppState.AutoStart> {
                 on<Event.OnToggleRecording> {
+                    recordingReturnState = AppState.AutoStart
                     transitionTo(AppState.Recording, SideEffect.StartRecording)
                 }
 
@@ -105,13 +108,13 @@ class AppRepositoryImpl @Inject constructor(
 
             state<AppState.Recording> {
                 on<Event.OnToggleRecording> {
-                    transitionTo(AppState.Ready, SideEffect.StopRecording)
+                    transitionTo(recordingReturnState, SideEffect.StopRecording(recordingReturnState))
                 }
             }
 
             onTransition {
                 val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
-                when (validTransition.sideEffect) {
+                when (val sideEffect = validTransition.sideEffect) {
                     SideEffect.CalibrationStarted -> {
                         _appState.value = AppState.Calibrating
                     }
@@ -124,8 +127,8 @@ class AppRepositoryImpl @Inject constructor(
                         _appState.value = AppState.Recording
                     }
 
-                    SideEffect.StopRecording -> {
-                        _appState.value = AppState.Ready
+                    is SideEffect.StopRecording -> {
+                        _appState.value = sideEffect.state
                     }
 
                     SideEffect.AutoStartEnabled -> {
@@ -137,7 +140,7 @@ class AppRepositoryImpl @Inject constructor(
                     }
 
                     null -> {
-                        _appState.value = AppState.Idle
+                        Timber.d("No side effect implemented")
                     }
                 }
             }
@@ -158,7 +161,7 @@ class AppRepositoryImpl @Inject constructor(
             data object CalibrationStarted : SideEffect()
             data object CalibrationFinished : SideEffect()
             data object StartRecording : SideEffect()
-            data object StopRecording : SideEffect()
+            data class StopRecording(val state: AppState) : SideEffect()
             data object AutoStartEnabled : SideEffect()
             data object AutoStartDisabled : SideEffect()
         }
