@@ -19,15 +19,10 @@ package com.alpsfly.aeroglide.core.data.di
 import android.content.Context
 import android.hardware.SensorManager
 import android.location.LocationManager
-import androidx.core.content.getSystemService
 import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.AppRepositoryImpl
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
+import com.alpsfly.aeroglide.core.data.AutoStartSettingsProviderImpl
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
 import com.alpsfly.aeroglide.core.model.common.User
@@ -37,9 +32,14 @@ import com.alpsfly.aeroglide.core.model.database.Climbrate
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
-import com.alpsfly.aeroglide.core.model.hardware.SensorData
+import dagger.Binds
+import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -83,6 +83,14 @@ interface DataRepositoryModule {
     ): DataRepository
 }
 
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class SettingsModule {
+    @Binds
+    abstract fun bindAutoStartSettingsProvider(
+        impl: AutoStartSettingsProviderImpl
+    ): AutoStartSettingsProvider
+}
 
 class FakeDataRepository @Inject constructor(
     override val allActivities: Flow<List<Activity>>,

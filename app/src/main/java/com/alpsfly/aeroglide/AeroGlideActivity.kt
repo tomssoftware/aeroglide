@@ -4,6 +4,7 @@ import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.WindowManager
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,13 +26,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.core.app.ActivityCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.coroutineScope
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.AppState
@@ -43,13 +46,15 @@ import com.alpsfly.aeroglide.theme.AeroGlideTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AeroGlideActivity : ComponentActivity() {
-
     private val aeroGlideViewModel: AeroGlideViewModel by viewModels()
-
     private lateinit var beepGenerator: BeepGeneratorImpl
+
+    @Inject
+    lateinit var prefs: SharedPreferences
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +68,7 @@ class AeroGlideActivity : ComponentActivity() {
                 action = LocationService.ACTION_START
                 startService(this)
             }
-            aeroGlideViewModel.startCalibration()
+            aeroGlideViewModel.doStartCalibration()
         } else {
             Timber.i("REQUEST ACCESS_FINE_LOCATION PERMISSION")
             val permissions = arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION)
@@ -77,6 +82,11 @@ class AeroGlideActivity : ComponentActivity() {
                 } else {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 }
+
+                if (state == AppState.Ready) {
+                    val spkAutoStartEnabled = prefs.getBoolean("spk_auto_start_enabled", false)
+                    aeroGlideViewModel.doEnableAutoStart(spkAutoStartEnabled);
+                }
             }
         }
 
@@ -86,97 +96,10 @@ class AeroGlideActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val darkTheme = isSystemInDarkTheme()
-            AeroGlideTheme(
-                darkTheme = darkTheme,
-                dynamicColor = false
-            ) {
-                val navController = rememberNavController()
-                val drawerState = rememberDrawerState(DrawerValue.Closed)
-                val coroutineScope = rememberCoroutineScope()
-                val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-                val appState by aeroGlideViewModel.appState.collectAsState()
-
-
-                Scaffold(
-                    modifier = Modifier,
-                    topBar = {
-                        AeroGlideTopAppBar(
-                            title = "AeroGlide",
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            navigationIcon = {
-                                IconButton(
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            if (drawerState.isClosed)
-                                                drawerState.open()
-                                            else
-                                                drawerState.close()
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Menu,
-                                        contentDescription = "Main Menu"
-                                    )
-                                }
-                            },
-                            actions = {
-                                IconButton(
-                                    onClick = aeroGlideViewModel.onToggleRecording
-                                ) {
-                                    if (appState == AppState.Recording) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.outline_stop_circle_24),
-                                            contentDescription = "Mark as favorite"
-                                        )
-                                    } else {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.outline_play_arrow_24),
-                                            contentDescription = "Mark as favorite"
-                                        )
-                                    }
-                                }
-                                IconButton(onClick = {
-                                    beepGenerator.setFrequency(500f) // Set frequency to 880 Hz
-                                    beepGenerator.setDuration(1000L) // Set duration to 2 seconds
-                                    beepGenerator.playBeep()
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit notes"
-                                    )
-                                }
-                            },
-                            scrollBehavior = scrollBehavior
-                        )
-                    }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(it)
-                    ) {
-                        AeroGlideNavDrawer(
-                            navController = navController,
-                            drawerState = drawerState,
-                            onClick = {
-                                coroutineScope.launch {
-                                    if (drawerState.isClosed)
-                                        drawerState.open()
-                                    else
-                                        drawerState.close()
-                                }
-                            }
-                        )
-                    }
-                }
-            }
+            AeroGlideScreen(
+                navController = rememberNavController(),
+                aeroGlideViewModel = aeroGlideViewModel
+            )
         }
     }
 
@@ -197,7 +120,7 @@ class AeroGlideActivity : ComponentActivity() {
                     action = LocationService.ACTION_START
                     startService(this)
                 }
-                aeroGlideViewModel.startCalibration()
+                aeroGlideViewModel.doStopCalibration()
             }
         }
     }
@@ -216,6 +139,100 @@ class AeroGlideActivity : ComponentActivity() {
 
         fun requestPermissions(activity: Activity, permissions: Array<String>, requestCode: Int) {
             ActivityCompat.requestPermissions(activity, permissions, requestCode)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AeroGlideScreen(
+    navController: NavController,
+    aeroGlideViewModel: AeroGlideViewModel = hiltViewModel()
+) {
+    val darkTheme = isSystemInDarkTheme()
+    AeroGlideTheme(
+        darkTheme = darkTheme,
+        dynamicColor = false
+    ) {
+        val navController = rememberNavController()
+        val drawerState = rememberDrawerState(DrawerValue.Closed)
+        val coroutineScope = rememberCoroutineScope()
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val appState by aeroGlideViewModel.appState.collectAsState()
+
+        Scaffold(
+            modifier = Modifier,
+            topBar = {
+                AeroGlideTopAppBar(
+                    title = "AeroGlide",
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    if (drawerState.isClosed)
+                                        drawerState.open()
+                                    else
+                                        drawerState.close()
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Main Menu"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = aeroGlideViewModel.onToggleRecording
+                        ) {
+                            if (appState == AppState.Recording) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_stop_circle_24),
+                                    contentDescription = "Mark as favorite"
+                                )
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_play_arrow_24),
+                                    contentDescription = "Mark as favorite"
+                                )
+                            }
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.volume_off_24px),
+                                contentDescription = "Volume off"
+                            )
+                        }
+                    },
+                    scrollBehavior = scrollBehavior
+                )
+            }
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
+            ) {
+                AeroGlideNavDrawer(
+                    navController = navController,
+                    drawerState = drawerState,
+                    onClick = {
+                        coroutineScope.launch {
+                            if (drawerState.isClosed)
+                                drawerState.open()
+                            else
+                                drawerState.close()
+                        }
+                    }
+                )
+            }
         }
     }
 }

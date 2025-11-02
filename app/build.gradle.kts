@@ -98,8 +98,8 @@ dependencies {
     api(project(":feature:diagnosis"))
     api(project(":feature:disclaimer"))
     api(project(":feature:livetracking"))
+    api(project(":feature:settings"))
     api(project(":feature:variometer"))
-
 
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)

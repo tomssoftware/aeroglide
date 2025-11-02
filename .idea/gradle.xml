@@ -27,10 +27,10 @@
             <option value="$PROJECT_DIR$/feature/diagnosis" />
             <option value="$PROJECT_DIR$/feature/disclaimer" />
             <option value="$PROJECT_DIR$/feature/livetracking" />
+            <option value="$PROJECT_DIR$/feature/settings" />
             <option value="$PROJECT_DIR$/feature/variometer" />
           </set>
         </option>
-        <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
     </option>
   </component>
