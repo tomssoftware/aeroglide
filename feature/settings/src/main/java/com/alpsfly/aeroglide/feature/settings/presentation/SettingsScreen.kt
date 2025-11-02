@@ -121,9 +121,7 @@ fun SettingsScreen(
                     title = "Auto-Start",
                     summary = if (viewModel.autoStartEnabled.collectAsState().value) "Enabled" else "Disabled",
                     isChecked = viewModel.autoStartEnabled.collectAsState().value,
-                    onCheckedChange = {
-                        viewModel.setAutoStartEnabled(it)
-                    },
+                    onCheckedChange = { viewModel.onAutoStartEnabled(it) },
                     isEnabled = true
                 )
             }

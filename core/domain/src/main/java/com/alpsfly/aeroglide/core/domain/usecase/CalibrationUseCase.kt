@@ -21,7 +21,7 @@ class CalibrationUseCase @Inject constructor(
 
         Timber.d("Starting calibration")
         sensorRepository.enableSensorListener()
-        appRepository.onCalibrationStarted()
+        appRepository.doStartCalibration()
         accuracyProcessor.reset()
         val startOfCalibration = System.currentTimeMillis()
         var calibration = Calibration(timestamp = startOfCalibration)
@@ -54,7 +54,7 @@ class CalibrationUseCase @Inject constructor(
                 altitude0 = accuracyProcessor.altitude0
                 Timber.d("Calibration finished: $isCalibrated, $pressure0, $altitude0")
             }
-            appRepository.onCalibrationFinished()
+            appRepository.doStopCalibration()
             emit(calibration)
         }
     }

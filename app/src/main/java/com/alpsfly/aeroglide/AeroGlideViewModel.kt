@@ -23,11 +23,9 @@ class AeroGlideViewModel @Inject constructor(
 
     val appState = appRepository.appState
     var onToggleRecording = appRepository.onToggleRecording
-
-    var onAutoStartEnabled = appRepository.onAutoStartEnabled
-
     fun doStartCalibration() = appRepository.doStartCalibration()
     fun doStopCalibration() = appRepository.doStopCalibration()
+    fun doEnableAutoStart(enable: Boolean) = appRepository.doEnableAutoStart(enable)
 
     init {
         viewModelScope.launch {

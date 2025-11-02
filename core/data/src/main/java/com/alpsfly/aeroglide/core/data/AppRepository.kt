@@ -23,11 +23,9 @@ interface AppRepository {
     val appState: StateFlow<AppState>
     fun setActivityId(activityId: Long)
     var onToggleRecording: () -> Unit
-    var onCalibrationFinished: () -> Unit
-    var onCalibrationStarted: () -> Unit
-    var onAutoStartEnabled: (enabled: Boolean) -> Unit
-    fun doStartCalibration() = onCalibrationStarted()
-    fun doStopCalibration() = onCalibrationFinished()
+    fun doEnableAutoStart(enabled: Boolean)
+    fun doStartCalibration()
+    fun doStopCalibration()
 }
 
 @Singleton
@@ -46,15 +44,15 @@ class AppRepositoryImpl @Inject constructor(
         stateMachine.transition(Event.OnToggleRecording)
     }
 
-    override var onCalibrationStarted: () -> Unit = {
+    override fun doStartCalibration() {
         stateMachine.transition(Event.OnCalibrationStarted)
     }
 
-    override var onCalibrationFinished: () -> Unit = {
+    override fun doStopCalibration() {
         stateMachine.transition(Event.OnCalibrationFinished)
     }
 
-    override var onAutoStartEnabled: (enabled: Boolean) -> Unit = { enabled ->
+    override fun doEnableAutoStart(enabled: Boolean) {
         if (enabled) {
             stateMachine.transition(Event.OnAutoStartEnabled)
         } else {

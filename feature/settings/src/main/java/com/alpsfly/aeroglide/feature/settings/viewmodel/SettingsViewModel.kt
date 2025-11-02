@@ -39,13 +39,6 @@ class SettingsViewModel @Inject constructor(
     private val _varioSinkThreshold = MutableStateFlow(0f)
     val varioSinkThreshold = _varioSinkThreshold.asStateFlow()
 
-    var onAutoStartEnabled = appRepository.onAutoStartEnabled
-
-    fun setAutoStartEnabled(enabled: Boolean) {
-        _autoStartEnabled.value = enabled
-        onAutoStartEnabled(enabled)
-    }
-
     init {
         loadSettings()
     }
@@ -53,7 +46,7 @@ class SettingsViewModel @Inject constructor(
     private fun loadSettings() {
         viewModelScope.launch {
             // Load initial values from SharedPreferences
-            // NOTE: Replace "spk_auto_start_speed" with your actual preference key (R.string.spk_auto_start_speed)
+            _autoStartEnabled.value = prefs.getBoolean("spk_auto_start_enabled", false)
             _autoStartSpeed.value = prefs.getInt("spk_auto_start_speed", 20).toFloat()
             _autoStartClimbRate.value = prefs.getInt("spk_auto_start_climbrate", 5).toFloat() / 10f
             _varioClimbThreshold.value = prefs.getInt("spk_vario_tone_threshold_climb", 2).toFloat() / 10f
@@ -61,6 +54,14 @@ class SettingsViewModel @Inject constructor(
 
             // Load other settings...
         }
+    }
+
+    fun onAutoStartEnabled(enabled: Boolean) {
+        _autoStartEnabled.value = enabled
+        prefs.edit {
+            putBoolean("spk_auto_start_enabled", enabled)
+        }
+        appRepository.doEnableAutoStart(enabled)
     }
 
     fun onAutoStartSpeedChange(newValue: Float) {

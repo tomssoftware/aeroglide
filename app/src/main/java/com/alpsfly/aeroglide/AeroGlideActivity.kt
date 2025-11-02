@@ -4,6 +4,7 @@ import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.WindowManager
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,13 +43,15 @@ import com.alpsfly.aeroglide.theme.AeroGlideTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AeroGlideActivity : ComponentActivity() {
-
     private val aeroGlideViewModel: AeroGlideViewModel by viewModels()
-
     private lateinit var beepGenerator: BeepGeneratorImpl
+
+    @Inject
+    lateinit var prefs: SharedPreferences
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,6 +78,11 @@ class AeroGlideActivity : ComponentActivity() {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+
+                if (state == AppState.Ready) {
+                    val spkAutoStartEnabled = prefs.getBoolean("spk_auto_start_enabled", false)
+                    aeroGlideViewModel.doEnableAutoStart(spkAutoStartEnabled);
                 }
             }
         }
@@ -147,8 +154,8 @@ class AeroGlideActivity : ComponentActivity() {
                                     beepGenerator.playBeep()
                                 }) {
                                     Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit notes"
+                                        painter = painterResource(id = R.drawable.volume_off_24px),
+                                        contentDescription = "Volume off"
                                     )
                                 }
                             },
