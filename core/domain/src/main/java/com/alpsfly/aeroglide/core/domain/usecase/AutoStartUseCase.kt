@@ -54,6 +54,8 @@ class AutoStartUseCase @Inject constructor(
 
     fun enableAutoStart() {
         Timber.d("enableAutoStart")
+        check(appRepository.appState.value == AppState.AutoStart)
+
         CoroutineScope(Dispatchers.IO).launch {
             autoStartDetector.reset()
             sensorRepository.enableSensorListener()
@@ -70,6 +72,8 @@ class AutoStartUseCase @Inject constructor(
 
     fun disableAutoStart() {
         Timber.d("disableAutoStart")
+        check(appRepository.appState.value != AppState.AutoStart)
+
         sensorRepository.disableSensorListener()
         autoStartDetector.reset()
     }

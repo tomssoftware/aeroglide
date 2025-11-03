@@ -33,11 +33,11 @@ class AeroGlideViewModel @Inject constructor(
                 when (it) {
                     AppState.Idle -> {
                         Timber.i("AppState.Idle")
-                        startCalibration()
                     }
 
                     AppState.Calibrating -> {
                         Timber.i("AppState.Calibrating")
+                        startCalibration()
                     }
 
                     AppState.Ready -> {

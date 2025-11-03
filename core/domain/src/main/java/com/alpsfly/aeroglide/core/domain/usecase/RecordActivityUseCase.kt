@@ -245,7 +245,6 @@ class VerticallyMoving(
         private const val INVALID_ALTITUDE_DELTA = 25f
         private const val ASCENT_THRESHOLD_HIGH_ACCURACY = 1f
         private const val DESCENT_THRESHOLD_HIGH_ACCURACY = -1f
-
         private const val ASCENT_THRESHOLD_MID_ACCURACY = 10f
         private const val DESCENT_THRESHOLD_MID_ACCURACY = -10f
     }

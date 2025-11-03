@@ -12,7 +12,6 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -40,6 +39,7 @@ fun LocationManager.locationDataFlow(
 
     val request = LocationRequest.Builder(interval)
         .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+        .setIntervalMillis(1000)
         .build()
     val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
@@ -64,10 +64,12 @@ fun LocationManager.locationDataFlow(
                 locationCallback,
                 Looper.getMainLooper()
             )
+            Timber.i("Location updates enabled")
+
         } else {
             fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+            Timber.i("Location updates disabled")
         }
-        Timber.i("Location updates enabled: $enabled")
     }.launchIn(this)
 
     awaitClose {
@@ -108,10 +110,11 @@ fun LocationManager.geoidCorrectionFlow(
     val job = enable.onEach { enabled ->
         if (enabled) {
             addNmeaListener(listener, handler)
+            Timber.i("NMEA location updates enabled")
         } else {
             removeNmeaListener(listener)
+            Timber.i("NMEA location updates disabled")
         }
-        Timber.i("NMEA location updates enabled: $enabled")
     }.launchIn(this)
 
     awaitClose {
@@ -130,7 +133,7 @@ private fun parseGeoidCorrection(nmeaMessage: String?): Float? {
         // Check if the message has enough parts and if the geoid separation part is a valid number
         val parts = message.split(",").dropLastWhile { it.isEmpty() }
         if (parts.size >= 12) {
-            Timber.i("NMEA message: $message")
+            Timber.d("NMEA message: $message")
             return parts[11].toFloatOrNull()
         }
     }
