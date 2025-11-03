@@ -16,15 +16,14 @@
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.serialzation)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.feature.activityhistory"
+    namespace = "com.alpsfly.aeroglide.feature.dataexchange"
     compileSdk = 36
 
     defaultConfig {
@@ -48,7 +47,6 @@ android {
 dependencies {
     api(project(":core:ui"))
     api(project(":core:data"))
-    api(project(":core:mapbox"))
 
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)
@@ -68,23 +66,15 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
-    // Kotlin
-    implementation(libs.kontlinx.serialization.json)
-
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material.icons.extended)
 
     // Vico chart library
     implementation(libs.vico.core)
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m3)
-
-    // Mapbox
-    implementation(libs.mapbox.android)
-    implementation(libs.mapbox.compose)
 }

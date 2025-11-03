@@ -94,6 +94,7 @@ dependencies {
     api(project(":core:ui"))
 
     api(project(":feature:activityhistory"))
+    api(project(":feature:dataexchange"))
     api(project(":feature:devicestatus"))
     api(project(":feature:diagnosis"))
     api(project(":feature:disclaimer"))

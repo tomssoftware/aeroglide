@@ -62,6 +62,9 @@ dependencies {
     // State machine
     implementation(libs.statemachine)
 
+    // csv export
+    implementation(libs.commons.csv)
+
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
