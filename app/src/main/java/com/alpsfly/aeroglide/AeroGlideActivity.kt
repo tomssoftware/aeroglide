@@ -4,7 +4,6 @@ import android.Manifest
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
@@ -41,7 +40,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.data.AppState
-import com.alpsfly.aeroglide.core.data.service.LocationService
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.theme.AeroGlideTheme
@@ -64,14 +62,11 @@ class AeroGlideActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Timber.i("CREATE MAIN ACTIVITY")
 
-        val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+        val permission =
+            (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         if (permission) {
             Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
-            Intent(applicationContext, LocationService::class.java).apply {
-                action = LocationService.ACTION_START
-                startService(this)
-            }
-            aeroGlideViewModel.doStartCalibration()
+            aeroGlideViewModel.startCalibration()
         } else {
             Timber.i("REQUEST ACCESS_FINE_LOCATION PERMISSION")
             val permissions = arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION)
@@ -125,14 +120,11 @@ class AeroGlideActivity : ComponentActivity() {
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             Timber.i("PROCESSING LOCATION PERMISSION REQUEST RESULT")
-            val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            val permission =
+                (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
             if (permission) {
                 Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
-                Intent(applicationContext, LocationService::class.java).apply {
-                    action = LocationService.ACTION_START
-                    startService(this)
-                }
-                aeroGlideViewModel.doStopCalibration()
+                aeroGlideViewModel.startCalibration()
             }
         }
     }
@@ -140,10 +132,6 @@ class AeroGlideActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Timber.i("DESTROY MAIN ACTIVITY")
-        Intent(applicationContext, LocationService::class.java).apply {
-            action = LocationService.ACTION_STOP
-            stopService(this)
-        }
     }
 
     private fun requestBackgroundLocationPermission() {
@@ -216,7 +204,7 @@ fun AeroGlideScreen(
                     },
                     actions = {
                         IconButton(
-                            onClick = aeroGlideViewModel.onToggleRecording
+                            onClick = { aeroGlideViewModel.onToggleRecording() }
                         ) {
                             if (appState == AppState.Recording) {
                                 Icon(

@@ -1,8 +1,6 @@
 package com.alpsfly.aeroglide.core.data
 
-import android.content.Context
 import com.tinder.StateMachine
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,15 +22,14 @@ interface AppRepository {
     fun setActivityId(activityId: Long)
     var onToggleRecording: () -> Unit
     fun doEnableAutoStart(enabled: Boolean)
-    fun doStartCalibration()
-    fun doStopCalibration()
+    fun enterCalibrationState()
+    fun exitCalibrationState()
 }
 
 @Singleton
 class AppRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context,
 
-    ) : AppRepository {
+) : AppRepository {
     // Instantiate the state machine
     private val stateMachine = createStateMachine()
     private val _activityId = MutableStateFlow(0L)
@@ -44,11 +41,11 @@ class AppRepositoryImpl @Inject constructor(
         stateMachine.transition(Event.OnToggleRecording)
     }
 
-    override fun doStartCalibration() {
+    override fun enterCalibrationState() {
         stateMachine.transition(Event.OnCalibrationStarted)
     }
 
-    override fun doStopCalibration() {
+    override fun exitCalibrationState() {
         stateMachine.transition(Event.OnCalibrationFinished)
     }
 
@@ -106,7 +103,10 @@ class AppRepositoryImpl @Inject constructor(
 
             state<AppState.Recording> {
                 on<Event.OnToggleRecording> {
-                    transitionTo(recordingReturnState, SideEffect.StopRecording(recordingReturnState))
+                    transitionTo(
+                        recordingReturnState,
+                        SideEffect.StopRecording(recordingReturnState)
+                    )
                 }
             }
 

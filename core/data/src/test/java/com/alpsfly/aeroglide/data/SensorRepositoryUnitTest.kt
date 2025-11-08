@@ -5,10 +5,8 @@ import android.hardware.SensorManager
 import android.location.LocationManager
 import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.data.SensorRepository
-import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
 import org.junit.Before
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
 
 class SensorRepositoryUnitTest {
 
@@ -20,8 +18,6 @@ class SensorRepositoryUnitTest {
 
     @Before
     fun setup() {
-        `when`(mockTimeProvider.nanoTime()).thenReturn(1000000000L)
-        sensorRepository = SensorRepositoryImpl(context = mockContext, mockSensorManager, mockLocationManager, mockTimeProvider)
     }
 }
 

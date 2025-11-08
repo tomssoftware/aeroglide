@@ -22,7 +22,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AeroGlide">
         <service
-            android:name=".core.data.service.LocationService"
+            android:name=".core.domain.usecase.location.LocationService"
             android:foregroundServiceType="location"
             android:exported="false" />
 

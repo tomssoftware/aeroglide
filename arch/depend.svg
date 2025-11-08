@@ -1,0 +1,101 @@
+<svg width="960" height="720" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="14">
+    <!-- Definitions for markers and styles -->
+    <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#555" />
+        </marker>
+        <style>
+            .node-app { fill: #E1F5FE; stroke: #0288D1; stroke-width: 2; }
+            .node-domain { fill: #E8F5E9; stroke: #388E3C; stroke-width: 2; }
+            .node-data { fill: #FFF3E0; stroke: #F57C00; stroke-width: 2; }
+            .node-hardware { fill: #FCE4EC; stroke: #D81B60; stroke-width: 2; }
+            .node-text { font-weight: bold; text-anchor: middle; fill: #333; }
+            .edge { stroke: #555; stroke-width: 2; marker-end: url(#arrow); }
+            .edge-problem { stroke: #D32F2F; stroke-width: 3; marker-end: url(#arrow); animation: pulse 2s infinite; }
+            .label { text-anchor: middle; font-size: 11px; fill: #D32F2F; font-weight: bold; }
+            @keyframes pulse { 0% { stroke-opacity: 1; } 50% { stroke-opacity: 0.3; } 100% { stroke-opacity: 1; } }
+            .title { font-size: 24px; font-weight: bold; text-anchor: middle; }
+            .legend-text { font-size: 12px; }
+        </style>
+    </defs>
+
+    <!-- Title -->
+    <text x="480" y="40" class="title">AeroGlide Dependency Graph</text>
+
+    <!-- Nodes -->
+    <g id="nodes">
+        <!-- App/UI Layer -->
+        <rect x="360" y="80" width="240" height="60" rx="10" class="node-app" />
+        <text x="480" y="115" class="node-text">AeroGlideViewModel</text>
+
+        <!-- Domain Layer (UseCases / Controllers) -->
+        <rect x="50" y="200" width="240" height="60" rx="10" class="node-domain" />
+        <text x="170" y="235" class="node-text">CalibrationUseCase</text>
+
+        <rect x="360" y="200" width="240" height="60" rx="10" class="node-domain" />
+        <text x="480" y="235" class="node-text">RecordingController</text>
+
+        <rect x="670" y="200" width="240" height="60" rx="10" class="node-domain" />
+        <text x="790" y="235" class="node-text">RecordActivityUseCase</text>
+
+        <!-- Data Layer (Repositories) -->
+        <rect x="50" y="380" width="240" height="60" rx="10" class="node-data" />
+        <text x="170" y="415" class="node-text">AppRepository</text>
+
+        <rect x="360" y="380" width="240" height="60" rx="10" class="node-data" />
+        <text x="480" y="415" class="node-text">SensorRepository</text>
+
+        <rect x="670" y="380" width="240" height="60" rx="10" class="node-data" />
+        <text x="790" y="415" class="node-text">DataRepository</text>
+
+        <!-- Hardware Layer -->
+        <rect x="360" y="540" width="240" height="60" rx="10" aclass="node-hardware" />
+        <text x="480" y="575" class="node-text">LocationManager</text>
+        <rect x="80" y="540" width="240" height="60" rx="10" aclass="node-hardware" />
+        <text x="200" y="575" class="node-text">SensorManager</text>
+    </g>
+
+    <!-- Edges -->
+    <g id="edges">
+        <!-- ViewModel Dependencies -->
+        <path class="edge" d="M 480 140 C 480 160, 480 180, 480 200" /> <!-- ViewModel -> RecordingController -->
+        <path class="edge" d="M 420 140 C 320 170, 220 350, 170 380" /> <!-- ViewModel -> AppRepository (via RecordingController) -->
+
+        <!-- RecordingController Dependencies -->
+        <path class="edge" d="M 380 260 C 300 290, 200 350, 170 380" /> <!-- RecController -> AppRepo -->
+        <path class="edge" d="M 480 260 V 380" /> <!-- RecController -> SensorRepo -->
+        <path class="edge" d="M 580 260 C 650 290, 750 350, 790 380" /> <!-- RecController -> RecordActivityUseCase (via DataRepo) -->
+        <path class="edge" d="M 390 200 C 290 200, 260 210, 230 230" transform="translate(0, 5)"/> <!-- RecController -> CalibrationUseCase -->
+
+        <!-- UseCase Dependencies -->
+        <path class="edge" d="M 790 260 V 380" /> <!-- RecordActivityUseCase -> DataRepository -->
+        <path class="edge" d="M 730 260 C 630 290, 530 350, 480 380" /> <!-- RecordActivityUseCase -> SensorRepository -->
+        <path class="edge" d="M 170 260 V 380" /> <!-- CalibrationUseCase -> AppRepository -->
+        <path class="edge" d="M 230 260 C 300 290, 400 350, 450 380" /> <!-- CalibrationUseCase -> SensorRepository -->
+
+        <!-- Repository Dependencies -->
+        <path class="edge" d="M 420 440 C 320 470, 220 510, 200 540" /> <!-- SensorRepository -> SensorManager -->
+        <path class="edge" d="M 480 440 V 540" /> <!-- SensorRepository -> LocationManager -->
+
+        <!-- Problematic Dependencies -->
+        <path class="edge-problem" id="problem1" d="M 480 380 C 420 350, 390 290, 420 260" /> <!-- SensorRepository -> RecordingController (Implied via circular logic) -->
+        <text dy="-5"><textPath href="#problem1" startOffset="50%" class="label">Circular Logic</textPath></text>
+
+        <path class="edge-problem" id="problem2" d="M 170 380 C 100 350, 100 290, 150 260" /> <!-- AppRepository -> CalibrationUseCase (Implied) -->
+        <text dy="-5"><textPath href="#problem2" startOffset="50%" class="label">Circular Logic</textPath></text>
+    </g>
+
+    <!-- Legend -->
+    <g id="legend" transform="translate(700, 500)">
+        <rect x="0" y="0" width="220" height="150" rx="10" fill="#f9f9f9" stroke="#ccc"/>
+        <text x="110" y="25" class="node-text" font-size="16">Legend</text>
+        <rect x="15" y="45" width="20" height="20" class="node-app" rx="5"/>
+        <text x="45" y="60" class="legend-text">UI / App Layer</text>
+        <rect x="15" y="75" width="20" height="20" class="node-domain" rx="5"/>
+        <text x="45" y="90" class="legend-text">Domain Layer (UseCases)</text>
+        <rect x="15" y="105" width="20" height="20" class="node-data" rx="5"/>
+        <text x="45" y="120" class="legend-text">Data Layer (Repositories)</text>
+        <path d="M 15 135 L 35 135" class="edge-problem" stroke-width="3"/>
+        <text x="45" y="140" class="legend-text">Problematic Dependency</text>
+    </g>
+</svg>

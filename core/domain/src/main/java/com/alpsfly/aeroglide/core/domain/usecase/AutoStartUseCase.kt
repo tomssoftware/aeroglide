@@ -58,7 +58,6 @@ class AutoStartUseCase @Inject constructor(
 
         CoroutineScope(Dispatchers.IO).launch {
             autoStartDetector.reset()
-            sensorRepository.enableSensorListener()
             combine(sensorRepository.locationFlowUi, sensorRepository.climbrateFlowUi) { location, climbrate ->
                 autoStartDetector.velocity = location.speed
                 autoStartDetector.climbrate = climbrate.climbrate
@@ -73,8 +72,6 @@ class AutoStartUseCase @Inject constructor(
     fun disableAutoStart() {
         Timber.d("disableAutoStart")
         check(appRepository.appState.value != AppState.AutoStart)
-
-        sensorRepository.disableSensorListener()
         autoStartDetector.reset()
     }
 }

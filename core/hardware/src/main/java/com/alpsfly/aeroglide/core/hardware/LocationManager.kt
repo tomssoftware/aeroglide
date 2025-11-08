@@ -2,21 +2,15 @@ package com.alpsfly.aeroglide.core.hardware
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.LocationListener
 import android.location.LocationManager
 import android.location.OnNmeaMessageListener
 import android.os.Handler
 import android.os.Looper
-import com.google.android.gms.location.LocationAvailability
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
 import java.util.concurrent.Executors
 
@@ -26,8 +20,6 @@ fun LocationManager.locationDataFlow(
     enable: Flow<Boolean>,
     interval: Long
 ) = callbackFlow {
-    val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-
     if (!context.hasLocationPermission()) {
         Timber.w("Location permission is not granted")
     }
@@ -36,45 +28,29 @@ fun LocationManager.locationDataFlow(
     if (!isGpsEnabled && !isNetworkEnabled) {
         Timber.w("GPS and network providers are disabled")
     }
+    val provider = LocationManager.GPS_PROVIDER
 
-    val request = LocationRequest.Builder(interval)
-        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-        .setIntervalMillis(1000)
-        .build()
-    val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(result: LocationResult) {
-            super.onLocationResult(result)
-            result.locations.lastOrNull()?.let { location ->
-                this@callbackFlow.trySend(location)
-            }
-        }
+    val listener = LocationListener { location ->
+        Timber.d("GPS_PROVIDER new location: ${location.latitude}, ${location.longitude}")
+        trySend(location)
+    }
 
-        override fun onLocationAvailability(locationAvailability: LocationAvailability) {
-            super.onLocationAvailability(locationAvailability)
-            if (!locationAvailability.isLocationAvailable) {
-                Timber.w("Location is not available")
-            }
+    enable.collectLatest { isEnabled ->
+        if (isEnabled) {
+            requestLocationUpdates(
+                provider,
+                interval,
+                0f,
+                listener,
+                Looper.getMainLooper()
+            )
+        } else {
+            removeUpdates(listener)
         }
     }
 
-    val job = enable.onEach { enabled ->
-        if (enabled) {
-            fusedLocationProviderClient.requestLocationUpdates(
-                request,
-                locationCallback,
-                Looper.getMainLooper()
-            )
-            Timber.i("Location updates enabled")
-
-        } else {
-            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-            Timber.i("Location updates disabled")
-        }
-    }.launchIn(this)
-
     awaitClose {
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-        job.cancel()
+        removeUpdates(listener)
     }
 }
 
@@ -100,26 +76,28 @@ fun LocationManager.geoidCorrectionFlow(
     val listener = OnNmeaMessageListener { message, _ ->
         executor.execute {
             val geoidCorrection = parseGeoidCorrection(message)
-            // Only send if the value is valid
             geoidCorrection?.let {
-                trySend(it)
+                if (trySend(it).isSuccess) {
+                    Timber.d("NMEA message: $message")
+                }
             }
         }
     }
 
-    val job = enable.onEach { enabled ->
-        if (enabled) {
-            addNmeaListener(listener, handler)
+    // We now collect the 'enable' flow directly.
+    enable.collectLatest { isEnabled ->
+        if (isEnabled) {
             Timber.i("NMEA location updates enabled")
+            addNmeaListener(listener, handler)
         } else {
-            removeNmeaListener(listener)
             Timber.i("NMEA location updates disabled")
+            removeNmeaListener(listener)
         }
-    }.launchIn(this)
+    }
 
+    // The awaitClose block is now simpler, as it no longer needs to cancel the job.
     awaitClose {
         removeNmeaListener(listener)
-        job.cancel()
     }
 }
 
@@ -133,7 +111,6 @@ private fun parseGeoidCorrection(nmeaMessage: String?): Float? {
         // Check if the message has enough parts and if the geoid separation part is a valid number
         val parts = message.split(",").dropLastWhile { it.isEmpty() }
         if (parts.size >= 12) {
-            Timber.d("NMEA message: $message")
             return parts[11].toFloatOrNull()
         }
     }
