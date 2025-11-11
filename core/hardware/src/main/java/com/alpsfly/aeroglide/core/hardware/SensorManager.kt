@@ -10,8 +10,7 @@ import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.collectLatest
 
 /** Linear Acceleration sensor callback flow with SENSOR_DELAY_NORMAl, 200ms  */
 fun SensorManager.linearAccelerationSensorDataFlow(enable: Flow<Boolean>) = callbackFlow {
@@ -20,24 +19,26 @@ fun SensorManager.linearAccelerationSensorDataFlow(enable: Flow<Boolean>) = call
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
                 val sensorData =
-                    SensorData(type = SensorType.LinearAcceleration, frequency = frequency.inc(), values = event.values.clone())
+                    SensorData(
+                        type = SensorType.LinearAcceleration,
+                        frequency = frequency.inc(),
+                        values = event.values.clone()
+                    )
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
         }
     }
 
-    val job = enable.onEach { en ->
-        if (en) {
+    enable.collectLatest { isEnabled ->
+        if (isEnabled) {
             registerListener(callback, getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SENSOR_DELAY_NORMAL)
         } else {
             // todo: reset sensor data
             unregisterListener(callback)
         }
-    }.launchIn(this)
-
+    }
     awaitClose {
         unregisterListener(callback)
-        job.cancel()
     }
 }
 
@@ -47,24 +48,24 @@ fun SensorManager.pressureSensorDataFlow(enable: Flow<Boolean>) = callbackFlow {
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = SensorData(type = SensorType.Pressure, frequency = frequency.inc(), values = event.values.clone())
+                val sensorData =
+                    SensorData(type = SensorType.Pressure, frequency = frequency.inc(), values = event.values.clone())
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
         }
     }
 
-    val job = enable.onEach { en ->
-        if (en) {
+    enable.collectLatest { isEnabled ->
+        if (isEnabled) {
             registerListener(callback, getDefaultSensor(Sensor.TYPE_PRESSURE), SENSOR_DELAY_NORMAL)
         } else {
             // todo: reset sensor data
             unregisterListener(callback)
         }
-    }.launchIn(this)
+    }
 
     awaitClose {
         unregisterListener(callback)
-        job.cancel()
     }
 }
 
@@ -74,22 +75,25 @@ fun SensorManager.rotationVectorSensorDataFlow(enable: Flow<Boolean>) = callback
         val frequency = SensorFrequency()
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
-                val sensorData = SensorData(type = SensorType.RotationVector, frequency = frequency.inc(), values = event.values.clone())
+                val sensorData = SensorData(
+                    type = SensorType.RotationVector,
+                    frequency = frequency.inc(),
+                    values = event.values.clone()
+                )
                 this@callbackFlow.trySend(sensorData).isSuccess
             }
         }
     }
-    val job = enable.onEach { en ->
-        if (en) {
+    enable.collectLatest { isEnabled ->
+        if (isEnabled) {
             registerListener(callback, getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SENSOR_DELAY_NORMAL)
         } else {
             // todo: reset sensor data
             unregisterListener(callback)
         }
-    }.launchIn(this)
+    }
 
     awaitClose {
         unregisterListener(callback)
-        job.cancel()
     }
 }

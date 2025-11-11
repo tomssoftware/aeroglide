@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -42,6 +43,7 @@ import com.alpsfly.aeroglide.core.common.toLocalTimeString
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
 import com.alpsfly.aeroglide.core.model.database.Activity
+import com.alpsfly.aeroglide.navigation.navigateToDataExportScreen
 
 @Composable
 fun ListHistoryScreen(
@@ -126,11 +128,17 @@ fun ActivityCard(
                 }
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.share_24px),
-                contentDescription = null,
-                modifier = Modifier.size(48.dp)
-            )
+            IconButton(
+                onClick = {
+                    navController.navigateToDataExportScreen(activity.activityId)
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.share_24px),
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                )
+            }
         }
     }
 }
