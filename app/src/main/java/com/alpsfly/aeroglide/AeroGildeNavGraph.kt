@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.alpsfly.aeroglide.core.Screen
 import com.alpsfly.aeroglide.feature.activityhistory.activityList
 import com.alpsfly.aeroglide.feature.activityhistory.activityMain
+import com.alpsfly.aeroglide.feature.dataexchange.navigation.dataExport
 import com.alpsfly.aeroglide.feature.diagnosis.presentation.DiagnosisDetailScreen
 import com.alpsfly.aeroglide.feature.diagnosis.presentation.DiagnosisScreen
 import com.alpsfly.aeroglide.feature.livetracking.VariometerScreen
@@ -41,5 +42,6 @@ fun AeroGlideNavGraph(navController: NavHostController) {
         }
         activityList(navController = navController)
         activityMain(navController = navController)
+        dataExport(navController = navController)
     }
 }

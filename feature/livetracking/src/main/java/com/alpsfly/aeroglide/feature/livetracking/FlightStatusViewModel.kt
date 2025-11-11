@@ -3,9 +3,10 @@ package com.alpsfly.aeroglide.feature.livetracking
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
-import com.alpsfly.aeroglide.core.data.AppState
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FlightStatusViewModel @Inject constructor(
+    appStateManager: AppStateManager,
     appRepository: AppRepository,
     private val dataRepository: DataRepository,
     sensorRepository: SensorRepository,
@@ -31,8 +33,8 @@ class FlightStatusViewModel @Inject constructor(
     val glideRatioFlow = sensorRepository.glideRatioFlowUi
     private val calibrationFlow = sensorRepository.calibration
 
-    //private val activityId = appRepository.activityId
-    private val appState = appRepository.appState
+    private val activityId = appRepository.activityId
+    private val appState = appStateManager.appState
 
     val calibrationUiState: StateFlow<CalibrationUiState> =
         calibrationFlow

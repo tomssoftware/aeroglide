@@ -7,6 +7,7 @@ import android.location.LocationManager
 import com.alpsfly.aeroglide.core.common.Limits
 import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.common.chunked
+import com.alpsfly.aeroglide.core.common.di.ApplicationScope
 import com.alpsfly.aeroglide.core.common.di.SystemTime
 import com.alpsfly.aeroglide.core.common.movingAverage
 import com.alpsfly.aeroglide.core.data.util.IKalmanFilter
@@ -30,9 +31,7 @@ import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -79,28 +78,30 @@ interface SensorRepository {
     val calibration: StateFlow<Calibration>
     fun setCalibration(calibration: Calibration)
 
-    fun enableSensorListener()
-    fun disableSensorListener()
+    // ✅ ONE MASTER SWITCH
+    fun enableRecordingListeners()
+    fun disableRecordingListeners()
 }
+
 
 @Singleton
 class SensorRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    @param:ApplicationScope private val applicationScope: CoroutineScope,
     sensorManager: SensorManager,
     locationManager: LocationManager,
     @param:SystemTime private val timeProvider: TimeProvider
 ) : SensorRepository, SensorEventCallback() {
-    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val enableSensorListener = MutableStateFlow(false)
-    override fun enableSensorListener() {
-        Timber.i("ENABLE SENSOR LISTENER")
-        enableSensorListener.value = true
+    private val isRecordingListenerEnabled = MutableStateFlow(false)
+    override fun enableRecordingListeners() {
+        Timber.i("ENABLE ALL RECORDING LISTENERS")
+        isRecordingListenerEnabled.value = true
     }
 
-    override fun disableSensorListener() {
-        Timber.i("DISABLE SENSOR LISTENER")
-        enableSensorListener.value = false
+    override fun disableRecordingListeners() {
+        Timber.i("DISABLE ALL RECORDING LISTENERS")
+        isRecordingListenerEnabled.value = false
     }
 
     /**
@@ -108,15 +109,16 @@ class SensorRepositoryImpl @Inject constructor(
      */
     override val locationDataSource = locationManager.locationDataFlow(
         context = context,
-        enable = enableSensorListener,
+        enable = isRecordingListenerEnabled,
         interval = 1000
     ).shareSensorData()
 
+    @OptIn(FlowPreview::class)
     override val geoidCorrectionDataSource = locationManager.geoidCorrectionFlow(
         context = context,
-        enable = enableSensorListener,
+        enable = isRecordingListenerEnabled,
         interval = 1000
-    ).shareSensorData()
+    ).shareSensorData().sample(1000.milliseconds)
 
     override val locationFlow: Flow<Location>
         get() {
@@ -137,28 +139,28 @@ class SensorRepositoryImpl @Inject constructor(
                     speedAccuracy = l.speedAccuracyMetersPerSecond,
                     provider = l.provider ?: "unknown"
                 )
-            }
+            }.shareSensorData()
         }
 
     /**
      * pressure state flow
      */
     override val pressureDataSource = sensorManager.pressureSensorDataFlow(
-        enable = enableSensorListener
+        enable = isRecordingListenerEnabled
     )
 
     /**
      * Linear acceleration shared flow
      */
     private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow(
-        enable = enableSensorListener
+        enable = isRecordingListenerEnabled
     )
 
     /**
      * Rotation vector shared flow
      */
     private val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow(
-        enable = enableSensorListener
+        enable = isRecordingListenerEnabled
     )
 
     /**
@@ -176,7 +178,7 @@ class SensorRepositoryImpl @Inject constructor(
                     frequency = sensorFrequency.inc(),
                     values = floatArrayOf(it)
                 )
-            }
+            }.shareSensorData()
         }
 
     override val verticalAccelerationFlowUi: Flow<SensorData>
@@ -220,7 +222,11 @@ class SensorRepositoryImpl @Inject constructor(
                 val pressure = p.values[0] * 100f
                 var altitude = l.altitude
                 if (calibration.value.isCalibrated) {
-                    altitude = calcAltitude(pressure, calibration.value.pressure0, calibration.value.altitude0)
+                    altitude = calcAltitude(
+                        pressure,
+                        calibration.value.pressure0,
+                        calibration.value.altitude0
+                    )
                 }
                 SensorData(
                     type = SensorType.Altitude,
@@ -228,7 +234,7 @@ class SensorRepositoryImpl @Inject constructor(
                     frequency = sensorFrequency.inc(),
                     values = floatArrayOf(altitude)
                 )
-            }
+            }.shareSensorData()
         }
 
     override val altitudeFlowUi: Flow<Altitude>
@@ -281,7 +287,7 @@ class SensorRepositoryImpl @Inject constructor(
                         frequency = sensorFrequency.get(),
                         values = floatArrayOf(a)
                     )
-                }
+                }.shareSensorData()
         }
 
     override val climbrateFlowUi: Flow<Climbrate>
@@ -367,11 +373,12 @@ class SensorRepositoryImpl @Inject constructor(
     }
 
     private fun <T> Flow<T>.shareSensorData(stopTimeoutMillis: Long = 5000): Flow<T> = shareIn(
-        scope = repositoryScope,
+        scope = applicationScope,
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis),
         replay = 1
     )
 }
+
 
 
 

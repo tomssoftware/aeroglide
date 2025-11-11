@@ -1,10 +1,8 @@
 package com.alpsfly.aeroglide
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
 import android.util.Log
+import com.alpsfly.aeroglide.core.common.di.ApplicationScope
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
@@ -16,13 +14,16 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.firestoreSettings
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class AeroGlideApplication @Inject constructor(/*private val database: AeroGlideDatabase*/) : Application() {
+class AeroGlideApplication : Application() {
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
+
     inner class CrashlyticsTree : Timber.Tree() {
         override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
             when (priority) {
@@ -82,19 +83,14 @@ class AeroGlideApplication @Inject constructor(/*private val database: AeroGlide
             firestore.firestoreSettings = firestoreSettings {
                 isPersistenceEnabled = false
             }
-            auth.useEmulator(BuildConfig.FIREBASE_EMULATOR_HOST_ADDRESS, BuildConfig.FIREBASE_EMULATOR_PORT_AUTH)
+            auth.useEmulator(
+                BuildConfig.FIREBASE_EMULATOR_HOST_ADDRESS,
+                BuildConfig.FIREBASE_EMULATOR_PORT_AUTH
+            )
         } else {
             val firebaseAppCheck = FirebaseAppCheck.getInstance()
             firebaseAppCheck.installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance())
         }
-
-        val channel = NotificationChannel(
-            "location",
-            "Location",
-            NotificationManager.IMPORTANCE_LOW
-        )
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
 
         applicationScope.launch {
             if (BuildConfig.DEBUG) {
@@ -103,7 +99,5 @@ class AeroGlideApplication @Inject constructor(/*private val database: AeroGlide
             Timber.plant(CrashlyticsTree())
         }
     }
-
-    private val applicationScope = CoroutineScope(Dispatchers.Default)
 }
 

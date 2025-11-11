@@ -1,11 +1,12 @@
 package com.alpsfly.aeroglide
 
+import android.Manifest
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -38,8 +39,8 @@ import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
-import com.alpsfly.aeroglide.core.data.AppState
-import com.alpsfly.aeroglide.core.data.service.LocationService
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.theme.AeroGlideTheme
@@ -56,27 +57,38 @@ class AeroGlideActivity : ComponentActivity() {
     @Inject
     lateinit var prefs: SharedPreferences
 
+    @Inject
+    lateinit var appStateManager: AppStateManager
+
+
+    //@RequiresApi(Build.VERSION_CODES.Q)
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Timber.i("CREATE MAIN ACTIVITY")
 
-        val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+        val permission =
+            (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         if (permission) {
             Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
-            Intent(applicationContext, LocationService::class.java).apply {
-                action = LocationService.ACTION_START
-                startService(this)
-            }
-            aeroGlideViewModel.doStartCalibration()
+            aeroGlideViewModel.startCalibration()
         } else {
             Timber.i("REQUEST ACCESS_FINE_LOCATION PERMISSION")
             val permissions = arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION)
             requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val permissionBackgroundLocation =
+                (checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            if (!permissionBackgroundLocation) {
+                Timber.i("REQUEST ACCESS_BACKGROUND_LOCATION PERMISSION")
+                requestBackgroundLocationPermission()
+            }
+        }
+
         lifecycle.coroutineScope.launch {
-            aeroGlideViewModel.appState.collect { state ->
+            appStateManager.appState.collect { state ->
                 if (state == AppState.Recording) {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
@@ -85,7 +97,7 @@ class AeroGlideActivity : ComponentActivity() {
 
                 if (state == AppState.Ready) {
                     val spkAutoStartEnabled = prefs.getBoolean("spk_auto_start_enabled", false)
-                    aeroGlideViewModel.doEnableAutoStart(spkAutoStartEnabled);
+                    appStateManager.onAutoStartEnabled(spkAutoStartEnabled)
                 }
             }
         }
@@ -98,6 +110,7 @@ class AeroGlideActivity : ComponentActivity() {
         setContent {
             AeroGlideScreen(
                 navController = rememberNavController(),
+                appStateManager = appStateManager,
                 aeroGlideViewModel = aeroGlideViewModel
             )
         }
@@ -113,14 +126,11 @@ class AeroGlideActivity : ComponentActivity() {
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             Timber.i("PROCESSING LOCATION PERMISSION REQUEST RESULT")
-            val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            val permission =
+                (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
             if (permission) {
                 Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
-                Intent(applicationContext, LocationService::class.java).apply {
-                    action = LocationService.ACTION_START
-                    startService(this)
-                }
-                aeroGlideViewModel.doStopCalibration()
+                aeroGlideViewModel.startCalibration()
             }
         }
     }
@@ -128,14 +138,24 @@ class AeroGlideActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Timber.i("DESTROY MAIN ACTIVITY")
-        Intent(applicationContext, LocationService::class.java).apply {
-            action = LocationService.ACTION_STOP
-            stopService(this)
+    }
+
+    private fun requestBackgroundLocationPermission() {
+        Timber.i("Requesting background location permission.")
+        // IMPORTANT: You should show a dialog here explaining WHY you need background location.
+        // For simplicity, we'll go straight to the request.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE
+            )
         }
     }
 
     companion object {
         const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+        const val BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE = 1002
 
         fun requestPermissions(activity: Activity, permissions: Array<String>, requestCode: Int) {
             ActivityCompat.requestPermissions(activity, permissions, requestCode)
@@ -147,6 +167,7 @@ class AeroGlideActivity : ComponentActivity() {
 @Composable
 fun AeroGlideScreen(
     navController: NavController,
+    appStateManager: AppStateManager,
     aeroGlideViewModel: AeroGlideViewModel = hiltViewModel()
 ) {
     val darkTheme = isSystemInDarkTheme()
@@ -158,7 +179,7 @@ fun AeroGlideScreen(
         val drawerState = rememberDrawerState(DrawerValue.Closed)
         val coroutineScope = rememberCoroutineScope()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val appState by aeroGlideViewModel.appState.collectAsState()
+        val appState by appStateManager.appState.collectAsState()
 
         Scaffold(
             modifier = Modifier,
@@ -190,7 +211,7 @@ fun AeroGlideScreen(
                     },
                     actions = {
                         IconButton(
-                            onClick = aeroGlideViewModel.onToggleRecording
+                            onClick = { aeroGlideViewModel.onToggleRecording() }
                         ) {
                             if (appState == AppState.Recording) {
                                 Icon(

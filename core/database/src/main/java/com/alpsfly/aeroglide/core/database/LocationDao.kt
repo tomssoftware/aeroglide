@@ -15,7 +15,7 @@ interface LocationDao {
     @Query("select * from location where timestamp = :timestamp")
     fun getLocation(timestamp: Long): Flow<Location?>
 
-    @Query("select * from location where timestamp between :start and :end")
+    @Query("select * from location where timestamp between :start and :end order by timestamp")
     fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

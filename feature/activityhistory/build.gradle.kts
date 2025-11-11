@@ -85,6 +85,6 @@ dependencies {
     implementation(libs.vico.compose.m3)
 
     // Mapbox
-    implementation (libs.mapbox.android)
-    implementation (libs.mapbox.compose)
+    implementation(libs.mapbox.android)
+    implementation(libs.mapbox.compose)
 }

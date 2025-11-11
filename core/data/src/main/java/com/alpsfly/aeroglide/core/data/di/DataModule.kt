@@ -25,6 +25,8 @@ import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProviderImpl
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
+import com.alpsfly.aeroglide.core.data.SensorRepository
+import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
 import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
@@ -42,6 +44,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 import javax.inject.Singleton
+
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -71,6 +74,16 @@ interface AppRepositoryModule {
     fun bindsAppRepository(
         appRepository: AppRepositoryImpl
     ): AppRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface RepositoryModule {
+    @Binds
+    @Singleton
+    fun bindSensorRepository(
+        sensorRepositoryImpl: SensorRepositoryImpl
+    ): SensorRepository
 }
 
 @Module

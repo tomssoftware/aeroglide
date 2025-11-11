@@ -94,6 +94,7 @@ dependencies {
     api(project(":core:ui"))
 
     api(project(":feature:activityhistory"))
+    api(project(":feature:dataexchange"))
     api(project(":feature:devicestatus"))
     api(project(":feature:diagnosis"))
     api(project(":feature:disclaimer"))
@@ -105,8 +106,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-
-    implementation(libs.play.service.location)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.test)

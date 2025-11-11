@@ -5,4 +5,5 @@ sealed class Screen(val route: String) {
     data object DiagnosisDetailScreen : Screen(route = "DiagnosisDetailScreen")
     data object DiagnosisScreen : Screen(route = "DiagnosisScreen")
     data object VariometerScreen : Screen(route = "VariometerScreen")
+    data object DataExportScreen : Screen(route = "DataExportScreen")
 }
