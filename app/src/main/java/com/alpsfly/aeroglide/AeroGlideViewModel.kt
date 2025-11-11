@@ -1,19 +1,19 @@
 package com.alpsfly.aeroglide
 
 import androidx.lifecycle.ViewModel
-import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.domain.usecase.FlightSessionCoordinatorUseCase
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AeroGlideViewModel @Inject constructor(
-    private val appRepository: AppRepository,
+    private val appStateManager: AppStateManager,
     private val flightCoordinator: FlightSessionCoordinatorUseCase
 ) : ViewModel() {
 
-    val appState = appRepository.appState
+    val appState = appStateManager.appState
 
     fun onToggleRecording() = flightCoordinator.onToggleRecording()
     fun onReCalibrate() = flightCoordinator.startCalibration()
@@ -25,7 +25,7 @@ class AeroGlideViewModel @Inject constructor(
 
     fun doEnableAutoStart(enable: Boolean) {
         // This is a direct state change, so calling AppRepository is fine.
-        appRepository.doEnableAutoStart(enable)
+        appStateManager.onAutoStartEnabled(enable)
     }
 
     override fun onCleared() {

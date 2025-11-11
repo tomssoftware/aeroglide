@@ -1,6 +1,5 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
-import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.domain.usecase.location.ServiceStarter
 import timber.log.Timber
 import javax.inject.Inject
@@ -10,7 +9,6 @@ import javax.inject.Inject
  * This is a lightweight, stateless orchestrator.
  */
 class RecordingUseCase @Inject constructor(
-    private val dataRepository: DataRepository,
     private val recordingProcessor: RecordingProcessor, // The "worker buddy"
     private val serviceStarter: ServiceStarter      // The hardware manager
 ) {

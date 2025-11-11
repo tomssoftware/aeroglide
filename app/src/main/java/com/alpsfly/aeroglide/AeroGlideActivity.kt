@@ -39,7 +39,8 @@ import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
-import com.alpsfly.aeroglide.core.data.AppState
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.theme.AeroGlideTheme
@@ -55,6 +56,10 @@ class AeroGlideActivity : ComponentActivity() {
 
     @Inject
     lateinit var prefs: SharedPreferences
+
+    @Inject
+    lateinit var appStateManager: AppStateManager
+
 
     //@RequiresApi(Build.VERSION_CODES.Q)
     @OptIn(ExperimentalMaterial3Api::class)
@@ -83,7 +88,7 @@ class AeroGlideActivity : ComponentActivity() {
         }
 
         lifecycle.coroutineScope.launch {
-            aeroGlideViewModel.appState.collect { state ->
+            appStateManager.appState.collect { state ->
                 if (state == AppState.Recording) {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
@@ -92,7 +97,7 @@ class AeroGlideActivity : ComponentActivity() {
 
                 if (state == AppState.Ready) {
                     val spkAutoStartEnabled = prefs.getBoolean("spk_auto_start_enabled", false)
-                    aeroGlideViewModel.doEnableAutoStart(spkAutoStartEnabled);
+                    appStateManager.onAutoStartEnabled(spkAutoStartEnabled)
                 }
             }
         }
@@ -105,6 +110,7 @@ class AeroGlideActivity : ComponentActivity() {
         setContent {
             AeroGlideScreen(
                 navController = rememberNavController(),
+                appStateManager = appStateManager,
                 aeroGlideViewModel = aeroGlideViewModel
             )
         }
@@ -161,6 +167,7 @@ class AeroGlideActivity : ComponentActivity() {
 @Composable
 fun AeroGlideScreen(
     navController: NavController,
+    appStateManager: AppStateManager,
     aeroGlideViewModel: AeroGlideViewModel = hiltViewModel()
 ) {
     val darkTheme = isSystemInDarkTheme()
@@ -172,7 +179,7 @@ fun AeroGlideScreen(
         val drawerState = rememberDrawerState(DrawerValue.Closed)
         val coroutineScope = rememberCoroutineScope()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val appState by aeroGlideViewModel.appState.collectAsState()
+        val appState by appStateManager.appState.collectAsState()
 
         Scaffold(
             modifier = Modifier,

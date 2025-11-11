@@ -4,7 +4,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +18,7 @@ fun SharedPreferences.getFloat(key: String, defaultValue: Float): Float {
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val appRepository: AppRepository,
+    private val appStateManager: AppStateManager,
     private val prefs: SharedPreferences // Inject SharedPreferences via Hilt
 ) : ViewModel() {
 
@@ -49,8 +49,10 @@ class SettingsViewModel @Inject constructor(
             _autoStartEnabled.value = prefs.getBoolean("spk_auto_start_enabled", false)
             _autoStartSpeed.value = prefs.getInt("spk_auto_start_speed", 20).toFloat()
             _autoStartClimbRate.value = prefs.getInt("spk_auto_start_climbrate", 5).toFloat() / 10f
-            _varioClimbThreshold.value = prefs.getInt("spk_vario_tone_threshold_climb", 2).toFloat() / 10f
-            _varioSinkThreshold.value = prefs.getInt("spk_vario_tone_threshold_sink", -30).toFloat() / -10f
+            _varioClimbThreshold.value =
+                prefs.getInt("spk_vario_tone_threshold_climb", 2).toFloat() / 10f
+            _varioSinkThreshold.value =
+                prefs.getInt("spk_vario_tone_threshold_sink", -30).toFloat() / -10f
 
             // Load other settings...
         }
@@ -61,7 +63,7 @@ class SettingsViewModel @Inject constructor(
         prefs.edit {
             putBoolean("spk_auto_start_enabled", enabled)
         }
-        appRepository.doEnableAutoStart(enabled)
+        appStateManager.onAutoStartEnabled(enabled)
     }
 
     fun onAutoStartSpeedChange(newValue: Float) {

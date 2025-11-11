@@ -1,8 +1,8 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
-import com.alpsfly.aeroglide.core.data.AppRepository
-import com.alpsfly.aeroglide.core.data.AppState
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -12,10 +12,10 @@ import javax.inject.Singleton
 
 @Singleton
 class FlightSessionCoordinatorUseCase @Inject constructor(
-    private val appRepository: AppRepository,
+    private val appStateManager: AppStateManager,
     private val calibrationUseCase: CalibrationUseCase,
-    // ✅ 1. INJECT THE RECORDINGUSECASE
     private val recordingUseCase: RecordingUseCase,
+    private val autoStartUseCase: AutoStartUseCase,
     @param:ApplicationScope private val applicationScope: CoroutineScope
 ) {
 
@@ -25,7 +25,7 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
     }
 
     private fun listenToAppState() {
-        appRepository.appState
+        appStateManager.appState
             .onEach { state ->
                 Timber.i("Coordinator observes AppState: $state")
                 // This is where the cross-use-case logic lives.
@@ -43,7 +43,18 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
                         // For example:
                         // val shouldAutoStart = settingsProvider.getAutoStartEnabled()
                         // if (shouldAutoStart) { autoStartUseCase.enable() }
+
+                        // The coordinator now decides when to enable auto-start.
+                        val shouldAutoStart = false // Get this from a SettingsProvider
+                        if (shouldAutoStart) {
+                            autoStartUseCase.enable()
+                        }
                         Timber.d("Coordinator: App is Ready. Waiting for user action.")
+                    }
+
+                    AppState.Recording -> {
+                        // When a recording starts (manually or auto), disable the detector.
+                        // autoStartUseCase.disable()
                     }
 
                     else -> {
@@ -52,40 +63,41 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
                         Timber.d("Coordinator: No action needed for state $state.")
                     }
                 }
-            }
-            .launchIn(applicationScope)
+            }.launchIn(applicationScope)
     }
 
-    // ✅ 2. ADD THE PUBLIC FUNCTION FOR THE VIEWMODEL TO CALL
     /**
      * Toggles the recording state.
      * This is the single entry point for the UI to start or stop a recording.
      */
     fun onToggleRecording() {
-        val currentState = appRepository.appState.value
+        val currentState = appStateManager.appState.value
         Timber.i("Coordinator: onToggleRecording called from state: $currentState")
 
-        if (currentState is AppState.Recording) {
-            // If we are currently recording, the command is to stop.
-            recordingUseCase.stopRecording()
-        } else if (currentState == AppState.Ready || currentState == AppState.AutoStart) {
-            // If we are in a state where recording is allowed, the command is to start.
-            // The coordinator is responsible for creating a unique ID for the new activity.
-            appRepository.setActivityId(System.currentTimeMillis())
-            recordingUseCase.startRecording(appRepository.activityId.value)
-        } else {
-            // If in any other state (like Idle or Calibrating), ignore the request.
-            Timber.w("Coordinator: Ignoring toggle recording request from state $currentState.")
-            return // Exit without changing the state machine
+        when (currentState) {
+            AppState.Recording -> {
+                // If we are currently recording, the command is to stop.
+                recordingUseCase.stopRecording()
+            }
+
+            AppState.Ready, AppState.AutoStart -> {
+                // If we are in a state where recording is allowed, the command is to start.
+                // The coordinator is responsible for creating a unique ID for the new activity.
+                recordingUseCase.startRecording(System.currentTimeMillis())
+            }
+
+            else -> {
+                // If in any other state (like Idle or Calibrating), ignore the request.
+                Timber.w("Coordinator: Ignoring toggle recording request from state $currentState.")
+                return // Exit without changing the state machine
+            }
         }
 
         // 3. After commanding the use case, tell the state machine to transition.
         // This decouples the action from the state change itself.
-        appRepository.onToggleRecording()
+        appStateManager.onToggleRecording()
     }
 
-    fun startCalibration() {
-        // We can delegate this call directly to the specialized use case.
-        calibrationUseCase()
-    }
+    // We can delegate this call directly to the specialized use case.
+    fun startCalibration() = calibrationUseCase()
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.PowerManager
 import androidx.core.content.ContextCompat
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
+import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
@@ -33,6 +34,7 @@ import kotlin.time.ExperimentalTime
  */
 @Singleton
 class RecordingProcessor @Inject constructor(
+    private val appRepository: AppRepository,
     private val sensorRepository: SensorRepository,
     private val dataRepository: DataRepository,
     @param:ApplicationScope private val applicationScope: CoroutineScope,
@@ -54,6 +56,7 @@ class RecordingProcessor @Inject constructor(
         startWakeLock()
 
         // We now do everything inside one managing coroutine.
+        appRepository.setActivityId(activityId)
         applicationScope.launch {
             // 1. CREATE the new activity record here.
             insertActivity(activityId)

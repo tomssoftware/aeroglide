@@ -1,6 +1,5 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
-import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorType
@@ -16,13 +15,11 @@ import javax.inject.Singleton
 
 @Singleton
 class CalibrationProcessor @Inject constructor(
-    private val appRepository: AppRepository,
     private val sensorRepository: SensorRepository,
     private val applicationScope: CoroutineScope // Inject the application-level scope
 ) {
     private val accuracyProcessor = AccuracyProcessor()
     private var calibrationJob: Job? = null
-    private var calibrationResult = Calibration()
 
     fun start(onCalibrationFinished: () -> Unit) {
         if (calibrationJob?.isActive == true) {
@@ -72,8 +69,6 @@ class CalibrationProcessor @Inject constructor(
                 altitude0 = accuracyProcessor.altitude0
                 Timber.d("Calibration finished: $isCalibrated, $pressure0, $altitude0")
             }
-            // Signal to the AppRepository that the process is complete
-            appRepository.exitCalibrationState()
             // Invoke the callback to notify the manager that the job is done.
             onCalibrationFinished()
             emit(calibration)

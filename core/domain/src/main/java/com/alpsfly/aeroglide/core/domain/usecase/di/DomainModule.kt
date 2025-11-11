@@ -4,12 +4,16 @@ import android.app.Application
 import android.content.Context
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
 import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
 import com.alpsfly.aeroglide.core.data.SensorRepository
+import com.alpsfly.aeroglide.core.domain.usecase.AutoStartProcessor
+import com.alpsfly.aeroglide.core.domain.usecase.AutoStartUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationProcessor
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.FlightSessionCoordinatorUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordingUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.location.ServiceStarter
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.Module
@@ -60,7 +64,7 @@ object DomainModule {
         // assuming it's defined in another module (e.g., CommonModule or AppModule).
         @ApplicationScope applicationScope: CoroutineScope
     ): CalibrationProcessor {
-        return CalibrationProcessor(appRepository, sensorRepository, applicationScope)
+        return CalibrationProcessor(sensorRepository, applicationScope)
     }
 
     /**
@@ -69,13 +73,12 @@ object DomainModule {
      */
     @Provides
     fun provideCalibrationUseCase(
-        appRepository: AppRepository,
-        sensorRepository: SensorRepository,
+        appStateManager: AppStateManager,
         calibrationProcessor: CalibrationProcessor,
         serviceStarter: ServiceStarter
     ): CalibrationUseCase {
         return CalibrationUseCase(
-            appRepository,
+            appStateManager,
             calibrationProcessor,
             serviceStarter
         )
@@ -88,19 +91,53 @@ object DomainModule {
     @Provides
     @Singleton
     fun provideFlightSessionCoordinatorUseCase(
-        appRepository: AppRepository,
+        appStateManager: AppStateManager,
         calibrationUseCase: CalibrationUseCase,
         recordingUseCase: RecordingUseCase,
+        autoStartUseCase: AutoStartUseCase,
         @ApplicationScope applicationScope: CoroutineScope
     ): FlightSessionCoordinatorUseCase {
         return FlightSessionCoordinatorUseCase(
-            appRepository,
+            appStateManager,
             calibrationUseCase,
             recordingUseCase,
+            autoStartUseCase,
             applicationScope
         )
     }
 
-    // You will add providers for RecordActivityUseCase, RecordingProcessor,
-    // AutoStartUseCase, AutoStartProcessor, etc., here in the future.
+    /**
+     * Provides the "Worker" processor for the auto-start logic.
+     * It is a singleton as it manages a long-running, stateful process.
+     */
+    @Provides
+    @Singleton
+    fun provideAutoStartProcessor(
+        sensorRepository: SensorRepository,
+        settingsProvider: AutoStartSettingsProvider,
+        @ApplicationScope applicationScope: CoroutineScope
+    ): AutoStartProcessor {
+        return AutoStartProcessor(
+            sensorRepository,
+            settingsProvider,
+            applicationScope
+        )
+    }
+
+    /**
+     * Provides the "Manager" use case for auto-start.
+     * This can be a regular (non-singleton) provider as it is lightweight.
+     */
+    @Provides
+    fun provideAutoStartUseCase(
+        appStateManager: AppStateManager,
+        autoStartProcessor: AutoStartProcessor,
+        serviceStarter: ServiceStarter
+    ): AutoStartUseCase {
+        return AutoStartUseCase(
+            appStateManager,
+            autoStartProcessor,
+            serviceStarter
+        )
+    }
 }
