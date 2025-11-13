@@ -15,11 +15,6 @@ import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
 import com.alpsfly.aeroglide.core.item.DataField
-import com.alpsfly.aeroglide.core.model.database.Activity
-import com.alpsfly.aeroglide.core.model.database.Altitude
-import com.alpsfly.aeroglide.core.model.database.Climbrate
-import com.alpsfly.aeroglide.core.model.database.GlideRatio
-import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.ui.R
 
 @Composable
@@ -28,12 +23,15 @@ fun FlightStatusScreen(
     navController: NavController,
     flightStatusViewModel: FlightStatusViewModel = hiltViewModel()
 ) {
-    val activity by flightStatusViewModel.activityFlow.collectAsStateWithLifecycle(initialValue = Activity())
-    val altitude by flightStatusViewModel.altitudeFlow.collectAsStateWithLifecycle(initialValue = Altitude())
-    val climbrate by flightStatusViewModel.climbrateFlow.collectAsStateWithLifecycle(initialValue = Climbrate())
-    val glideRatio by flightStatusViewModel.glideRatioFlow.collectAsStateWithLifecycle(initialValue = GlideRatio())
-    val location by flightStatusViewModel.locationFlow.collectAsStateWithLifecycle(initialValue = Location())
-    val calibration by flightStatusViewModel.calibrationUiState.collectAsStateWithLifecycle()
+    val uiState by flightStatusViewModel.uiState.collectAsStateWithLifecycle()
+
+    // Deconstruct the state for readability inside the composable scope.
+    val activity = uiState.activity
+    val altitude = uiState.altitude
+    val climbrate = uiState.climbrate
+    val glideRatio = uiState.glideRatio
+    val location = uiState.location
+    val calibrationState = uiState.calibrationState
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -48,7 +46,7 @@ fun FlightStatusScreen(
                     .withSymbol(false)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.M).toLocalSymbol(),
-                blinking = calibration is CalibrationUiState.Loading,
+                blinking = calibrationState is CalibrationUiState.Loading,
                 modifier = Modifier.weight(1f)
             )
             DataField(
@@ -66,7 +64,7 @@ fun FlightStatusScreen(
                 value = LocalUnit
                     .of(location.speed, UnitConverter.Unit.MS)
                     .withDigits(0)
-                    .withSymbol( flag = false)
+                    .withSymbol(flag = false)
                     .toUnit(UnitConverter.Unit.KMH)
                     .toLocalString(),
                 unit = LocalUnit.of(UnitConverter.Unit.KMH).toLocalSymbol(),
