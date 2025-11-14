@@ -51,7 +51,7 @@ class FlightStatusViewModel @Inject constructor(
         // A flow that emits the current activity ONLY when recording, otherwise null.
         val activityFlow: StateFlow<Activity?> = appStateManager.appState
             .flatMapLatest { state ->
-                if (state == AppState.Recording) {
+                if (state is AppState.Recording) {
                     appRepository.activityId.flatMapLatest { activityId ->
                         dataRepository.getActivityFlow(activityId)
                     }
@@ -106,7 +106,7 @@ class FlightStatusViewModel @Inject constructor(
                 glideRatio = glideRatio,
                 activity = activity,
                 calibrationState = calibration,
-                isRecording = appState == AppState.Recording
+                isRecording = appState is AppState.Recording
             )
         }.stateIn(
             scope = viewModelScope,

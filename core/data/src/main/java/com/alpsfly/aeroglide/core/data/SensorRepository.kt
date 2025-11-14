@@ -78,7 +78,7 @@ interface SensorRepository {
     val calibration: StateFlow<Calibration>
     fun setCalibration(calibration: Calibration)
 
-    // ✅ ONE MASTER SWITCH
+    // ONE MASTER SWITCH
     fun enableRecordingListeners()
     fun disableRecordingListeners()
 }

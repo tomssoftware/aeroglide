@@ -8,24 +8,27 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// You can move AppState here to be owned by the state manager
+// The AppState sealed class is already perfectly defined with its 'fromState' property.
 sealed class AppState {
-    data object Idle : AppState()
-    data object Calibrating : AppState()
-    data object Ready : AppState()
-    data object AutoStart : AppState()
-    data object Recording : AppState()
+    abstract val fromState: AppState?
+
+    data class Idle(override val fromState: AppState? = null) : AppState()
+    data class Calibrating(override val fromState: AppState) : AppState()
+    data class Ready(override val fromState: AppState) : AppState()
+    data class AutoStart(override val fromState: AppState) : AppState()
+    data class Recording(val activityId: Long, override val fromState: AppState) : AppState()
 }
 
 @Singleton
 class AppStateManager @Inject constructor() {
-    private val _appState = MutableStateFlow<AppState>(AppState.Idle)
+
+    private val _appState = MutableStateFlow<AppState>(AppState.Idle(null))
     val appState: StateFlow<AppState> = _appState.asStateFlow()
 
     private val stateMachine = createStateMachine()
 
-    // --- Public Commands to change state ---
-    fun onToggleRecording() = stateMachine.transition(Event.OnToggleRecording)
+    // --- Public Commands are unchanged ---
+    fun onToggleRecording(recordId: Long) = stateMachine.transition(Event.OnToggleRecording(recordId))
     fun onCalibrationStarted() = stateMachine.transition(Event.OnCalibrationStarted)
     fun onCalibrationFinished() = stateMachine.transition(Event.OnCalibrationFinished)
     fun onAutoStartEnabled(enable: Boolean) {
@@ -33,113 +36,65 @@ class AppStateManager @Inject constructor() {
         else stateMachine.transition(Event.OnAutoStartDisabled)
     }
 
-    /* application state machine */
-    private fun createStateMachine(): StateMachine<AppState, Event, SideEffect> {
+    private fun createStateMachine(): StateMachine<AppState, Event, Unit> {
         return StateMachine.create {
-            lateinit var recordingReturnState: AppState
-            initialState(AppState.Idle)
+            initialState(AppState.Idle(null))
+
+            // The onTransition block is correct. It logs and updates the public state.
+            onTransition {
+                val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
+                _appState.value = validTransition.toState
+                Timber.d("State Transition: ${validTransition.fromState::class.simpleName} -> ${validTransition.toState::class.simpleName}")
+            }
 
             state<AppState.Idle> {
                 on<Event.OnCalibrationStarted> {
-                    transitionTo(AppState.Calibrating, SideEffect.CalibrationStarted)
+                    // `this` inside a `state<Type>` block refers to the instance of `Type`.
+                    transitionTo(AppState.Calibrating(fromState = this))
                 }
             }
 
             state<AppState.Calibrating> {
                 on<Event.OnCalibrationFinished> {
-                    transitionTo(AppState.Ready, SideEffect.CalibrationFinished)
+                    // `this` is the `AppState.Calibrating` instance we are transitioning FROM.
+                    transitionTo(AppState.Ready(fromState = this))
                 }
             }
 
             state<AppState.Ready> {
-                on<Event.OnToggleRecording> {
-                    recordingReturnState = AppState.Ready
-                    transitionTo(AppState.Recording, SideEffect.StartRecording)
+                on<Event.OnToggleRecording> { event ->
+                    transitionTo(AppState.Recording(event.recordId, fromState = this))
                 }
-
                 on<Event.OnAutoStartEnabled> {
-                    transitionTo(AppState.AutoStart, SideEffect.AutoStartEnabled)
+                    transitionTo(AppState.AutoStart(fromState = this))
                 }
             }
 
             state<AppState.AutoStart> {
-                on<Event.OnToggleRecording> {
-                    recordingReturnState = AppState.AutoStart
-                    transitionTo(AppState.Recording, SideEffect.StartRecording)
+                on<Event.OnToggleRecording> { event ->
+                    transitionTo(AppState.Recording(event.recordId, fromState = this))
                 }
-
                 on<Event.OnAutoStartDisabled> {
-                    transitionTo(AppState.Ready, SideEffect.AutoStartDisabled)
+                    transitionTo(AppState.Ready(fromState = this))
                 }
             }
 
             state<AppState.Recording> {
                 on<Event.OnToggleRecording> {
-                    transitionTo(
-                        recordingReturnState,
-                        SideEffect.StopRecording(recordingReturnState)
-                    )
-                }
-            }
-
-            onTransition {
-                val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
-                when (val sideEffect = validTransition.sideEffect) {
-                    SideEffect.CalibrationStarted -> {
-                        Timber.i("SIDE EFFECT: ${sideEffect.toString().uppercase()}")
-                        _appState.value = AppState.Calibrating
-                    }
-
-                    SideEffect.CalibrationFinished -> {
-                        Timber.i("SIDE EFFECT: ${sideEffect.toString().uppercase()}")
-                        _appState.value = AppState.Ready
-                    }
-
-                    SideEffect.StartRecording -> {
-                        Timber.i("SIDE EFFECT: ${sideEffect.toString().uppercase()}")
-                        _appState.value = AppState.Recording
-                    }
-
-                    is SideEffect.StopRecording -> {
-                        Timber.i("SIDE EFFECT: ${sideEffect.toString().uppercase()}")
-                        _appState.value = sideEffect.state
-                    }
-
-                    SideEffect.AutoStartEnabled -> {
-                        Timber.i("SIDE EFFECT: ${sideEffect.toString().uppercase()}")
-                        _appState.value = AppState.AutoStart
-                    }
-
-                    SideEffect.AutoStartDisabled -> {
-                        Timber.i("SIDE EFFECT: ${sideEffect.toString().uppercase()}")
-                        _appState.value = AppState.Ready
-                    }
-
-                    null -> {
-                        Timber.d("No side effect implemented")
-                    }
+                    // `this` is the `AppState.Recording` instance, which contains the activityId.
+                    // The new `Ready` state now correctly knows its predecessor.
+                    transitionTo(AppState.Ready(fromState = this))
                 }
             }
         }
     }
 
-    companion object {
-
-        sealed class Event {
-            data object OnToggleRecording : Event()
-            data object OnCalibrationFinished : Event()
-            data object OnCalibrationStarted : Event()
-            data object OnAutoStartEnabled : Event()
-            data object OnAutoStartDisabled : Event()
-        }
-
-        sealed class SideEffect {
-            data object CalibrationStarted : SideEffect()
-            data object CalibrationFinished : SideEffect()
-            data object StartRecording : SideEffect()
-            data class StopRecording(val state: AppState) : SideEffect()
-            data object AutoStartEnabled : SideEffect()
-            data object AutoStartDisabled : SideEffect()
-        }
+    // Events are correct as simple signals.
+    sealed class Event {
+        data class OnToggleRecording(val recordId: Long) : Event()
+        data object OnCalibrationFinished : Event()
+        data object OnCalibrationStarted : Event()
+        data object OnAutoStartEnabled : Event()
+        data object OnAutoStartDisabled : Event()
     }
 }
