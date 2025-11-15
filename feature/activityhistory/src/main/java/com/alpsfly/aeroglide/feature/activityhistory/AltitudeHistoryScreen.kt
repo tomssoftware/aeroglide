@@ -21,6 +21,8 @@ fun AltitudeHistoryScreen(
 
     LineChartScreen(
         modelProducer = viewModel.altitudeModelProducer,
+        xAxisFormatter = viewModel.xAxisLabelFormatter,
+        yAxisFormatter = viewModel.yAxisLabelFormatter,
         rangeProvider = viewModel.rangeProvider,
         modifier = Modifier
     )

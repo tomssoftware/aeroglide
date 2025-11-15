@@ -20,6 +20,8 @@ fun ClimbrateHistoryScreen(
 
     LineChartScreen(
         modelProducer = viewModel.climbrateModelProducer,
+        xAxisFormatter = viewModel.xAxisLabelFormatter,
+        yAxisFormatter = viewModel.yAxisLabelFormatterClimbrate,
         modifier = Modifier
     )
 }

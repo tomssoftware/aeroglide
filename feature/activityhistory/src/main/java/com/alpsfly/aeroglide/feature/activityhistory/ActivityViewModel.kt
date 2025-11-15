@@ -6,8 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.mapbox.geojson.Point
+import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
+import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -132,6 +135,48 @@ class ActivityViewModel @Inject constructor(
     fun deleteActivity(activity: Activity) {
         viewModelScope.launch {
             dataRepository.deleteActivity(activity)
+        }
+    }
+
+    val yAxisLabelFormatter = object : CartesianValueFormatter {
+        override fun format(
+            context: CartesianMeasuringContext,
+            value: Double,
+            verticalAxisPosition: Axis.Position.Vertical?
+        ): CharSequence {
+            return "${value.toInt()} m"
+        }
+    }
+
+    val yAxisLabelFormatterClimbrate = CartesianValueFormatter { _, value, _ ->
+        "%.1f m/s".format(value)
+    }
+
+    val xAxisLabelFormatter = object : CartesianValueFormatter {
+        override fun format(
+            context: CartesianMeasuringContext,
+            value: Double,
+            verticalAxisPosition: Axis.Position.Vertical?
+        ): CharSequence {
+            // The 'value' is the total elapsed seconds from the start of the recording.
+            val totalSeconds = value.toLong()
+
+            // Calculate hours, minutes, and remaining seconds.
+            val hours = totalSeconds / 3600
+            val minutes = (totalSeconds % 3600) / 60
+            val seconds = totalSeconds % 60
+
+            return when {
+                // If duration is one hour or more, format as "hh:mm".
+                hours > 0 -> {
+                    // Use String.format for easy padding with leading zeros.
+                    "%02d:%02d".format(hours, minutes)
+                }
+                // Otherwise, format as "mm:ss".
+                else -> {
+                    "%02d:%02d".format(minutes, seconds)
+                }
+            }
         }
     }
 }
