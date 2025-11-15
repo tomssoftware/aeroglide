@@ -1,79 +1,80 @@
 package com.alpsfly.aeroglide.feature.activityhistory
 
+import androidx.core.graphics.toColorInt
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
-import com.alpsfly.aeroglide.core.mapbox.data.MapBoxLocation
-import com.alpsfly.aeroglide.core.mapbox.data.mapToFeatureCollection
 import com.alpsfly.aeroglide.core.mapbox.data.zipMapBoxLocations
-import com.mapbox.geojson.FeatureCollection
+import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
+// This is the single source of truth for the Map History UI.
+sealed interface MapHistoryUiState {
+    /** The screen is currently loading the track data. */
+    data object Loading : MapHistoryUiState
+
+    /** The track data was loaded successfully. */
+    data class Success(
+        val trackPolyline: List<PolylineAnnotationOptions> = emptyList()
+    ) : MapHistoryUiState
+
+    /** An error occurred, e.g., the activity could not be found. */
+    data class Error(val message: String) : MapHistoryUiState
+}
+
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class MapHistoryViewModel @Inject constructor(
-    private val appRepository: AppRepository,
     private val dataRepository: DataRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    val activityId = appRepository.activityId
+    private val activityId: StateFlow<Long> = savedStateHandle.getStateFlow("activityId", 0L)
+    val uiState: StateFlow<MapHistoryUiState> = activityId
+        .flatMapLatest { id ->
+            dataRepository.getActivityFlow(id).flatMapLatest { activity ->
+                if (activity == null) {
+                    // If activity is null, return an error flow.
+                    flowOf(MapHistoryUiState.Error("Activity not found."))
+                } else if (activity.begin == 0L || activity.end == 0L) {
+                    // If activity has no data, return a success state with an empty track.
+                    flowOf(MapHistoryUiState.Success(trackPolyline = emptyList()))
+                } else {
+                    // If activity is valid, combine the data sources to build the track.
+                    combine(
+                        dataRepository.getLocationsBetween(activity.begin, activity.end),
+                        dataRepository.getClimbratesBetween(activity.begin, activity.end)
+                    ) { locations, climbrates ->
+                        val zippedLocations =
+                            zipMapBoxLocations(locations, climbrates).sortedBy { it.timestamp }
 
-    private var _mapboxFeatureCollection = FeatureCollection.fromFeatures(emptyList())
-    val mapboxFeatureCollection: FeatureCollection
-        get() {
-            return _mapboxFeatureCollection
-        }
+                        val polylineOptions = zippedLocations.zipWithNext().map { (start, end) ->
+                            PolylineAnnotationOptions()
+                                .withPoints(listOf(start.point, end.point))
+                                .withLineColor(start.color.toColorInt())
+                                .withLineWidth(5.0)
+                        }
 
-    private var _mapboxLocationCollection = MutableStateFlow<List<MapBoxLocation>>(emptyList())
-    val mapboxLocationCollection: StateFlow<List<MapBoxLocation>>
-        get() {
-            return _mapboxLocationCollection
-        }
-
-
-    fun loadFeatureCollection(activityId: Long) {
-        viewModelScope.launch {
-            dataRepository.getActivity(activityId)?.let { activity ->
-                getMapboxFeatureCollection(
-                    activity.begin,
-                    activity.end
-                ).collect { featureCollection ->
-                    _mapboxFeatureCollection = featureCollection
+                        // On success, emit the Success state with the data.
+                        MapHistoryUiState.Success(
+                            trackPolyline = polylineOptions
+                        )
+                    }
                 }
             }
         }
-        viewModelScope.launch {
-            dataRepository.getActivity(activityId)?.let { activity ->
-                getMapboxLocationCollection(
-                    activity.begin,
-                    activity.end
-                ).collect { locationCollection ->
-                    _mapboxLocationCollection.value = locationCollection
-                }
-            }
-        }
-    }
-
-    private fun getMapboxFeatureCollection(begin: Long, end: Long): Flow<FeatureCollection> {
-        val locations = dataRepository.getLocationsBetween(begin, end)
-        val climbrates = dataRepository.getClimbratesBetween(begin, end)
-        return combine(locations, climbrates) { l, c ->
-            mapToFeatureCollection(zipMapBoxLocations(l, c)
-                .sortedBy { it.timestamp })
-        }
-    }
-
-    private fun getMapboxLocationCollection(begin: Long, end: Long): Flow<List<MapBoxLocation>> {
-        val locations = dataRepository.getLocationsBetween(begin, end)
-        val climbrates = dataRepository.getClimbratesBetween(begin, end)
-        return combine(locations, climbrates) { l, c ->
-            zipMapBoxLocations(l, c)
-                .sortedBy { it.timestamp }
-        }
-    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            // The initial state for the UI is always Loading.
+            initialValue = MapHistoryUiState.Loading
+        )
 }

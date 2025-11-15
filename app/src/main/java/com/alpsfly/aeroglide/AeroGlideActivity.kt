@@ -89,13 +89,13 @@ class AeroGlideActivity : ComponentActivity() {
 
         lifecycle.coroutineScope.launch {
             appStateManager.appState.collect { state ->
-                if (state == AppState.Recording) {
+                if (state is AppState.Recording) {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 }
 
-                if (state == AppState.Ready) {
+                if (state is AppState.Ready) {
                     val spkAutoStartEnabled = prefs.getBoolean("spk_auto_start_enabled", false)
                     appStateManager.onAutoStartEnabled(spkAutoStartEnabled)
                 }
@@ -213,7 +213,7 @@ fun AeroGlideScreen(
                         IconButton(
                             onClick = { aeroGlideViewModel.onToggleRecording() }
                         ) {
-                            if (appState == AppState.Recording) {
+                            if (appState is AppState.Recording) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.outline_stop_circle_24),
                                     contentDescription = "Mark as favorite"

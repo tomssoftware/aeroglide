@@ -5,7 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.core.presentation.LineChartScreen
+import com.alpsfly.aeroglide.chart.LineChartScreen
 
 
 @Composable
@@ -21,6 +21,8 @@ fun AltitudeHistoryScreen(
 
     LineChartScreen(
         modelProducer = viewModel.altitudeModelProducer,
+        xAxisFormatter = viewModel.xAxisLabelFormatter,
+        yAxisFormatter = viewModel.yAxisLabelFormatter,
         rangeProvider = viewModel.rangeProvider,
         modifier = Modifier
     )

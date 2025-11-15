@@ -12,7 +12,7 @@ class CalibrationUseCase @Inject constructor(
     private val serviceStarter: ServiceStarter // Inject the service manager
 ) {
     operator fun invoke() {
-        if (appStateManager.appState.value == AppState.Calibrating) {
+        if (appStateManager.appState.value is AppState.Calibrating) {
             Timber.w("Calibration is already in progress, ignoring request.")
             return
         }
@@ -32,23 +32,25 @@ class CalibrationUseCase @Inject constructor(
 
             // Now, the UseCase can decide whether to stop the hardware.
             // Check if a recording is in progress. If not, shut down the sensors.
-            if (appStateManager.appState.value != AppState.Recording) {
+            if (appStateManager.appState.value is AppState.Recording) {
+                Timber.i("Recording is active, leaving service running.")
+            } else {
                 Timber.i("No recording active, commanding service to stop.")
                 appStateManager.onCalibrationFinished()
                 serviceStarter.stopRecordingService()
-            } else {
-                Timber.i("Recording is active, leaving service running.")
+
             }
         }
     }
 
     // You could add a stop() method here if you need to manually cancel calibration
     fun stop() {
-        if (appStateManager.appState.value != AppState.Calibrating) return
-        Timber.i("CalibrationUseCase: Commanding STOP.")
-        calibrationProcessor.stop()
-        // We don't stop the service here, as a recording might be active.
-        // The AppState logic should handle service shutdown.
-        appStateManager.onCalibrationFinished()
+        if (appStateManager.appState.value is AppState.Calibrating) {
+            Timber.i("CalibrationUseCase: Commanding STOP.")
+            calibrationProcessor.stop()
+            // We don't stop the service here, as a recording might be active.
+            // The AppState logic should handle service shutdown.
+            appStateManager.onCalibrationFinished()
+        }
     }
 }

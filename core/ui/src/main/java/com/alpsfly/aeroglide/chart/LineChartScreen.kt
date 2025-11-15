@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.presentation
+package com.alpsfly.aeroglide.chart
 
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
@@ -22,6 +22,7 @@ import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.common.shader.ShaderProvider
 
@@ -30,6 +31,8 @@ import com.patrykandpatrick.vico.core.common.shader.ShaderProvider
 fun LineChartScreen(
     rangeProvider: CartesianLayerRangeProvider = CartesianLayerRangeProvider.auto(),
     modelProducer: CartesianChartModelProducer,
+    xAxisFormatter: CartesianValueFormatter = CartesianValueFormatter.Default,
+    yAxisFormatter: CartesianValueFormatter = CartesianValueFormatter.Default,
     modifier: Modifier
 ) {
     val lineColor = Color(0xffa485e0)
@@ -51,10 +54,11 @@ fun LineChartScreen(
                 rangeProvider = rangeProvider
             ),
             startAxis = VerticalAxis.rememberStart(
-                // todo: configure
+                valueFormatter = yAxisFormatter,
+                guideline = null
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
-                // todo: configure
+                valueFormatter = xAxisFormatter,
                 guideline = null
             ),
         ),
