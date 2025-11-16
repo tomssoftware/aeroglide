@@ -7,4 +7,5 @@ sealed class Screen(val route: String) {
     data object VariometerScreen : Screen(route = "VariometerScreen")
     data object DataExportScreen : Screen(route = "DataExportScreen")
     data object PremiumsScreen : Screen(route = "PremiumsScreen")
+    data object MapManagerScreen : Screen(route = "MapManagerScreen")
 }

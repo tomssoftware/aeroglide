@@ -27,6 +27,8 @@ import com.alpsfly.aeroglide.core.data.BillingRepository
 import com.alpsfly.aeroglide.core.data.BillingRepositoryImpl
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
+import com.alpsfly.aeroglide.core.data.MapRepository
+import com.alpsfly.aeroglide.core.data.MapRepositoryImpl
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
 import com.alpsfly.aeroglide.core.model.common.User
@@ -113,6 +115,24 @@ interface BillingRepositoryModule {
     @Binds
     @Singleton
     fun bindBillingRepository(impl: BillingRepositoryImpl): BillingRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+// Change this from an 'interface' to an 'object' to allow @Provides functions
+object MapRepositoryModule {
+
+    // ✅ THIS IS THE FIX ✅
+    // We change from @Binds to @Provides to explicitly declare the dependencies.
+    @Provides
+    @Singleton
+    fun provideMapRepository(
+        @ApplicationContext context: Context // Explicitly ask Hilt for the ApplicationContext
+    ): MapRepository {
+        // Manually construct the implementation. Hilt now knows exactly where
+        // the context comes from and guarantees it is not null.
+        return MapRepositoryImpl(context)
+    }
 }
 
 class FakeDataRepository @Inject constructor(

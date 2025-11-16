@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
-import com.mapbox.geojson.Point
 import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
 import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
@@ -112,25 +111,25 @@ class ActivityViewModel @Inject constructor(
         }
     }
 
-    private val trackPoints = mutableListOf<Point>()
-    fun loadLocations(activityId: Long) {
-        viewModelScope.launch {
-            dataRepository.getActivity(activityId)?.let { activity ->
-                val locationFlow = dataRepository.getLocationsBetween(activity.begin, activity.end)
-                trackPoints.clear()
-                locationFlow.collect { locationList ->
-                    locationList.forEach { location ->
-                        trackPoints.add(
-                            Point.fromLngLat(
-                                location.longitude.toDouble(),
-                                location.latitude.toDouble()
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
+//    private val trackPoints = mutableListOf<Point>()
+//    fun loadLocations(activityId: Long) {
+//        viewModelScope.launch {
+//            dataRepository.getActivity(activityId)?.let { activity ->
+//                val locationFlow = dataRepository.getLocationsBetween(activity.begin, activity.end)
+//                trackPoints.clear()
+//                locationFlow.collect { locationList ->
+//                    locationList.forEach { location ->
+//                        trackPoints.add(
+//                            Point.fromLngLat(
+//                                location.longitude.toDouble(),
+//                                location.latitude.toDouble()
+//                            )
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     fun deleteActivity(activity: Activity) {
         viewModelScope.launch {

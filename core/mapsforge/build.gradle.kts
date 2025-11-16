@@ -17,27 +17,21 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.serialzation)
-    alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.core.ui"
+    namespace = "com.alpsfly.aeroglide.core.mapsforge"
     compileSdk = 36
 
     defaultConfig {
         minSdk = 26
-
-        testInstrumentationRunner = "com.alpsfly.aeroglide.core.testing.HiltTestRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildFeatures {
-        compose = true
         aidl = false
         buildConfig = false
+        compose = true
         renderScript = false
         shaders = false
     }
@@ -49,31 +43,10 @@ android {
 }
 
 dependencies {
-    api(project(":core:data"))
-    api(project(":core:common"))
-    api(project(":core:model"))
-    api(project(":core:domain"))
+    api(project(":core:firebase"))
 
-    // Core Android dependencies
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-
-    // Arch Components
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    // Logging
-    implementation(libs.timber)
-
-    // Hilt Dependency Injection
-    implementation(libs.hilt.android)
-    implementation(libs.androidx.material3)
-    ksp(libs.hilt.compiler)
-
-    // Kotlin
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kontlinx.serialization.core)
     implementation(libs.kontlinx.serialization.json)
 
     // Compose
@@ -83,10 +56,12 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
-    // Vico chart library
-    implementation(libs.vico.core)
-    implementation(libs.vico.compose)
-    implementation(libs.vico.compose.m3)
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+    implementation(libs.retrofitConverterScalars)
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLoggingInterceptor)
 
     // mapsforge map core
     // https://opendatacommons.org/licenses/dbcl/1-0/
@@ -99,15 +74,5 @@ dependencies {
     // mapsforge map android
     implementation(libs.mapsforge.map.android)
     implementation(libs.androidsvg)
-
-    // mapsforge poi core
-    implementation(libs.mapsforge.poi)
-
-    // mapsforge poi android
-    implementation(libs.mapsforge.poi.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
 }
+
