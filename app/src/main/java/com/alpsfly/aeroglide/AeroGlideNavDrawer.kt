@@ -58,6 +58,17 @@ fun AeroGlideNavDrawer(navController: NavHostController, drawerState: DrawerStat
                     }
                 )
                 NavigationDrawerItem(
+                    label = { Text(text = stringResource(uiR.string.sid_map_manager)) },
+                    icon = {
+                        Icon(painter = painterResource(id = uiR.drawable.list_alt_24px), contentDescription = null)
+                    },
+                    selected = false,
+                    onClick = {
+                        onClick()
+                        navController.navigate(route = Screen.MapManagerScreen.route)
+                    }
+                )
+                NavigationDrawerItem(
                     label = { Text(text = stringResource(uiR.string.sid_settings)) },
                     icon = {
                         Icon(painter = painterResource(id = uiR.drawable.settings_24px), contentDescription = null)

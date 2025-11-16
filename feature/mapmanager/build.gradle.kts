@@ -16,22 +16,18 @@
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.serialzation)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.core.ui"
+    namespace = "com.alpsfly.aeroglide.feature.mapmanager"
     compileSdk = 36
 
     defaultConfig {
         minSdk = 26
-
-        testInstrumentationRunner = "com.alpsfly.aeroglide.core.testing.HiltTestRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildFeatures {
@@ -49,10 +45,8 @@ android {
 }
 
 dependencies {
+    api(project(":core:ui"))
     api(project(":core:data"))
-    api(project(":core:common"))
-    api(project(":core:model"))
-    api(project(":core:domain"))
 
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)
@@ -70,11 +64,7 @@ dependencies {
 
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
-    implementation(libs.androidx.material3)
     ksp(libs.hilt.compiler)
-
-    // Kotlin
-    implementation(libs.kontlinx.serialization.json)
 
     // Compose
     val composeBom = platform(libs.androidx.compose.bom)
@@ -82,6 +72,13 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+    implementation(libs.retrofitConverterScalars)
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLoggingInterceptor)
 
     // Vico chart library
     implementation(libs.vico.core)
@@ -95,19 +92,4 @@ dependencies {
     implementation(libs.mapsforge.map.reader)
     implementation(libs.mapsforge.themes)
     implementation(libs.kxml2)
-
-    // mapsforge map android
-    implementation(libs.mapsforge.map.android)
-    implementation(libs.androidsvg)
-
-    // mapsforge poi core
-    implementation(libs.mapsforge.poi)
-
-    // mapsforge poi android
-    implementation(libs.mapsforge.poi.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
 }

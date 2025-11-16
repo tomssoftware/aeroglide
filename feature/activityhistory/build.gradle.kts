@@ -48,7 +48,7 @@ android {
 dependencies {
     api(project(":core:ui"))
     api(project(":core:data"))
-    api(project(":core:mapbox"))
+    api(project(":core:mapsforge"))
 
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)
@@ -84,7 +84,23 @@ dependencies {
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m3)
 
-    // Mapbox
-    implementation(libs.mapbox.android)
-    implementation(libs.mapbox.compose)
+    // mapsforge map core
+    // https://opendatacommons.org/licenses/dbcl/1-0/
+    implementation(libs.mapsforge.core)
+    implementation(libs.mapsforge.map)
+    implementation(libs.mapsforge.map.reader)
+    implementation(libs.mapsforge.themes)
+    implementation(libs.kxml2)
+
+    // mapsforge map android
+    implementation(libs.mapsforge.map.android)
+    implementation(libs.androidsvg)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+    implementation(libs.retrofitConverterScalars)
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLoggingInterceptor)
+
 }

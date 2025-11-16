@@ -100,6 +100,7 @@ dependencies {
     api(project(":feature:diagnosis"))
     api(project(":feature:disclaimer"))
     api(project(":feature:livetracking"))
+    api(project(":feature:mapmanager"))
     api(project(":feature:settings"))
     api(project(":feature:variometer"))
 
@@ -161,6 +162,18 @@ dependencies {
 
     // Logging
     implementation(libs.timber)
+
+    // mapsforge map core
+    // https://opendatacommons.org/licenses/dbcl/1-0/
+    implementation(libs.mapsforge.core)
+    implementation(libs.mapsforge.map)
+    implementation(libs.mapsforge.map.reader)
+    implementation(libs.mapsforge.themes)
+    implementation(libs.kxml2)
+
+    // mapsforge map android
+    implementation(libs.mapsforge.map.android)
+    implementation(libs.androidsvg)
 
     // Tooling
     debugImplementation(libs.androidx.compose.ui.tooling)
