@@ -18,21 +18,20 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.core.domain"
+    namespace = "com.alpsfly.aeroglide.feature.settings"
     compileSdk = 36
 
     defaultConfig {
         minSdk = 26
-
-        testInstrumentationRunner = "com.alpsfly.aeroglide.core.testing.HiltTestRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildFeatures {
+        compose = true
         aidl = false
         buildConfig = false
         renderScript = false
@@ -46,9 +45,19 @@ android {
 }
 
 dependencies {
-    api(project(":core:model"))
+    api(project(":core:ui"))
     api(project(":core:data"))
-    api(project(":core:hardware"))
+
+    // Core Android dependencies
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+
+    // Arch Components
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // Android billing
     implementation(libs.billing.ktx)
@@ -56,19 +65,19 @@ dependencies {
     // Logging
     implementation(libs.timber)
 
-    // State machine
-    implementation(libs.statemachine)
-
     // Hilt Dependency Injection
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
-    implementation(libs.play.service.location)
+    // Compose
+    val composeBom = platform(libs.androidx.compose.bom)
+    implementation(composeBom)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
 
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.test)
-
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1") // For testing coroutines
-    testImplementation("io.mockk:mockk:1.13.5") // Powerful mocking library for Kotlin
+    // Vico chart library
+    implementation(libs.vico.core)
+    implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m3)
 }

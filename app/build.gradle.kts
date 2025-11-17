@@ -94,6 +94,7 @@ dependencies {
     api(project(":core:ui"))
 
     api(project(":feature:activityhistory"))
+    api(project(":feature:billing"))
     api(project(":feature:dataexchange"))
     api(project(":feature:devicestatus"))
     api(project(":feature:diagnosis"))
@@ -129,6 +130,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
+
+    // Android billing
+    implementation(libs.billing.ktx)
 
     // Import the BoM for Firebase
     implementation(platform(libs.firebase.bom))

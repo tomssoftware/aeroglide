@@ -23,6 +23,8 @@ import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.AppRepositoryImpl
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProviderImpl
+import com.alpsfly.aeroglide.core.data.BillingRepository
+import com.alpsfly.aeroglide.core.data.BillingRepositoryImpl
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
@@ -103,6 +105,14 @@ abstract class SettingsModule {
     abstract fun bindAutoStartSettingsProvider(
         impl: AutoStartSettingsProviderImpl
     ): AutoStartSettingsProvider
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface BillingRepositoryModule {
+    @Binds
+    @Singleton
+    fun bindBillingRepository(impl: BillingRepositoryImpl): BillingRepository
 }
 
 class FakeDataRepository @Inject constructor(

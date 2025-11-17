@@ -52,6 +52,7 @@ dependencies {
 
     // Arch Components
     implementation(libs.hilt.android)
+    implementation(libs.billing.ktx)
     ksp(libs.hilt.compiler)
 
     implementation(libs.kotlinx.coroutines.android)

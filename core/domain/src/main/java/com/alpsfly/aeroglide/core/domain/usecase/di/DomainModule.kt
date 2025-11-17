@@ -5,12 +5,14 @@ import android.content.Context
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
 import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
+import com.alpsfly.aeroglide.core.data.BillingRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.AutoStartProcessor
 import com.alpsfly.aeroglide.core.domain.usecase.AutoStartUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationProcessor
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.FlightSessionCoordinatorUseCase
+import com.alpsfly.aeroglide.core.domain.usecase.PurchaseUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordingUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.location.ServiceStarter
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
@@ -139,5 +141,10 @@ object DomainModule {
             autoStartProcessor,
             serviceStarter
         )
+    }
+
+    @Provides
+    fun providePurchaseUseCase(billingRepository: BillingRepository): PurchaseUseCase {
+        return PurchaseUseCase(billingRepository)
     }
 }
