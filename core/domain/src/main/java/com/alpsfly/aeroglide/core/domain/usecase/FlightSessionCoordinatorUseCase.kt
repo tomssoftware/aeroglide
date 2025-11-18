@@ -18,7 +18,7 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
     private val calibrationUseCase: CalibrationUseCase,
     private val recordingUseCase: RecordingUseCase,
     private val autoStartUseCase: AutoStartUseCase,
-    private val downloadMapUseCase: DownloadMapUseCase,
+    private val downloadDemUseCase: DownloadDemUseCase,
     private val sensorRepository: SensorRepository,
     @param:ApplicationScope private val applicationScope: CoroutineScope
 ) {
@@ -47,10 +47,10 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
                         Timber.d("Coordinator: App is Ready. Triggering on-demand map check for location: $currentLocation")
 
                         // Use the location to call the use case.
-                        downloadMapUseCase(currentLocation.latitude.toDouble(), currentLocation.longitude.toDouble())
+                        downloadDemUseCase(currentLocation.latitude.toDouble(), currentLocation.longitude.toDouble())
                             .collect { downloadState ->
                                 // The Coordinator can observe the result.
-                                Timber.d("Coordinator: Map download state: $downloadState")
+                                Timber.d("Coordinator: Dem download state: $downloadState")
                             }
 
                         // The coordinator now decides when to enable auto-start.

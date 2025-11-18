@@ -1,93 +1,80 @@
 package com.alpsfly.aeroglide.feature.activityhistory
 
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
-import com.alpsfly.aeroglide.core.data.DownloadState
-import com.alpsfly.aeroglide.core.domain.usecase.DownloadMapUseCase
+import com.alpsfly.aeroglide.core.mapbox.data.zipMapBoxLocations
+import com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import org.mapsforge.core.model.Point
-import java.io.File
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-// The new, robust UiState definition
+// This is the single source of truth for the Map History UI.
 sealed interface MapHistoryUiState {
+    /** The screen is currently loading the track data. */
     data object Loading : MapHistoryUiState
-    data class Downloading(val progress: Float) : MapHistoryUiState
-    data class Success(val mapFile: File, val trackPoints: List<Point>, val startPosition: Point?) : MapHistoryUiState
+
+    /** The track data was loaded successfully. */
+    data class Success(
+        val trackPolyline: List<PolylineAnnotationOptions> = emptyList()
+    ) : MapHistoryUiState
+
+    /** An error occurred, e.g., the activity could not be found. */
     data class Error(val message: String) : MapHistoryUiState
 }
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class MapHistoryViewModel @Inject constructor(
     private val dataRepository: DataRepository,
-    private val downloadMapUseCase: DownloadMapUseCase, // Inject the use case
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    private val activityId: StateFlow<Long> = savedStateHandle.getStateFlow("activityId", 0L)
+    val uiState: StateFlow<MapHistoryUiState> = activityId
+        .flatMapLatest { id ->
+            dataRepository.getActivityFlow(id).flatMapLatest { activity ->
+                if (activity == null) {
+                    // If activity is null, return an error flow.
+                    flowOf(MapHistoryUiState.Error("Activity not found."))
+                } else if (activity.begin == 0L || activity.end == 0L) {
+                    // If activity has no data, return a success state with an empty track.
+                    flowOf(MapHistoryUiState.Success(trackPolyline = emptyList()))
+                } else {
+                    // If activity is valid, combine the data sources to build the track.
+                    combine(
+                        dataRepository.getLocationsBetween(activity.begin, activity.end),
+                        dataRepository.getClimbratesBetween(activity.begin, activity.end)
+                    ) { locations, climbrates ->
+                        val zippedLocations =
+                            zipMapBoxLocations(locations, climbrates).sortedBy { it.timestamp }
 
-    private val _uiState = MutableStateFlow<MapHistoryUiState>(MapHistoryUiState.Loading)
-    val uiState: StateFlow<MapHistoryUiState> = _uiState.asStateFlow()
+                        val polylineOptions = zippedLocations.zipWithNext().map { (start, end) ->
+                            PolylineAnnotationOptions()
+                                .withPoints(listOf(start.point, end.point))
+                                .withLineColor(start.color.toColorInt())
+                                .withLineWidth(5.0)
+                        }
 
-    init {
-        val activityId: Long? = savedStateHandle["activityId"]
-        if (activityId != null && activityId != 0L) {
-            loadMapAndTrack(activityId)
-        } else {
-            _uiState.value = MapHistoryUiState.Error("Invalid Activity ID provided.")
-        }
-    }
-
-    private fun loadMapAndTrack(activityId: Long) {
-        viewModelScope.launch {
-            _uiState.value = MapHistoryUiState.Loading
-
-            // 1. Fetch the activity and track points first.
-            val activity = dataRepository.getActivity(activityId)
-            if (activity == null) {
-                _uiState.value = MapHistoryUiState.Error("Activity with ID $activityId not found.")
-                return@launch
-            }
-
-            val locations = dataRepository.getLocationsBetween(activity.begin, activity.end).first()
-            val trackPoints = locations.map { Point(it.longitude.toDouble(), it.latitude.toDouble()) }
-
-            if (trackPoints.isEmpty()) {
-                _uiState.value = MapHistoryUiState.Error("This activity has no track data to display.")
-                return@launch
-            }
-
-            val startPosition = trackPoints.first()
-            val startLat = startPosition.y
-            val startLon = startPosition.x
-
-            // 2. Now, call the DownloadMapUseCase to get the map file.
-            //    This will either return the file immediately or start a download.
-            downloadMapUseCase(startLat, startLon).collect { downloadState ->
-                // 3. Update the UiState based on the emissions from the DownloadState flow.
-                when (downloadState) {
-                    is DownloadState.Loading -> {
-                        _uiState.value = MapHistoryUiState.Downloading(downloadState.progress)
-                    }
-
-                    is DownloadState.Success -> {
-                        _uiState.value = MapHistoryUiState.Success(
-                            mapFile = downloadState.file,
-                            trackPoints = trackPoints,
-                            startPosition = startPosition
+                        // On success, emit the Success state with the data.
+                        MapHistoryUiState.Success(
+                            trackPolyline = polylineOptions
                         )
-                    }
-
-                    is DownloadState.Error -> {
-                        _uiState.value = MapHistoryUiState.Error(downloadState.message)
                     }
                 }
             }
         }
-    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            // The initial state for the UI is always Loading.
+            initialValue = MapHistoryUiState.Loading
+        )
 }
