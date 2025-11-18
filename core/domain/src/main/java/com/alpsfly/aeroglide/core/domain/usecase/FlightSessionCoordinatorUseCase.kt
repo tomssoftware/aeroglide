@@ -1,9 +1,11 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
+import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
@@ -16,6 +18,8 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
     private val calibrationUseCase: CalibrationUseCase,
     private val recordingUseCase: RecordingUseCase,
     private val autoStartUseCase: AutoStartUseCase,
+    private val downloadMapUseCase: DownloadMapUseCase,
+    private val sensorRepository: SensorRepository,
     @param:ApplicationScope private val applicationScope: CoroutineScope
 ) {
 
@@ -38,11 +42,16 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
                     }
 
                     is AppState.Ready -> {
-                        // Calibration is done. The coordinator can now decide
-                        // whether to enable auto-start based on a setting.
-                        // For example:
-                        // val shouldAutoStart = settingsProvider.getAutoStartEnabled()
-                        // if (shouldAutoStart) { autoStartUseCase.enable() }
+                        // When the app is ready, get the *first* available location.
+                        val currentLocation = sensorRepository.locationFlowUi.first()
+                        Timber.d("Coordinator: App is Ready. Triggering on-demand map check for location: $currentLocation")
+
+                        // Use the location to call the use case.
+                        downloadMapUseCase(currentLocation.latitude.toDouble(), currentLocation.longitude.toDouble())
+                            .collect { downloadState ->
+                                // The Coordinator can observe the result.
+                                Timber.d("Coordinator: Map download state: $downloadState")
+                            }
 
                         // The coordinator now decides when to enable auto-start.
                         val shouldAutoStart = false // Get this from a SettingsProvider

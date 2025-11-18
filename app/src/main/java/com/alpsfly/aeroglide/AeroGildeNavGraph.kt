@@ -12,6 +12,7 @@ import com.alpsfly.aeroglide.feature.dataexchange.navigation.dataExport
 import com.alpsfly.aeroglide.feature.diagnosis.presentation.DiagnosisDetailScreen
 import com.alpsfly.aeroglide.feature.diagnosis.presentation.DiagnosisScreen
 import com.alpsfly.aeroglide.feature.livetracking.VariometerScreen
+import com.alpsfly.aeroglide.feature.mapmanager.MapManagerScreen
 import com.alpsfly.aeroglide.feature.settings.presentation.SettingsScreen
 
 @Composable
@@ -34,6 +35,11 @@ fun AeroGlideNavGraph(navController: NavHostController) {
             route = Screen.PremiumsScreen.route
         ) {
             PremiumScreen(navController = navController)
+        }
+        composable(
+            route = Screen.MapManagerScreen.route
+        ) {
+            MapManagerScreen(navController = navController)
         }
         composable(
             route = Screen.DiagnosisScreen.route
