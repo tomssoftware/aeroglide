@@ -18,7 +18,7 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
     private val calibrationUseCase: CalibrationUseCase,
     private val recordingUseCase: RecordingUseCase,
     private val autoStartUseCase: AutoStartUseCase,
-    private val downloadDemUseCase: DownloadDemUseCase,
+    private val downloadElevationUseCase: DownloadElevationUseCase,
     private val sensorRepository: SensorRepository,
     @param:ApplicationScope private val applicationScope: CoroutineScope
 ) {
@@ -47,7 +47,7 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
                         Timber.d("Coordinator: App is Ready. Triggering on-demand map check for location: $currentLocation")
 
                         // Use the location to call the use case.
-                        downloadDemUseCase(currentLocation.latitude.toDouble(), currentLocation.longitude.toDouble())
+                        downloadElevationUseCase(currentLocation.latitude.toDouble(), currentLocation.longitude.toDouble())
                             .collect { downloadState ->
                                 // The Coordinator can observe the result.
                                 Timber.d("Coordinator: Dem download state: $downloadState")

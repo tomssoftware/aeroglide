@@ -11,7 +11,7 @@ import com.alpsfly.aeroglide.core.domain.usecase.AutoStartProcessor
 import com.alpsfly.aeroglide.core.domain.usecase.AutoStartUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationProcessor
 import com.alpsfly.aeroglide.core.domain.usecase.CalibrationUseCase
-import com.alpsfly.aeroglide.core.domain.usecase.DownloadDemUseCase
+import com.alpsfly.aeroglide.core.domain.usecase.DownloadElevationUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.FlightSessionCoordinatorUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.PurchaseUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordingUseCase
@@ -98,7 +98,7 @@ object DomainModule {
         calibrationUseCase: CalibrationUseCase,
         recordingUseCase: RecordingUseCase,
         autoStartUseCase: AutoStartUseCase,
-        downloadDemUseCase: DownloadDemUseCase,
+        downloadElevationUseCase: DownloadElevationUseCase,
         sensorRepository: SensorRepository,
         @ApplicationScope applicationScope: CoroutineScope
     ): FlightSessionCoordinatorUseCase {
@@ -107,7 +107,7 @@ object DomainModule {
             calibrationUseCase,
             recordingUseCase,
             autoStartUseCase,
-            downloadDemUseCase,
+            downloadElevationUseCase,
             sensorRepository,
             applicationScope
         )

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.alpsfly.aeroglide.data
+package com.alpsfly.aeroglide.core.data
 
-import com.alpsfly.aeroglide.core.data.LocalDataRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 

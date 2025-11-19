@@ -30,6 +30,7 @@ fun FlightStatusScreen(
     val altitude = uiState.altitude
     val climbrate = uiState.climbrate
     val glideRatio = uiState.glideRatio
+    val aboveGround = uiState.aboveGround
     val location = uiState.location
     val calibrationState = uiState.calibrationState
 
@@ -50,13 +51,13 @@ fun FlightStatusScreen(
                 modifier = Modifier.weight(1f)
             )
             DataField(
-                caption = stringResource(R.string.sid_climbrate),
+                caption = stringResource(R.string.sid_abbr_agl),
                 value = LocalUnit
-                    .of(climbrate.climbrate, UnitConverter.Unit.MS)
-                    .withDigits(2)
+                    .of(aboveGround.aglMeters ?: 0f, UnitConverter.Unit.M)
+                    .withDigits(0)
                     .withSymbol(false)
                     .toLocalString(),
-                unit = LocalUnit.of(UnitConverter.Unit.MS).toLocalSymbol(),
+                unit = LocalUnit.of(UnitConverter.Unit.M).toLocalSymbol(),
                 modifier = Modifier.weight(1f)
             )
             DataField(

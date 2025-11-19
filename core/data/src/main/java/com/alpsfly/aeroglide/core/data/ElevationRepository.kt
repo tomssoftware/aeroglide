@@ -1,6 +1,9 @@
 package com.alpsfly.aeroglide.core.data
 
 import android.content.Context
+import com.alpsfly.aeroglide.core.data.elevation.ElevationTile
+import com.alpsfly.aeroglide.core.data.elevation.ElevationTileReader
+import com.alpsfly.aeroglide.core.data.tile.TileStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +23,7 @@ import kotlin.math.floor
 // Using the same sealed interface for download state is perfect.
 // No new classes needed here.
 
-interface DemRepository {
+interface ElevationRepository {
     /**
      * The core function. Takes a lat/lon, determines the required tile,
      * checks if it's downloaded, and if not, downloads it.
@@ -33,6 +36,12 @@ interface DemRepository {
      * Returns null if not found.
      */
     fun getLocalDemTile(lat: Double, lon: Double, quality: DemQuality = DemQuality.HIGH): File?
+
+    /**
+     * Provides a continuous flow of the terrain elevation (in meters) for a given flow of locations.
+     * It handles on-demand downloading and caching of DEM tiles automatically.
+     */
+    suspend fun getTerrainElevation(lat: Double, lon: Double, quality: DemQuality): Short?
 }
 
 enum class DemQuality(val path: String) {
@@ -52,9 +61,12 @@ sealed interface DownloadState {
 }
 
 @Singleton
-class DemRepositoryImpl @Inject constructor(
+class ElevationRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context
-) : DemRepository {
+) : ElevationRepository {
+
+    private val tileReader = ElevationTileReader()
+    private val tileStore = TileStore<ElevationTile>()
 
     companion object {
         // Base URL for the high-resolution DEM data source you found.
@@ -138,6 +150,49 @@ class DemRepositoryImpl @Inject constructor(
         val tileName = getTileNameForLocation(lat, lon) ?: return null
         val hgtFile = File(context.filesDir, "dem/${quality.path}/$tileName.hgt")
         return if (hgtFile.exists()) hgtFile else null
+    }
+
+    override suspend fun getTerrainElevation(lat: Double, lon: Double, quality: DemQuality): Short? {
+        val tileName = getTileNameForLocation(lat, lon) ?: return null
+
+        // 1. Check in-memory cache first
+        val cachedTile = tileStore.getTile(tileName)
+        if (cachedTile != null) {
+            return calculateElevationFromTile(cachedTile, lat, lon)
+        }
+
+        // 2. Not in memory, check local storage
+        val localFile = getLocalDemTile(lat, lon, quality)
+        if (localFile != null) {
+            val tile = tileReader.read(tileName, localFile.absolutePath)
+            tileStore.addTile(tileName, tile) // Add to in-memory cache
+            return calculateElevationFromTile(tile, lat, lon)
+        }
+
+        // 3. Not in memory or local storage, must download.
+        // We collect the flow until it's finished (Success or Error).
+        var finalFile: File? = null
+        getOrDownloadDemTileForLocation(lat, lon, quality).collect { downloadState ->
+            if (downloadState is DownloadState.Success) {
+                finalFile = downloadState.file
+            }
+            if (downloadState is DownloadState.Error) {
+                Timber.e("Failed to download DEM tile for elevation calculation: ${downloadState.message}")
+            }
+        }
+
+        finalFile?.let { file ->
+            val newTile = tileReader.read(tileName, file.absolutePath)
+            tileStore.addTile(tileName, newTile)
+            return calculateElevationFromTile(newTile, lat, lon)
+        }
+
+        // If we reach here, we failed to get the elevation.
+        return null
+    }
+
+    private fun calculateElevationFromTile(tile: ElevationTile, lat: Double, lon: Double): Short? {
+        return tile.computeElevation(lat, lon)
     }
 
     /**

@@ -26,8 +26,8 @@ import com.alpsfly.aeroglide.core.data.AutoStartSettingsProviderImpl
 import com.alpsfly.aeroglide.core.data.BillingRepository
 import com.alpsfly.aeroglide.core.data.BillingRepositoryImpl
 import com.alpsfly.aeroglide.core.data.DataRepository
-import com.alpsfly.aeroglide.core.data.DemRepository
-import com.alpsfly.aeroglide.core.data.DemRepositoryImpl
+import com.alpsfly.aeroglide.core.data.ElevationRepository
+import com.alpsfly.aeroglide.core.data.ElevationRepositoryImpl
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
@@ -120,15 +120,15 @@ interface BillingRepositoryModule {
 @Module
 @InstallIn(SingletonComponent::class)
 // Change this from an 'interface' to an 'object' to allow @Provides functions
-object DemRepositoryModule {
+object ElevationRepositoryModule {
     @Provides
     @Singleton
-    fun provideDemRepository(
+    fun provideElevationRepository(
         @ApplicationContext context: Context // Explicitly ask Hilt for the ApplicationContext
-    ): DemRepository {
+    ): ElevationRepository {
         // Manually construct the implementation. Hilt now knows exactly where
         // the context comes from and guarantees it is not null.
-        return DemRepositoryImpl(context)
+        return ElevationRepositoryImpl(context)
     }
 }
 
