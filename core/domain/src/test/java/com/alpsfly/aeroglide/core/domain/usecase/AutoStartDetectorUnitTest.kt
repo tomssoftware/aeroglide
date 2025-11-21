@@ -16,19 +16,26 @@ class AutoStartDetectorTest {
 
     private lateinit var autoStartDetector: AutoStartDetector
 
+    // controllable test clock (milliseconds)
+    private var testTimeMillis: Long = 0L
+
     // Mock the callbacks to verify they are called
     private var takeOffCalled = false
     private var landedCalled = false
 
     @Before
     fun setUp() {
-        autoStartDetector = AutoStartDetector()
+        autoStartDetector = AutoStartDetector(timeProvider = { testTimeMillis })
         takeOffCalled = false
         landedCalled = false
 
         // Assign mock implementations to the callbacks
-        autoStartDetector.onTakeOff = { takeOffCalled = true }
-        autoStartDetector.onLanded = { landedCalled = true }
+        autoStartDetector.onTakeOff = {
+            takeOffCalled = true
+        }
+        autoStartDetector.onLanded = {
+            landedCalled = true
+        }
     }
 
     @Test
@@ -58,7 +65,7 @@ class AutoStartDetectorTest {
         autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
 
         // WHEN: detect() is called for the required 5 seconds
-        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 100.milliseconds)
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
 
         // other wise github action fails
         advanceTimeBy(autoStartDetector.takeOffDuration + 100.milliseconds)
@@ -137,7 +144,7 @@ class AutoStartDetectorTest {
 
         autoStartDetector.velocity = autoStartDetector.velocityFlying + 1.0f
         autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
-        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 100.milliseconds)
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
 
         assertTrue("Should be able to start a new flight after reset", takeOffCalled)
     }
@@ -153,7 +160,7 @@ class AutoStartDetectorTest {
         takeOffCalled = false
         landedCalled = false
 
-        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 100.milliseconds)
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
     }
 
     private fun flying() {
@@ -178,18 +185,14 @@ class AutoStartDetectorTest {
      * This makes the tests much cleaner and more readable.
      */
     private fun AutoStartDetector.simulateTimePassing(duration: Duration, tickIntervalMs: Long = 100) {
-        val startTime = System.currentTimeMillis()
         var elapsed = 0L
-        while (elapsed < duration.inWholeMilliseconds) {
-            // We can't actually advance the clock, but we can call detect() repeatedly
-            // The detector's internal logic uses System.currentTimeMillis(), so it will see time passing.
+        val totalMs = duration.inWholeMilliseconds
+        while (elapsed < totalMs) {
+            // advance our fake clock
+            testTimeMillis += tickIntervalMs
+            // call detect so the detector uses the advanced time
             this.detect()
-            // A small delay is needed to let the system clock actually advance.
-            // In a real test, you might inject a Clock dependency. For this FSM, this is sufficient.
-            Thread.sleep(tickIntervalMs)
-            elapsed = System.currentTimeMillis() - startTime
+            elapsed += tickIntervalMs
         }
-        // One final call to ensure the last interval is processed
-        this.detect()
     }
 }
