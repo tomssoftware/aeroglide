@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
+import com.alpsfly.aeroglide.core.data.DemQuality
+import com.alpsfly.aeroglide.core.data.ElevationRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
@@ -19,10 +21,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
+
+data class Agl(val aglMeters: Float? = null)
 
 // This data class is the single source of truth for the UI.
 data class FlightUiState(
@@ -30,6 +35,7 @@ data class FlightUiState(
     val altitude: Altitude = Altitude(),
     val climbrate: Climbrate = Climbrate(),
     val glideRatio: GlideRatio = GlideRatio(),
+    val aboveGround: Agl = Agl(),
     val activity: Activity? = null,
     val calibrationState: CalibrationUiState = CalibrationUiState.Loading,
     val isRecording: Boolean = false
@@ -42,6 +48,7 @@ class FlightStatusViewModel @Inject constructor(
     appRepository: AppRepository,
     dataRepository: DataRepository,
     sensorRepository: SensorRepository,
+    elevationRepository: ElevationRepository
 ) : ViewModel() {
 
     // This is now the ONLY public state the UI needs to care about.
@@ -76,6 +83,32 @@ class FlightStatusViewModel @Inject constructor(
                 initialValue = CalibrationUiState.Loading
             )
 
+        val aglFlow: StateFlow<Agl> = sensorRepository.locationFlowUi
+            .flatMapLatest { location ->
+                flow {
+                    // For each new location, call the suspend function in the DemRepository.
+                    val terrainElevation = elevationRepository.getTerrainElevation(
+                        lat = location.latitude.toDouble(),
+                        lon = location.longitude.toDouble(),
+                        quality = DemQuality.STANDARD
+                    )
+
+                    val agl = if (terrainElevation != null) {
+                        // Calculate AGL if we have both values
+                        location.altitude - terrainElevation
+                    } else {
+                        // Return null if terrain elevation isn't available yet
+                        null
+                    }
+                    emit(Agl(aglMeters = agl))
+                }
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = Agl() // Initial value is null
+            )
+
         // 1. First, combine the core sensor data flows into an intermediate object.
         val sensorDataFlow = combine(
             sensorRepository.locationFlowUi,
@@ -92,8 +125,9 @@ class FlightStatusViewModel @Inject constructor(
             sensorDataFlow, // This is our first group
             activityFlow,
             calibrationUiStateFlow,
+            aglFlow,
             appStateManager.appState
-        ) { sensorData, activity, calibration, appState ->
+        ) { sensorData, activity, calibration, agl, appState ->
             // Deconstruct the results for readability
             val (location, altitude, climbrate) = sensorData.first
             val glideRatio = sensorData.second
@@ -104,6 +138,7 @@ class FlightStatusViewModel @Inject constructor(
                 altitude = altitude,
                 climbrate = climbrate,
                 glideRatio = glideRatio,
+                aboveGround = agl,
                 activity = activity,
                 calibrationState = calibration,
                 isRecording = appState is AppState.Recording

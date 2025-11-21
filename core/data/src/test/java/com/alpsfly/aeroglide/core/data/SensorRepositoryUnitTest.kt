@@ -1,10 +1,9 @@
-package com.alpsfly.aeroglide.data
+package com.alpsfly.aeroglide.core.data
 
 import android.content.Context
 import android.hardware.SensorManager
 import android.location.LocationManager
 import com.alpsfly.aeroglide.core.common.TimeProvider
-import com.alpsfly.aeroglide.core.data.SensorRepository
 import org.junit.Before
 import org.mockito.Mockito.mock
 

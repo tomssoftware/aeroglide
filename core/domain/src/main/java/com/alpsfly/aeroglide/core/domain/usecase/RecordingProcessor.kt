@@ -84,13 +84,21 @@ class RecordingProcessor @Inject constructor(
     }
 
     private fun collectSensors() {
-        sensorRepository.altitudeFlowUi.onEach { processAltitude(it) }.launchIn(applicationScope)
+        sensorRepository.altitudeFlowUi.onEach {
+            processAltitude(it)
+        }.launchIn(applicationScope)
             .also { recordingJobs.add(it) }
-        sensorRepository.climbrateFlowUi.onEach { processClimbrate(it) }.launchIn(applicationScope)
+        sensorRepository.climbrateFlowUi.onEach {
+            processClimbrate(it)
+        }.launchIn(applicationScope)
             .also { recordingJobs.add(it) }
-        sensorRepository.pressureFlowUi.onEach { processPressure(it) }.launchIn(applicationScope)
+        sensorRepository.pressureFlowUi.onEach {
+            processPressure(it)
+        }.launchIn(applicationScope)
             .also { recordingJobs.add(it) }
-        sensorRepository.locationFlowUi.onEach { processLocation(it) }.launchIn(applicationScope)
+        sensorRepository.locationFlowUi.onEach {
+            processLocation(it)
+        }.launchIn(applicationScope)
             .also { recordingJobs.add(it) }
     }
 

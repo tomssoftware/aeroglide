@@ -18,6 +18,7 @@ module.properties
 
 # Key files
 release.jks
+keystore/
 
 # User-specific configurations
 .idea/
@@ -53,3 +54,4 @@ Thumbs.db
 .settings/*
 */.classpath
 */.settings/*
+.idea/gradle.xml

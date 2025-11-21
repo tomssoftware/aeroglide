@@ -66,7 +66,15 @@ dependencies {
     // csv export
     implementation(libs.commons.csv)
 
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofitConverterGson)
+    implementation(libs.retrofitConverterScalars)
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLoggingInterceptor)
+
     // Local tests: jUnit, coroutines, Android runner
+    testImplementation(libs.mockwebserver)
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.junit.jupiter)
