@@ -68,7 +68,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.test)
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1") // For testing coroutines
-    testImplementation("io.mockk:mockk:1.13.5") // Powerful mocking library for Kotlin
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test) // For testing coroutines
+    testImplementation(libs.mockk) // Powerful mocking library for Kotlin
 }

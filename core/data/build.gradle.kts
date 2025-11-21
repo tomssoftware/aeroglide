@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.okhttpLoggingInterceptor)
 
     // Local tests: jUnit, coroutines, Android runner
+    testImplementation(libs.mockwebserver)
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.junit.jupiter)

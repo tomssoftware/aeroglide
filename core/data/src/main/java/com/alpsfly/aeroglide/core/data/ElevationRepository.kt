@@ -62,11 +62,12 @@ sealed interface DownloadState {
 
 @Singleton
 class ElevationRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val tileReader: ElevationTileReader = ElevationTileReader(),
+    private val tileStore: TileStore<ElevationTile> = TileStore(),
+    private val okHttpClient: OkHttpClient
 ) : ElevationRepository {
 
-    private val tileReader = ElevationTileReader()
-    private val tileStore = TileStore<ElevationTile>()
 
     companion object {
         // Base URL for the high-resolution DEM data source you found.
@@ -102,9 +103,8 @@ class ElevationRepositoryImpl @Inject constructor(
         try {
             emit(DownloadState.Loading(0f))
 
-            val client = OkHttpClient()
             val request = Request.Builder().url(url).build()
-            val response = client.newCall(request).execute()
+            val response = okHttpClient.newCall(request).execute()
 
             if (!response.isSuccessful) {
                 throw Exception("Download failed with code: ${response.code}")
@@ -207,7 +207,13 @@ class ElevationRepositoryImpl @Inject constructor(
         val latInt = floor(lat).toInt()
         val lonInt = floor(lon).toInt()
 
-        return String.format("%c%02d%c%03d", latHemisphere, kotlin.math.abs(latInt), lonHemisphere, kotlin.math.abs(lonInt))
+        return "${latHemisphere}${
+            abs(latInt).toString()
+                .padStart(2, '0')
+        }${lonHemisphere}${
+            abs(lonInt).toString()
+                .padStart(3, '0')
+        }"
     }
 
     /**
@@ -219,7 +225,7 @@ class ElevationRepositoryImpl @Inject constructor(
         // Round down to nearest 10 (e.g., 47 -> 40, 12 -> 10, 5 -> 00)
         val latTens = (floor(abs(lat)).toInt() / 1) * 1
 
-        return String.format("%s%02d", latHemisphere, latTens)
+        return "$latHemisphere${latTens.toString().padStart(2, '0')}"
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.alpsfly.aeroglide.core.common.units
 
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -8,6 +9,14 @@ import java.util.Locale
 
 @RunWith(MockitoJUnitRunner::class)
 class LocalUnitTest {
+
+    // Save the original locale to restore it after tests
+    private val originalLocale = Locale.getDefault()
+
+    @After
+    fun tearDown() {
+        Locale.setDefault(originalLocale)
+    }
 
     @Test
     fun `create LocalUnit with of(unit) should have default value 0`() {
@@ -31,6 +40,7 @@ class LocalUnitTest {
 
     @Test
     fun `withDigits should set correct digits`() {
+        Locale.setDefault(Locale.GERMANY)
         val localUnit = LocalUnit.of(12.345f, UnitConverter.Unit.M).withDigits(2)
         assertEquals("12,35", localUnit.toString())
     }
@@ -85,14 +95,15 @@ class LocalUnitTest {
         assertEquals(0.621371f, localUnit.toLocalValue(), 0.001f)
     }
 
-    //
-//    @Test
-//    fun `toLocalValue should convert to feet per minute for meters per second`() {
-//        val localUnit = LocalUnit.of(1f, UnitConverter.Unit.MS)
-//        assertEquals(196.8504f, localUnit.toLocalValue(), 0.001f)
-//    }
-//
-//    @Test
+
+    @Test
+    fun `toLocalValue should convert to feet per minute for meters per second`() {
+        Locale.setDefault(Locale.US)
+        val localUnit = LocalUnit.of(1f, UnitConverter.Unit.MS)
+        assertEquals(196.8504f, localUnit.toLocalValue(), 0.001f)
+    }
+
+    //    @Test
 //    fun `toLocalValue should convert to miles per hour for kilometers per hour`() {
 //        val localUnit = LocalUnit.of(1f, UnitConverter.Unit.KMH)
 //        assertEquals(0.621371f, localUnit.toLocalValue(), 0.001f)
