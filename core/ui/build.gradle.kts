@@ -87,27 +87,4 @@ dependencies {
     implementation(libs.vico.core)
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m3)
-
-    // mapsforge map core
-    // https://opendatacommons.org/licenses/dbcl/1-0/
-    implementation(libs.mapsforge.core)
-    implementation(libs.mapsforge.map)
-    implementation(libs.mapsforge.map.reader)
-    implementation(libs.mapsforge.themes)
-    implementation(libs.kxml2)
-
-    // mapsforge map android
-    implementation(libs.mapsforge.map.android)
-    implementation(libs.androidsvg)
-
-    // mapsforge poi core
-    implementation(libs.mapsforge.poi)
-
-    // mapsforge poi android
-    implementation(libs.mapsforge.poi.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
-    implementation(libs.sqlite.android)
 }
