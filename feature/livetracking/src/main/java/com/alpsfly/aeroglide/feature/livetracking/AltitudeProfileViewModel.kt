@@ -1,75 +1,81 @@
 package com.alpsfly.aeroglide.feature.livetracking
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.viewModelScope
-import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.chart.ChartProfileViewModel
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
-import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
-import com.alpsfly.aeroglide.core.viewmodel.LineChartViewModel
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
-import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
-import com.patrykandpatrick.vico.core.common.data.ExtraStore
+import com.alpsfly.aeroglide.core.model.database.Altitude
+import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
+import com.patrykandpatrick.vico.core.cartesian.axis.Axis
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
-import timber.log.Timber
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 @HiltViewModel
 class AltitudeProfileViewModel @Inject constructor(
     appStateManager: AppStateManager,
-    appRepository: AppRepository,
     sensorRepository: SensorRepository,
-    dataRepository: DataRepository
-) : LineChartViewModel(appStateManager, appRepository, dataRepository) {
+    private val dataRepository: DataRepository
+) : ChartProfileViewModel<Altitude>(appStateManager, sensorRepository, dataRepository) {
 
-    private val altitudeFlow = sensorRepository.altitudeFlowUi
+    // --- IMPLEMENT THE ABSTRACT PROPERTIES ---
 
-    val rangeProvider =
-        object : CartesianLayerRangeProvider {
-            override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore) =
-                minAltitude - 10.0
+    override val liveDataFlow: Flow<Altitude> = sensorRepository.altitudeFlowUi
 
-            override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore) =
-                maxAltitude + 10.0
-        }
+    override fun valueExtractor(data: Altitude): Float = data.altitude
 
-    val altitudeModelProducer = CartesianChartModelProducer()
-    private val altitudePoints = mutableStateListOf<Pair<Int, Float>>()
-
-    init {
-        viewModelScope.launch {
-            altitudeModelProducer.runTransaction {
-                lineSeries { series(0, 0, 0, 0, 0, 0, 0, 0, 0, 0) }
+    override suspend fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>> {
+        val activity = dataRepository.getActivity(activityId)
+        val begin = activity?.begin ?: 0L
+        val end = activity?.end ?: 0L
+        return dataRepository.getAltitudesBetween(begin, end).map { altitudes ->
+            val startTime = altitudes.firstOrNull()?.timestamp ?: 0L
+            altitudes.map {
+                val timeDeltaSeconds = (it.timestamp - startTime) / 1000
+                timeDeltaSeconds to it.altitude
             }
-        }
-        viewModelScope.launch {
-            collectAltitude()
         }
     }
 
-    private suspend fun collectAltitude() {
-        altitudeFlow.collect { altitudeChartData ->
-            altitudePoints.add(Pair(altitudePoints.size, altitudeChartData.altitude))
-            if (appState.value == AppState.Recording) {
-                altitudeModelProducer.runTransaction {
-                    lineSeries {
-                        series(
-                            x = altitudePoints.map { it.first },
-                            y = altitudePoints.map { it.second }
-                        )
-                    }
+    // --- PROVIDE SPECIFIC FORMATTERS ---
+
+    val yAxisLabelFormatter = object : CartesianValueFormatter {
+        override fun format(
+            context: CartesianMeasuringContext,
+            value: Double,
+            verticalAxisPosition: Axis.Position.Vertical?
+        ): CharSequence {
+            return "${value.toInt()} m"
+        }
+    }
+
+    val xAxisLabelFormatter = object : CartesianValueFormatter {
+        override fun format(
+            context: CartesianMeasuringContext,
+            value: Double,
+            verticalAxisPosition: Axis.Position.Vertical?
+        ): CharSequence {
+            // The 'value' is the total elapsed seconds from the start of the recording.
+            val totalSeconds = value.toLong()
+
+            // Calculate hours, minutes, and remaining seconds.
+            val hours = totalSeconds / 3600
+            val minutes = (totalSeconds % 3600) / 60
+            val seconds = totalSeconds % 60
+
+            return when {
+                // If duration is one hour or more, format as "hh:mm".
+                hours > 0 -> {
+                    // Use String.format for easy padding with leading zeros.
+                    "%02d:%02d".format(hours, minutes)
                 }
-            } else {
-                altitudePoints.clear()
+                // Otherwise, format as "mm:ss".
+                else -> {
+                    "%02d:%02d".format(minutes, seconds)
+                }
             }
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        Timber.i("CLEARED VIEWMODEL")
     }
 }

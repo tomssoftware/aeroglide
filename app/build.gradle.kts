@@ -94,11 +94,13 @@ dependencies {
     api(project(":core:ui"))
 
     api(project(":feature:activityhistory"))
+    api(project(":feature:billing"))
     api(project(":feature:dataexchange"))
     api(project(":feature:devicestatus"))
     api(project(":feature:diagnosis"))
     api(project(":feature:disclaimer"))
     api(project(":feature:livetracking"))
+    api(project(":feature:mapmanager"))
     api(project(":feature:settings"))
     api(project(":feature:variometer"))
 
@@ -130,6 +132,9 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
 
+    // Android billing
+    implementation(libs.billing.ktx)
+
     // Import the BoM for Firebase
     implementation(platform(libs.firebase.bom))
 
@@ -157,6 +162,18 @@ dependencies {
 
     // Logging
     implementation(libs.timber)
+
+    // mapsforge map core
+    // https://opendatacommons.org/licenses/dbcl/1-0/
+    implementation(libs.mapsforge.core)
+    implementation(libs.mapsforge.map)
+    implementation(libs.mapsforge.map.reader)
+    implementation(libs.mapsforge.themes)
+    implementation(libs.kxml2)
+
+    // mapsforge map android
+    implementation(libs.mapsforge.map.android)
+    implementation(libs.androidsvg)
 
     // Tooling
     debugImplementation(libs.androidx.compose.ui.tooling)

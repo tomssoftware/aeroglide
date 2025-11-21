@@ -75,7 +75,9 @@ class AutoStartProcessor @Inject constructor(
     }
 }
 
-class AutoStartDetector {
+class AutoStartDetector(
+    private val timeProvider: () -> Long = { System.currentTimeMillis() }
+) {
 
     // Input
     var climbrate: Float = Float.MIN_VALUE
@@ -133,7 +135,7 @@ class AutoStartDetector {
             return // Not enough data yet
         }
 
-        val currentTime = System.currentTimeMillis()
+        val currentTime = timeProvider()
         // If this is the first update, just set the time and exit
         if (lastUpdateTime == 0L) {
             lastUpdateTime = currentTime
@@ -152,6 +154,7 @@ class AutoStartDetector {
         timeInFlyingCondition = Duration.ZERO
         timeInLandingCondition = Duration.ZERO
         timeInLandedCondition = Duration.ZERO
+        lastUpdateTime = 0L
         stateMachine.transition(Event.OnReset)
     }
 

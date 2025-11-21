@@ -23,7 +23,11 @@ import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.AppRepositoryImpl
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProviderImpl
+import com.alpsfly.aeroglide.core.data.BillingRepository
+import com.alpsfly.aeroglide.core.data.BillingRepositoryImpl
 import com.alpsfly.aeroglide.core.data.DataRepository
+import com.alpsfly.aeroglide.core.data.ElevationRepository
+import com.alpsfly.aeroglide.core.data.ElevationRepositoryImpl
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
@@ -42,6 +46,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import okhttp3.OkHttpClient
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -103,6 +108,43 @@ abstract class SettingsModule {
     abstract fun bindAutoStartSettingsProvider(
         impl: AutoStartSettingsProviderImpl
     ): AutoStartSettingsProvider
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface BillingRepositoryModule {
+    @Binds
+    @Singleton
+    fun bindBillingRepository(impl: BillingRepositoryImpl): BillingRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object NetworkModule { // It's good practice to create a separate module for network components
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            // You can add timeouts, interceptors, etc. here
+            .build()
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+// Change this from an 'interface' to an 'object' to allow @Provides functions
+object ElevationRepositoryModule {
+    @Provides
+    @Singleton
+    fun provideElevationRepository(
+        @ApplicationContext context: Context, // Explicitly ask Hilt for the ApplicationContext
+        okHttpClient: OkHttpClient,
+    ): ElevationRepository {
+        // Manually construct the implementation. Hilt now knows exactly where
+        // the context comes from and guarantees it is not null.
+        return ElevationRepositoryImpl(context = context, okHttpClient = okHttpClient)
+    }
 }
 
 class FakeDataRepository @Inject constructor(

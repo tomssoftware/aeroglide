@@ -4,74 +4,154 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
+import com.alpsfly.aeroglide.core.data.DemQuality
+import com.alpsfly.aeroglide.core.data.ElevationRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.alpsfly.aeroglide.core.model.database.Activity
+import com.alpsfly.aeroglide.core.model.database.Altitude
+import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.GlideRatio
+import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
+data class Agl(val aglMeters: Float? = null)
+
+// This data class is the single source of truth for the UI.
+data class FlightUiState(
+    val location: Location = Location(),
+    val altitude: Altitude = Altitude(),
+    val climbrate: Climbrate = Climbrate(),
+    val glideRatio: GlideRatio = GlideRatio(),
+    val aboveGround: Agl = Agl(),
+    val activity: Activity? = null,
+    val calibrationState: CalibrationUiState = CalibrationUiState.Loading,
+    val isRecording: Boolean = false
+)
+
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class FlightStatusViewModel @Inject constructor(
     appStateManager: AppStateManager,
     appRepository: AppRepository,
-    private val dataRepository: DataRepository,
+    dataRepository: DataRepository,
     sensorRepository: SensorRepository,
+    elevationRepository: ElevationRepository
 ) : ViewModel() {
 
-    val locationFlow = sensorRepository.locationFlowUi
-    val altitudeFlow = sensorRepository.altitudeFlowUi
-    val climbrateFlow = sensorRepository.climbrateFlowUi
-    val glideRatioFlow = sensorRepository.glideRatioFlowUi
-    private val calibrationFlow = sensorRepository.calibration
+    // This is now the ONLY public state the UI needs to care about.
+    val uiState: StateFlow<FlightUiState>
 
-    private val activityId = appRepository.activityId
-    private val appState = appStateManager.appState
-
-    val calibrationUiState: StateFlow<CalibrationUiState> =
-        calibrationFlow
-            .map { result ->
-                if (!result.isCalibrated) {
-                    CalibrationUiState.Loading
+    init {
+        // A flow that emits the current activity ONLY when recording, otherwise null.
+        val activityFlow: StateFlow<Activity?> = appStateManager.appState
+            .flatMapLatest { state ->
+                if (state is AppState.Recording) {
+                    appRepository.activityId.flatMapLatest { activityId ->
+                        dataRepository.getActivityFlow(activityId)
+                    }
                 } else {
-                    CalibrationUiState.Success(result)
+                    flowOf(null) // Emit null when not recording.
                 }
-            }.stateIn(
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = null
+            )
+
+        val calibrationUiStateFlow: StateFlow<CalibrationUiState> = sensorRepository.calibration
+            .map { result ->
+                if (!result.isCalibrated) CalibrationUiState.Loading
+                else CalibrationUiState.Success(result)
+            }
+            .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = CalibrationUiState.Loading
             )
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val activityFlow: StateFlow<Activity?> = appState
-        .flatMapLatest { state ->
-            if (state == AppState.Recording) {
-                appRepository.activityId.flatMapLatest { activityId ->
-                    dataRepository.getActivityFlow(activityId)
+        val aglFlow: StateFlow<Agl> = sensorRepository.locationFlowUi
+            .flatMapLatest { location ->
+                flow {
+                    // For each new location, call the suspend function in the DemRepository.
+                    val terrainElevation = elevationRepository.getTerrainElevation(
+                        lat = location.latitude.toDouble(),
+                        lon = location.longitude.toDouble(),
+                        quality = DemQuality.STANDARD
+                    )
+
+                    val agl = if (terrainElevation != null) {
+                        // Calculate AGL if we have both values
+                        location.altitude - terrainElevation
+                    } else {
+                        // Return null if terrain elevation isn't available yet
+                        null
+                    }
+                    emit(Agl(aglMeters = agl))
                 }
-            } else {
-                flowOf() // Emit an empty flow if the boolean state is false
             }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = Agl() // Initial value is null
+            )
+
+        // 1. First, combine the core sensor data flows into an intermediate object.
+        val sensorDataFlow = combine(
+            sensorRepository.locationFlowUi,
+            sensorRepository.altitudeFlowUi,
+            sensorRepository.climbrateFlowUi,
+            sensorRepository.glideRatioFlowUi
+        ) { location, altitude, climbrate, glideRatio ->
+            // Create a temporary holder for this group of data
+            Triple(location, altitude, climbrate) to glideRatio
         }
-        .stateIn(
+
+        // 2. Now, combine the result of the first combine with the remaining flows.
+        uiState = combine(
+            sensorDataFlow, // This is our first group
+            activityFlow,
+            calibrationUiStateFlow,
+            aglFlow,
+            appStateManager.appState
+        ) { sensorData, activity, calibration, agl, appState ->
+            // Deconstruct the results for readability
+            val (location, altitude, climbrate) = sensorData.first
+            val glideRatio = sensorData.second
+
+            // Construct the final, complete UiState object
+            FlightUiState(
+                location = location,
+                altitude = altitude,
+                climbrate = climbrate,
+                glideRatio = glideRatio,
+                aboveGround = agl,
+                activity = activity,
+                calibrationState = calibration,
+                isRecording = appState is AppState.Recording
+            )
+        }.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Lazily, // todo: check if this is the best option
-            initialValue = Activity()
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = FlightUiState()
         )
+    }
 }
 
 sealed interface CalibrationUiState {
     data object Loading : CalibrationUiState
-    data class Success(
-        val calibration: Calibration,
-    ) : CalibrationUiState
+    data class Success(val calibration: Calibration) : CalibrationUiState
 }
-

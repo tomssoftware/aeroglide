@@ -19,16 +19,16 @@ class AutoStartUseCase @Inject constructor(
         // The UseCase provides the implementation for the processor's callbacks.
         autoStartProcessor.onTakeOffDetected = {
             // The worker reported a take-off. The manager decides what to do.
-            if (appStateManager.appState.value == AppState.AutoStart) {
+            if (appStateManager.appState.value is AppState.AutoStart) {
                 Timber.i("AutoStartUseCase: Received take-off signal, commanding state toggle.")
-                appStateManager.onToggleRecording()
+                appStateManager.onToggleRecording(0L) // todo: set id
             }
         }
         autoStartProcessor.onLandingDetected = {
             // The worker reported a landing. The manager decides what to do.
-            if (appStateManager.appState.value == AppState.Recording) {
+            if (appStateManager.appState.value is AppState.Recording) {
                 Timber.i("AutoStartUseCase: Received landing signal, commanding state toggle.")
-                appStateManager.onToggleRecording()
+                appStateManager.onToggleRecording(0L) // todo: set id
             }
         }
     }
