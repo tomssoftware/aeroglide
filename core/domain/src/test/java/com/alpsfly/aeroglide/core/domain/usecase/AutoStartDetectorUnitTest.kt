@@ -1,5 +1,8 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -47,6 +50,7 @@ class AutoStartDetectorTest {
         assertFalse("onTakeOff should not be called before duration is met", takeOffCalled)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `detect() triggers take-off when take-off conditions are met for required duration`() = runTest {
         // GIVEN: Take-off conditions
@@ -55,6 +59,9 @@ class AutoStartDetectorTest {
 
         // WHEN: detect() is called for the required 5 seconds
         autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 100.milliseconds)
+
+        // other wise github action fails
+        advanceTimeBy(autoStartDetector.takeOffDuration + 100.milliseconds)
 
         // THEN: The onTakeOff callback should have been called
         assertTrue("onTakeOff should be called after take-off conditions are met", takeOffCalled)
@@ -94,6 +101,7 @@ class AutoStartDetectorTest {
         assertTrue("onLanded should be called after landing conditions are met", landedCalled)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `detect() does not trigger landed if landing is aborted`() = runTest {
         // GIVEN: The detector is already in a flying state
@@ -106,6 +114,9 @@ class AutoStartDetectorTest {
         // WHEN: Speed picks up again, aborting the landing
         autoStartDetector.velocity = 2.0f
         autoStartDetector.simulateTimePassing(5.seconds)
+
+        // other wise github action fails
+        advanceUntilIdle()
 
         // THEN: The onLanded callback should not have been called
         assertFalse("onLanded should not be called if landing is aborted", landedCalled)
