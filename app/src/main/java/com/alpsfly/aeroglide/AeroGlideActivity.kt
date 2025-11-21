@@ -46,7 +46,6 @@ import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.theme.AeroGlideTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.mapsforge.map.android.graphics.AndroidGraphicFactory
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -87,9 +86,6 @@ class AeroGlideActivity : ComponentActivity() {
                 requestBackgroundLocationPermission()
             }
         }
-
-        // Mapsforge need this initialization
-        AndroidGraphicFactory.createInstance(application)
 
         lifecycle.coroutineScope.launch {
             appStateManager.appState.collect { state ->
