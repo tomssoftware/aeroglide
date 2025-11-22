@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.chart.ChartProfileUiState
 import com.alpsfly.aeroglide.chart.LineChartScreen
 
 @Composable
@@ -25,7 +24,6 @@ fun AltitudeProfileScreen(
         modifier = Modifier.fillMaxHeight(),
         contentAlignment = Alignment.Center
     ) {
-        // ✅ Use a 'when' statement to handle the different UI states.
         when (uiState) {
             is ChartProfileUiState.Initial -> {
                 // Only render the chart when we have data.

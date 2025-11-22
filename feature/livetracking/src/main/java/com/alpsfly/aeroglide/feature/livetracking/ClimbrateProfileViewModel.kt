@@ -1,7 +1,5 @@
 package com.alpsfly.aeroglide.feature.livetracking
 
-import com.alpsfly.aeroglide.chart.ChartProfileUiState
-import com.alpsfly.aeroglide.chart.ChartProfileViewModel
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
@@ -19,14 +17,11 @@ class ClimbrateProfileViewModel @Inject constructor(
     appStateManager: AppStateManager,
     sensorRepository: SensorRepository,
     private val dataRepository: DataRepository
-) : ChartProfileViewModel<Climbrate>(appStateManager, sensorRepository, dataRepository) {
-
-    // --- IMPLEMENT THE ABSTRACT PROPERTIES ---
-
-    override val liveDataFlow: Flow<Climbrate> = sensorRepository.climbrateFlowUi
-
-    override fun valueExtractor(data: Climbrate): Float = data.climbrate
-
+) : ChartProfileViewModel<Climbrate>(
+    appStateManager,
+    sensorRepository.climbrateFlowUi,
+    { it.climbrate }
+) {
     override suspend fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>> {
         val activity = dataRepository.getActivity(activityId)
         val begin = activity?.begin ?: 0L

@@ -1,9 +1,7 @@
-package com.alpsfly.aeroglide.chart
+package com.alpsfly.aeroglide.feature.livetracking
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.alpsfly.aeroglide.core.data.DataRepository
-import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
@@ -38,8 +36,8 @@ sealed interface ChartProfileUiState {
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class ChartProfileViewModel<T>(
     appStateManager: AppStateManager,
-    sensorRepository: SensorRepository,
-    dataRepository: DataRepository
+    private val liveDataFlow: Flow<T>,
+    private val valueExtractor: (T) -> Float
 ) : ViewModel() {
 
     // --- Configuration (to be provided by subclasses) ---
@@ -47,13 +45,6 @@ abstract class ChartProfileViewModel<T>(
         private const val MAX_LIVE_POINTS = 300 // Keep last 5 mins of live data
         private val INITIAL_POINTS = (0L..10L).map { it to 0f }
     }
-
-    // --- Abstract properties subclasses MUST implement ---
-    /** The specific live data flow from the sensor repository (e.g., sensorRepository.altitudeFlowUi). */
-    protected abstract val liveDataFlow: Flow<T>
-
-    /** A function to extract the Float value from the sensor data object (e.g., { it.altitude }). */
-    protected abstract fun valueExtractor(data: T): Float
 
     /** A function to load the full historical data for an activity. */
     protected abstract suspend fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>>
