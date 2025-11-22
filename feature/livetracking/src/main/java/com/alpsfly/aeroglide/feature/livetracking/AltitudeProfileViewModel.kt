@@ -1,6 +1,6 @@
 package com.alpsfly.aeroglide.feature.livetracking
 
-import com.alpsfly.aeroglide.chart.ChartProfileViewModel
+
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
@@ -9,7 +9,10 @@ import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
 import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -17,24 +20,30 @@ import javax.inject.Inject
 class AltitudeProfileViewModel @Inject constructor(
     appStateManager: AppStateManager,
     sensorRepository: SensorRepository,
-    private val dataRepository: DataRepository
-) : ChartProfileViewModel<Altitude>(appStateManager, sensorRepository, dataRepository) {
+    dataRepository: DataRepository
+) : ChartProfileViewModel<Altitude>(
+    appStateManager,
+    dataRepository,
+    sensorRepository.altitudeFlowUi,
+    { it.altitude }
+) {
 
-    // --- IMPLEMENT THE ABSTRACT PROPERTIES ---
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>> {
+        // Return a Flow that reacts to the activity.
+        return dataRepository.getActivityFlow(activityId).flatMapLatest { activity ->
+            if (activity == null) {
+                // If activity is null, emit an empty list for the chart
+                return@flatMapLatest flowOf(emptyList<Pair<Long, Float>>())
+            }
 
-    override val liveDataFlow: Flow<Altitude> = sensorRepository.altitudeFlowUi
-
-    override fun valueExtractor(data: Altitude): Float = data.altitude
-
-    override suspend fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>> {
-        val activity = dataRepository.getActivity(activityId)
-        val begin = activity?.begin ?: 0L
-        val end = activity?.end ?: 0L
-        return dataRepository.getAltitudesBetween(begin, end).map { altitudes ->
-            val startTime = altitudes.firstOrNull()?.timestamp ?: 0L
-            altitudes.map {
-                val timeDeltaSeconds = (it.timestamp - startTime) / 1000
-                timeDeltaSeconds to it.altitude
+            // If activity exists, get the altitudes and map them.
+            dataRepository.getAltitudesBetween(activity.begin, activity.end).map { altitudes ->
+                val startTime = altitudes.firstOrNull()?.timestamp ?: 0L
+                altitudes.map {
+                    val timeDeltaSeconds = (it.timestamp - startTime) / 1000
+                    timeDeltaSeconds to it.altitude
+                }
             }
         }
     }

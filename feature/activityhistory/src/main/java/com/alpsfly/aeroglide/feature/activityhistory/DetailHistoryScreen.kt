@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -29,15 +28,11 @@ fun DetailHistoryScreen(
     viewModel: ActivityViewModel = hiltViewModel(),
 ) {
     val activityUiState = viewModel.activity.collectAsStateWithLifecycle()
-
-    LaunchedEffect(key1 = activityId) {
-        viewModel.loadActivityById(activityId)
-    }
-
     when (activityUiState.value) {
         is ActivityUiState.Loading -> {
             Timber.d("Loading")
         }
+
         is ActivityUiState.Success -> {
             val activity = (activityUiState.value as ActivityUiState.Success).item
             Timber.d("Success ${activity.activityId}")
