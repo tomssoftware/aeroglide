@@ -8,7 +8,10 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -16,21 +19,29 @@ import javax.inject.Inject
 class ClimbrateProfileViewModel @Inject constructor(
     appStateManager: AppStateManager,
     sensorRepository: SensorRepository,
-    private val dataRepository: DataRepository
+    dataRepository: DataRepository
 ) : ChartProfileViewModel<Climbrate>(
     appStateManager,
+    dataRepository,
     sensorRepository.climbrateFlowUi,
     { it.climbrate }
 ) {
-    override suspend fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>> {
-        val activity = dataRepository.getActivity(activityId)
-        val begin = activity?.begin ?: 0L
-        val end = activity?.end ?: 0L
-        return dataRepository.getClimbratesBetween(begin, end).map { climbrates ->
-            val startTime = climbrates.firstOrNull()?.timestamp ?: 0L
-            climbrates.map {
-                val timeDeltaSeconds = (it.timestamp - startTime) / 1000
-                timeDeltaSeconds to it.climbrate
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>> {
+        // Return a Flow that reacts to the activity.
+        return dataRepository.getActivityFlow(activityId).flatMapLatest { activity ->
+            if (activity == null) {
+                // If activity is null, emit an empty list for the chart
+                return@flatMapLatest flowOf(emptyList<Pair<Long, Float>>())
+            }
+
+            // If activity exists, get the altitudes and map them.
+            dataRepository.getClimbratesBetween(activity.begin, activity.end).map { climbrates ->
+                val startTime = climbrates.firstOrNull()?.timestamp ?: 0L
+                climbrates.map {
+                    val timeDeltaSeconds = (it.timestamp - startTime) / 1000
+                    timeDeltaSeconds to it.climbrate
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.alpsfly.aeroglide.feature.livetracking
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 // 1. DEFINE THE GENERIC UI STATE
 sealed interface ChartProfileUiState {
@@ -36,6 +38,7 @@ sealed interface ChartProfileUiState {
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class ChartProfileViewModel<T>(
     appStateManager: AppStateManager,
+    protected val dataRepository: DataRepository,
     private val liveDataFlow: Flow<T>,
     private val valueExtractor: (T) -> Float
 ) : ViewModel() {
@@ -47,13 +50,14 @@ abstract class ChartProfileViewModel<T>(
     }
 
     /** A function to load the full historical data for an activity. */
-    protected abstract suspend fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>>
+    protected abstract fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>>
 
     // --- Shared, Reusable Logic ---
     val modelProducer = CartesianChartModelProducer()
     val uiState: StateFlow<ChartProfileUiState>
 
     init {
+        Timber.d("init view model")
         // This complex logic is now written ONCE and is completely reusable.
         uiState = appStateManager.appState
             .flatMapLatest { state ->
@@ -62,6 +66,7 @@ abstract class ChartProfileViewModel<T>(
                     is AppState.Ready -> {
                         val previousState = state.fromState
                         if (previousState is AppState.Recording) {
+                            Timber.d("load historic data for ${previousState.activityId}")
                             loadHistoricData(previousState.activityId)
                                 .map { points ->
                                     if (points.isEmpty()) {
@@ -145,5 +150,10 @@ abstract class ChartProfileViewModel<T>(
                 is ChartProfileUiState.Initial -> 100.0
             }
         }
+    }
+
+    override fun onCleared() {
+        Timber.d("clear view model")
+        super.onCleared()
     }
 }
