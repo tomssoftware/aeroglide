@@ -56,6 +56,7 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlin.reflect)
 
     // Logging
     implementation(libs.timber)
