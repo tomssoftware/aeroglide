@@ -54,12 +54,16 @@ class Exporter @Inject constructor(
         val locations = dataRepository.getLocationsBetween(activity.begin, activity.end).first()
         val altitudes = dataRepository.getAltitudesBetween(activity.begin, activity.end).first()
         val climbrates = dataRepository.getClimbratesBetween(activity.begin, activity.end).first()
+        val pressures = dataRepository.getPressuresBetween(activity.begin, activity.end).first()
+        val glideRatios = dataRepository.getGlideRatiosBetween(activity.begin, activity.end).first()
 
         // Create a list of temporary files to be zipped
         val filesToZip = mutableListOf<File>()
-        filesToZip.add(createTempFile(exportDir, "locations.csv", CsvExporter.buildCsv(locations)))
-        filesToZip.add(createTempFile(exportDir, "altitudes.csv", CsvExporter.buildCsv(altitudes)))
-        filesToZip.add(createTempFile(exportDir, "climbrates.csv", CsvExporter.buildCsv(climbrates)))
+        filesToZip.add(createTempFile(exportDir, "location.csv", CsvExporter.buildCsv(locations)))
+        filesToZip.add(createTempFile(exportDir, "altitude.csv", CsvExporter.buildCsv(altitudes)))
+        filesToZip.add(createTempFile(exportDir, "climbrate.csv", CsvExporter.buildCsv(climbrates)))
+        filesToZip.add(createTempFile(exportDir, "pressure.csv", CsvExporter.buildCsv(pressures)))
+        filesToZip.add(createTempFile(exportDir, "glide_ratio.csv", CsvExporter.buildCsv(glideRatios)))
 
         // Create the ZIP file
         FileOutputStream(zipFile).use { fos ->

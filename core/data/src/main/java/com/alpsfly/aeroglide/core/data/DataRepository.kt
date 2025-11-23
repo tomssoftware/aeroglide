@@ -20,6 +20,7 @@ import com.alpsfly.aeroglide.core.database.ActivityDao
 import com.alpsfly.aeroglide.core.database.AltitudeDao
 import com.alpsfly.aeroglide.core.database.CalibrationDao
 import com.alpsfly.aeroglide.core.database.ClimbrateDao
+import com.alpsfly.aeroglide.core.database.GlideRatioDao
 import com.alpsfly.aeroglide.core.database.LocationDao
 import com.alpsfly.aeroglide.core.database.PressureDao
 import com.alpsfly.aeroglide.core.database.UserDao
@@ -27,6 +28,7 @@ import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.GlideRatio
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
@@ -61,12 +63,16 @@ interface DataRepository {
     // Pressure
     suspend fun addPressure(pressure: Pressure)
     val pressure: Flow<List<Pressure>>
+    fun getPressuresBetween(start: Long, end: Long): Flow<List<Pressure>>
 
     // Location
     suspend fun addLocation(location: Location)
     val allLocations: Flow<List<Location>>
     fun getLocation(timestamp: Long): Flow<Location?>
     fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>>
+
+    // GlideRatio
+    fun getGlideRatiosBetween(start: Long, end: Long): Flow<List<GlideRatio>>
 
     // User
     suspend fun addUser(user: User)
@@ -80,6 +86,7 @@ class LocalDataRepository @Inject constructor(
     private val climbrateDao: ClimbrateDao,
     private val locationDao: LocationDao,
     private val pressureDao: PressureDao,
+    private val glideRatioDao: GlideRatioDao,
     private val userDao: UserDao,
 ) : DataRepository {
 
@@ -109,12 +116,16 @@ class LocalDataRepository @Inject constructor(
     // Pressure
     override suspend fun addPressure(pressure: Pressure) = pressureDao.addPressure(pressure)
     override val pressure: Flow<List<Pressure>> = pressureDao.getAllPressure()
+    override fun getPressuresBetween(start: Long, end: Long) = pressureDao.getPressuresBetween(start, end)
 
     // Location
     override suspend fun addLocation(location: Location) = locationDao.addLocation(location)
     override val allLocations: Flow<List<Location>> = locationDao.allLocations
     override fun getLocation(timestamp: Long): Flow<Location?> = locationDao.getLocation(timestamp)
     override fun getLocationsBetween(start: Long, end: Long) = locationDao.getLocationsBetween(start, end)
+
+    // GlideRatio
+    override fun getGlideRatiosBetween(start: Long, end: Long) = glideRatioDao.getGlideRatiosBetween(start, end)
 
     // User
     override suspend fun addUser(user: User) = userDao.addUser(user)
