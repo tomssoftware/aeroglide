@@ -1,6 +1,5 @@
 package com.alpsfly.aeroglide.feature.livetracking
 
-
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
@@ -22,10 +21,10 @@ class AltitudeProfileViewModel @Inject constructor(
     sensorRepository: SensorRepository,
     dataRepository: DataRepository
 ) : ChartProfileViewModel<Altitude>(
-    appStateManager,
-    dataRepository,
-    sensorRepository.altitudeFlowUi,
-    { it.altitude }
+    appStateManager = appStateManager,
+    dataRepository = dataRepository,
+    liveDataFlow = sensorRepository.altitudeFlowUi,
+    valueExtractor = { it.altitude }
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,15 +33,15 @@ class AltitudeProfileViewModel @Inject constructor(
         return dataRepository.getActivityFlow(activityId).flatMapLatest { activity ->
             if (activity == null) {
                 // If activity is null, emit an empty list for the chart
-                return@flatMapLatest flowOf(emptyList<Pair<Long, Float>>())
-            }
-
-            // If activity exists, get the altitudes and map them.
-            dataRepository.getAltitudesBetween(activity.begin, activity.end).map { altitudes ->
-                val startTime = altitudes.firstOrNull()?.timestamp ?: 0L
-                altitudes.map {
-                    val timeDeltaSeconds = (it.timestamp - startTime) / 1000
-                    timeDeltaSeconds to it.altitude
+                flowOf(emptyList<Pair<Long, Float>>())
+            } else {
+                // If activity exists, get the altitudes and map them.
+                dataRepository.getAltitudesBetween(activity.begin, activity.end).map { altitudes ->
+                    val startTime = altitudes.firstOrNull()?.timestamp ?: 0L
+                    altitudes.map {
+                        val timeDeltaSeconds = (it.timestamp - startTime) / 1000
+                        timeDeltaSeconds to it.altitude
+                    }
                 }
             }
         }

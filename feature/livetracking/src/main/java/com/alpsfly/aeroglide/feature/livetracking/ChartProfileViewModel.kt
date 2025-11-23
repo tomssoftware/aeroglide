@@ -13,11 +13,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -62,7 +64,10 @@ abstract class ChartProfileViewModel<T>(
         uiState = appStateManager.appState
             .flatMapLatest { state ->
                 when (state) {
-                    is AppState.Recording -> streamLiveData()
+                    is AppState.Recording -> {
+                        streamLiveData(state.activityId)
+                    }
+
                     is AppState.Ready -> {
                         val previousState = state.fromState
                         if (previousState is AppState.Recording) {
@@ -115,24 +120,60 @@ abstract class ChartProfileViewModel<T>(
         }
     }
 
-    private fun streamLiveData(): Flow<ChartProfileUiState> {
-        var index = 0L
-        return liveDataFlow.scan(ChartProfileUiState.Initial(INITIAL_POINTS) as ChartProfileUiState) { currentState, newData ->
-            val currentPoints = when (currentState) {
-                is ChartProfileUiState.Initial -> emptyList()
-                is ChartProfileUiState.HasData -> currentState.points
-            }
-            // Use the valueExtractor to get the float value from the generic data object
-            val newPoint = index++ to valueExtractor(newData)
-            val newPoints = (currentPoints + newPoint).takeLast(MAX_LIVE_POINTS)
+    /**
+     * Streams live data, but initializes with the last N points from the database
+     * so the chart isn't empty when opening the screen during a flight.
+     */
+    private fun streamLiveData(activityId: Long): Flow<ChartProfileUiState> {
+        // 1. Fetch the existing history for this activity ONCE.
+        return loadHistoricData(activityId)
+            .take(1) // Take only the first emission (current snapshot) and stop listening to DB
+            .flatMapConcat { historyPoints ->
 
-            val valuesInWindow = newPoints.map { it.second }
-            ChartProfileUiState.HasData(
-                points = newPoints,
-                minValue = valuesInWindow.minOrNull() ?: 0f,
-                maxValue = valuesInWindow.maxOrNull() ?: 0f
-            )
-        }
+                // 2. Prepare the index counter.
+                // If we have history, the next index should be size + 1. 
+                // We map history to a continuous 0..N index to match the live chart style.
+                var index = 0L
+
+                // Filter to keep only the last MAX points to match the live window
+                val recentHistory = historyPoints.takeLast(MAX_LIVE_POINTS)
+
+                // Re-map the history to use our local running index
+                val mappedHistory = recentHistory.map { pair ->
+                    index++ to pair.second
+                }
+
+                // 3. Create the starting state for the scan operator
+                val initialState: ChartProfileUiState = if (mappedHistory.isNotEmpty()) {
+                    val values = mappedHistory.map { it.second }
+                    ChartProfileUiState.HasData(
+                        points = mappedHistory,
+                        minValue = values.minOrNull() ?: 0f,
+                        maxValue = values.maxOrNull() ?: 0f
+                    )
+                } else {
+                    ChartProfileUiState.Initial(points = INITIAL_POINTS)
+                }
+
+                // 4. Start scanning live data using the populated initial state
+                liveDataFlow.scan(initialState) { currentState, newData ->
+                    val currentPoints = when (currentState) {
+                        is ChartProfileUiState.Initial -> emptyList()
+                        is ChartProfileUiState.HasData -> currentState.points
+                    }
+
+                    // Add the new point
+                    val newPoint = index++ to valueExtractor(newData)
+                    val newPoints = (currentPoints + newPoint).takeLast(MAX_LIVE_POINTS)
+
+                    val valuesInWindow = newPoints.map { it.second }
+                    ChartProfileUiState.HasData(
+                        points = newPoints,
+                        minValue = valuesInWindow.minOrNull() ?: 0f,
+                        maxValue = valuesInWindow.maxOrNull() ?: 0f
+                    )
+                }
+            }
     }
 
     // This can be overridden by subclasses if they need a different range padding.
