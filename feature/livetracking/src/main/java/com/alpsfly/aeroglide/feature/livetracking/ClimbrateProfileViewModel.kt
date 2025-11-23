@@ -21,10 +21,10 @@ class ClimbrateProfileViewModel @Inject constructor(
     sensorRepository: SensorRepository,
     dataRepository: DataRepository
 ) : ChartProfileViewModel<Climbrate>(
-    appStateManager,
-    dataRepository,
-    sensorRepository.climbrateFlowUi,
-    { it.climbrate }
+    appStateManager = appStateManager,
+    dataRepository = dataRepository,
+    liveDataFlow = sensorRepository.climbrateFlowUi,
+    valueExtractor = { it.climbrate }
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun loadHistoricData(activityId: Long): Flow<List<Pair<Long, Float>>> {
@@ -32,15 +32,15 @@ class ClimbrateProfileViewModel @Inject constructor(
         return dataRepository.getActivityFlow(activityId).flatMapLatest { activity ->
             if (activity == null) {
                 // If activity is null, emit an empty list for the chart
-                return@flatMapLatest flowOf(emptyList<Pair<Long, Float>>())
-            }
-
-            // If activity exists, get the altitudes and map them.
-            dataRepository.getClimbratesBetween(activity.begin, activity.end).map { climbrates ->
-                val startTime = climbrates.firstOrNull()?.timestamp ?: 0L
-                climbrates.map {
-                    val timeDeltaSeconds = (it.timestamp - startTime) / 1000
-                    timeDeltaSeconds to it.climbrate
+                flowOf(emptyList())
+            } else {
+                // If activity exists, get the altitudes and map them.
+                dataRepository.getClimbratesBetween(activity.begin, activity.end).map { climbrates ->
+                    val startTime = climbrates.firstOrNull()?.timestamp ?: 0L
+                    climbrates.map {
+                        val timeDeltaSeconds = (it.timestamp - startTime) / 1000
+                        timeDeltaSeconds to it.climbrate
+                    }
                 }
             }
         }
