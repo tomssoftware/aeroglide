@@ -2,6 +2,7 @@ package com.alpsfly.aeroglide.core.common
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import kotlin.time.Duration
 
 fun <T> Flow<T>.chunked(duration: Duration, timeProvider: TimeProvider = AndroidTimeProvider()): Flow<List<T>> = flow {
@@ -45,6 +46,29 @@ fun <T : Number> Flow<T>.movingAverage(duration: Duration, frequency: Float): Fl
             window.addLast(value.toFloat())
             val average = window.average().toFloat()
             emit(average)
+        }
+    }
+}
+
+
+/**
+ * A generic extension function that checks a Flow for out-of-range values.
+ * It uses a predicate to check the value and throttles logging to once per flow collection.
+ *
+ * @param T The type of data in the Flow.
+ * @param predicate A function that takes a value of type T and returns `true` if it is valid, `false` if it is an anomaly.
+ * @param onDeviation A function to be called when an anomaly is detected for the first time.
+ */
+fun <T> Flow<T>.logDeviation(
+    predicate: (T) -> Boolean,
+    onDeviation: (T) -> Unit
+): Flow<T> {
+    var anomalyReported = false // State is now encapsulated inside the function
+    return this.onEach { value ->
+        if (!anomalyReported && !predicate(value)) {
+            // If not yet reported AND the predicate fails (value is invalid)...
+            onDeviation(value)
+            anomalyReported = true // Mark as reported for this flow's lifecycle
         }
     }
 }
