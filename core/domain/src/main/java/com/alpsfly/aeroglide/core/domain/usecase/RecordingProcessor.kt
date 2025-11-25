@@ -51,7 +51,7 @@ class RecordingProcessor @Inject constructor(
             Timber.w("RecordingProcessor is already running.")
             return
         }
-        Timber.i("RecordingProcessor: Starting")
+        Timber.d("RecordingProcessor: Starting")
 
         startWakeLock()
 
@@ -74,7 +74,7 @@ class RecordingProcessor @Inject constructor(
 
     fun stop() {
         if (recordingJobs.isEmpty()) return
-        Timber.i("RecordingProcessor: Stopping.")
+        Timber.d("RecordingProcessor: Stopping.")
 
         recordingJobs.forEach { it.cancel() }
         recordingJobs.clear()
