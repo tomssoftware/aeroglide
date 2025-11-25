@@ -65,25 +65,12 @@ abstract class ChartProfileViewModel<T>(
             .flatMapLatest { state ->
                 when (state) {
                     is AppState.Recording -> {
-                        streamLiveData(state.activityId)
+                        streamLiveData(state)
                     }
 
                     is AppState.Ready -> {
-                        val previousState = state.fromState
-                        if (previousState is AppState.Recording) {
-                            Timber.d("load historic data for ${previousState.activityId}")
-                            loadHistoricData(previousState.activityId)
-                                .map { points ->
-                                    if (points.isEmpty()) {
-                                        ChartProfileUiState.Initial(INITIAL_POINTS)
-                                    } else {
-                                        ChartProfileUiState.HasData(
-                                            points = points,
-                                            minValue = points.minOfOrNull { it.second } ?: 0f,
-                                            maxValue = points.maxOfOrNull { it.second } ?: 0f
-                                        )
-                                    }
-                                }
+                        if (state.fromState is AppState.Recording) {
+                            createHistoryData(state.fromState as AppState.Recording)
                         } else {
                             flowOf(ChartProfileUiState.Initial(INITIAL_POINTS))
                         }
@@ -120,13 +107,31 @@ abstract class ChartProfileViewModel<T>(
         }
     }
 
+    private fun createHistoryData(state: AppState.Recording): Flow<ChartProfileUiState> {
+        val previousState = state
+        Timber.i("load historic data for ${previousState.activityId}")
+        return loadHistoricData(previousState.activityId)
+            .map { points ->
+                if (points.isEmpty()) {
+                    ChartProfileUiState.Initial(INITIAL_POINTS)
+                } else {
+                    ChartProfileUiState.HasData(
+                        points = points,
+                        minValue = points.minOfOrNull { it.second } ?: 0f,
+                        maxValue = points.maxOfOrNull { it.second } ?: 0f
+                    )
+                }
+            }
+    }
+
     /**
      * Streams live data, but initializes with the last N points from the database
      * so the chart isn't empty when opening the screen during a flight.
      */
-    private fun streamLiveData(activityId: Long): Flow<ChartProfileUiState> {
+    private fun streamLiveData(state: AppState.Recording): Flow<ChartProfileUiState> {
+        Timber.i("stream live data for ${state.activityId}")
         // 1. Fetch the existing history for this activity ONCE.
-        return loadHistoricData(activityId)
+        return loadHistoricData(state.activityId)
             .take(1) // Take only the first emission (current snapshot) and stop listening to DB
             .flatMapConcat { historyPoints ->
 

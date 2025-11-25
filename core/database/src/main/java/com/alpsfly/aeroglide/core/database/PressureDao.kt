@@ -14,4 +14,7 @@ interface PressureDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addPressure(pressure: Pressure)
+
+    @Query("select * from pressure where timestamp between :start and :end")
+    fun getPressuresBetween(start: Long, end: Long): Flow<List<Pressure>>
 }

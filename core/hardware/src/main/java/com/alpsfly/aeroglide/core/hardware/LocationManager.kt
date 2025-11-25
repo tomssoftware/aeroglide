@@ -31,7 +31,7 @@ fun LocationManager.locationDataFlow(
     val provider = LocationManager.GPS_PROVIDER
 
     val listener = LocationListener { location ->
-        Timber.d("GPS_PROVIDER new location: ${location.latitude}, ${location.longitude}")
+        Timber.v("GPS_PROVIDER new location: ${location.latitude}, ${location.longitude}")
         trySend(location)
     }
 
@@ -78,7 +78,7 @@ fun LocationManager.geoidCorrectionFlow(
             val geoidCorrection = parseGeoidCorrection(message)
             geoidCorrection?.let {
                 if (trySend(it).isSuccess) {
-                    Timber.d("NMEA message: $message")
+                    Timber.v("NMEA message: $message")
                 }
             }
         }
@@ -87,10 +87,10 @@ fun LocationManager.geoidCorrectionFlow(
     // We now collect the 'enable' flow directly.
     enable.collectLatest { isEnabled ->
         if (isEnabled) {
-            Timber.i("NMEA location updates enabled")
+            Timber.d("NMEA location updates enabled")
             addNmeaListener(listener, handler)
         } else {
-            Timber.i("NMEA location updates disabled")
+            Timber.d("NMEA location updates disabled")
             removeNmeaListener(listener)
         }
     }

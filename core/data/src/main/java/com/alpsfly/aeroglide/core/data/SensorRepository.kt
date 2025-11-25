@@ -9,6 +9,7 @@ import com.alpsfly.aeroglide.core.common.TimeProvider
 import com.alpsfly.aeroglide.core.common.chunked
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
 import com.alpsfly.aeroglide.core.common.di.SystemTime
+import com.alpsfly.aeroglide.core.common.logDeviation
 import com.alpsfly.aeroglide.core.common.movingAverage
 import com.alpsfly.aeroglide.core.data.util.IKalmanFilter
 import com.alpsfly.aeroglide.core.data.util.KalmanFilter
@@ -83,7 +84,6 @@ interface SensorRepository {
     fun disableRecordingListeners()
 }
 
-
 @Singleton
 class SensorRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
@@ -139,7 +139,10 @@ class SensorRepositoryImpl @Inject constructor(
                     speedAccuracy = l.speedAccuracyMetersPerSecond,
                     provider = l.provider ?: "unknown"
                 )
-            }.shareSensorData()
+            }.logDeviation(
+                predicate = { Limits.checkSpeed(it.speed) },
+                onDeviation = { Timber.w("Speed out of range: ${it.speed}") }
+            ).shareSensorData()
         }
 
     /**
@@ -178,7 +181,10 @@ class SensorRepositoryImpl @Inject constructor(
                     frequency = sensorFrequency.inc(),
                     values = floatArrayOf(it)
                 )
-            }.shareSensorData()
+            }.logDeviation(
+                predicate = { Limits.checkVerticalAcceleration(it.values[0]) },
+                onDeviation = { Timber.w("Vertical acceleration out of range: ${it.values[0]}") }
+            ).shareSensorData()
         }
 
     override val verticalAccelerationFlowUi: Flow<SensorData>
@@ -234,7 +240,10 @@ class SensorRepositoryImpl @Inject constructor(
                     frequency = sensorFrequency.inc(),
                     values = floatArrayOf(altitude)
                 )
-            }.shareSensorData()
+            }.logDeviation(
+                predicate = { Limits.checkAltitude(it.values[0]) },
+                onDeviation = { Timber.w("Altitude out of range: ${it.values[0]}") }
+            ).shareSensorData()
         }
 
     override val altitudeFlowUi: Flow<Altitude>
@@ -287,7 +296,10 @@ class SensorRepositoryImpl @Inject constructor(
                         frequency = sensorFrequency.get(),
                         values = floatArrayOf(a)
                     )
-                }.shareSensorData()
+                }.logDeviation(
+                    predicate = { Limits.checkClimbrate(it.values[0]) },
+                    onDeviation = { Timber.w("Climbrate out of range: ${it.values[0]}") }
+                ).shareSensorData()
         }
 
     override val climbrateFlowUi: Flow<Climbrate>
@@ -344,26 +356,19 @@ class SensorRepositoryImpl @Inject constructor(
         }
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
-        if (altitude0 in Limits.minAltitude..Limits.maxAltitude &&
-            pressure0 in Limits.minPressure..Limits.maxPressure &&
-            pressure in Limits.minPressure..Limits.maxPressure
-        ) {
-            val h0 = altitude0.toDouble() // meter
-            val ph = pressure.toDouble() // pascal
-            val p0 = pressure0.toDouble() // pascal
+        val h0 = altitude0.toDouble() // meter
+        val ph = pressure.toDouble() // pascal
+        val p0 = pressure0.toDouble() // pascal
 
-            /**
-             * https://de.wikipedia.org/wiki/Barometrische_Höhenformel
-             * Th = 288.15f (15°C)
-             * h = (Th/0.0065) * (1.0 - (ph/p0)^(1/5.255))
-             **/
-            val e = 0.1902949571836346 /* 1 / 5.255 */
-            val h = 44330.769 * (1.0 - (ph / p0).pow(e))
+        /**
+         * https://de.wikipedia.org/wiki/Barometrische_Höhenformel
+         * Th = 288.15f (15°C)
+         * h = (Th/0.0065) * (1.0 - (ph/p0)^(1/5.255))
+         **/
+        val e = 0.1902949571836346 /* 1 / 5.255 */
+        val h = 44330.769 * (1.0 - (ph / p0).pow(e))
 
-            return (h0 + h).toFloat()
-        } else {
-            return 0f
-        }
+        return (h0 + h).toFloat()
     }
 
     private val _calibration = MutableStateFlow(Calibration())

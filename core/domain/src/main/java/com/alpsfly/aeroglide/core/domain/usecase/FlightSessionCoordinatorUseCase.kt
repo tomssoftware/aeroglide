@@ -37,7 +37,7 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
                     is AppState.Idle -> {
                         // The app has started. The coordinator decides the first
                         // action is to begin calibration.
-                        Timber.i("Coordinator: App is Idle, commanding calibration to start.")
+                        Timber.d("Coordinator: App is Idle, commanding calibration to start.")
                         calibrationUseCase() // Call the invoke() operator
                     }
 
