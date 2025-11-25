@@ -78,6 +78,7 @@ interface SensorRepository {
 
     val calibration: StateFlow<Calibration>
     fun setCalibration(calibration: Calibration)
+    fun resetCalibration()
 
     // ONE MASTER SWITCH
     fun enableRecordingListeners()
@@ -150,6 +151,9 @@ class SensorRepositoryImpl @Inject constructor(
      */
     override val pressureDataSource = sensorManager.pressureSensorDataFlow(
         enable = isRecordingListenerEnabled
+    ).logDeviation(
+        predicate = { Limits.checkPressure(it.values[0]) },
+        onDeviation = { Timber.w("Pressure out of range: ${it.values[0]}") }
     )
 
     /**
@@ -225,7 +229,7 @@ class SensorRepositoryImpl @Inject constructor(
         get() {
             val sensorFrequency = SensorFrequency()
             return combine(pressureDataSource, locationFlow) { p, l ->
-                val pressure = p.values[0] * 100f
+                val pressure = p.values[0]
                 var altitude = l.altitude
                 if (calibration.value.isCalibrated) {
                     altitude = calcAltitude(
@@ -357,8 +361,8 @@ class SensorRepositoryImpl @Inject constructor(
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
         val h0 = altitude0.toDouble() // meter
-        val ph = pressure.toDouble() // pascal
-        val p0 = pressure0.toDouble() // pascal
+        val ph = pressure.toDouble() * 100f // pascal
+        val p0 = pressure0.toDouble() * 100f // pascal
 
         /**
          * https://de.wikipedia.org/wiki/Barometrische_Höhenformel
@@ -375,6 +379,10 @@ class SensorRepositoryImpl @Inject constructor(
     override val calibration = _calibration.asStateFlow()
     override fun setCalibration(calibration: Calibration) {
         _calibration.value = calibration
+    }
+
+    override fun resetCalibration() {
+        _calibration.value = Calibration()
     }
 
     private fun <T> Flow<T>.shareSensorData(stopTimeoutMillis: Long = 5000): Flow<T> = shareIn(

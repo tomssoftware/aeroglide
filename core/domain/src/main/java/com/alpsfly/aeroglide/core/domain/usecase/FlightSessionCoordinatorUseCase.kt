@@ -38,7 +38,7 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
                         // The app has started. The coordinator decides the first
                         // action is to begin calibration.
                         Timber.d("Coordinator: App is Idle, commanding calibration to start.")
-                        calibrationUseCase() // Call the invoke() operator
+                        onStartCalibration() // Call the invoke() operator
                     }
 
                     is AppState.Ready -> {
@@ -105,6 +105,10 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
         }
     }
 
-    // We can delegate this call directly to the specialized use case.
-    fun startCalibration() = calibrationUseCase()
+    fun onStartCalibration() {
+        val currentState = appStateManager.appState.value
+        if (currentState is AppState.Idle || currentState is AppState.Ready) {
+            calibrationUseCase()
+        }
+    }
 }

@@ -71,7 +71,6 @@ class AeroGlideActivity : ComponentActivity() {
             (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         if (permission) {
             Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
-            aeroGlideViewModel.startCalibration()
         } else {
             Timber.i("REQUEST ACCESS_FINE_LOCATION PERMISSION")
             val permissions = arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION)
@@ -130,7 +129,6 @@ class AeroGlideActivity : ComponentActivity() {
                 (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
             if (permission) {
                 Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
-                aeroGlideViewModel.startCalibration()
             }
         }
     }
@@ -211,6 +209,7 @@ fun AeroGlideScreen(
                     },
                     actions = {
                         IconButton(
+                            enabled = appState !is AppState.Calibrating,
                             onClick = { aeroGlideViewModel.onToggleRecording() }
                         ) {
                             if (appState is AppState.Recording) {
@@ -224,6 +223,14 @@ fun AeroGlideScreen(
                                     contentDescription = "Mark as favorite"
                                 )
                             }
+                        }
+                        IconButton(
+                            enabled = appState is AppState.Ready,
+                            onClick = { aeroGlideViewModel.onReCalibrate() }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.replay_24px),
+                                contentDescription = "Re-calibrate"
+                            )
                         }
                         IconButton(onClick = {}) {
                             Icon(
