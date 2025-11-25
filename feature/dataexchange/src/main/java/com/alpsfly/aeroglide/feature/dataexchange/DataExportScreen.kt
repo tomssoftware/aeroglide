@@ -13,7 +13,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +41,10 @@ fun DataExportScreen(
                     context.startActivity(event.intent)
                     onDismiss() // Dismiss the dialog after sharing
                 }
+
+                is ShareEvent.Error -> {
+                    onDismiss()
+                }
             }
         }
     }
@@ -56,7 +60,7 @@ fun DataExportDetailScreen(
     route: DataExportRoute,
     viewModel: DataExportViewModel = hiltViewModel(),
 ) {
-    val (selectedIndex, setSelectedIndex) = rememberSaveable { mutableStateOf(0) }
+    val (selectedIndex, setSelectedIndex) = rememberSaveable { mutableIntStateOf(0) }
 
     Column(
         modifier = Modifier
@@ -72,8 +76,8 @@ fun DataExportDetailScreen(
 
         val formatOptions = listOf(
             "GPX" to "GPX – GPS Exchange Format",
-            "IGC" to "IGC – Int. Gliding Commission Format",
-            "CSV" to "CSV – Comma-Separated Values"
+            "IGC" to "IGC – Int. Gliding Comm. Format",
+            "ZIP" to "ZIP – Comma-Sep. Values Inside"
         )
 
         formatOptions.forEachIndexed { index, (_, description) ->

@@ -27,7 +27,7 @@ class CalibrationProcessor @Inject constructor(
             return
         }
 
-        Timber.i("CalibrationProcessor: Starting.")
+        Timber.d("CalibrationProcessor: Starting.")
         accuracyProcessor.reset()
         val startOfCalibration = System.currentTimeMillis()
         var calibration = Calibration(timestamp = startOfCalibration)
@@ -77,7 +77,7 @@ class CalibrationProcessor @Inject constructor(
 
     fun stop() {
         if (calibrationJob?.isActive == true) {
-            Timber.i("CalibrationProcessor: Stopping.")
+            Timber.d("CalibrationProcessor: Stopping.")
             calibrationJob?.cancel()
             calibrationJob = null
         }

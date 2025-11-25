@@ -35,6 +35,7 @@ import com.alpsfly.aeroglide.core.model.common.User
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.core.model.database.Altitude
 import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.database.GlideRatio
 import com.alpsfly.aeroglide.core.model.database.Location
 import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
@@ -223,6 +224,14 @@ class FakeDataRepository @Inject constructor(
     }
 
     override fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getPressuresBetween(start: Long, end: Long): Flow<List<Pressure>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getGlideRatiosBetween(start: Long, end: Long): Flow<List<GlideRatio>> {
         TODO("Not yet implemented")
     }
 }

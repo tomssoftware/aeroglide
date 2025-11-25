@@ -21,7 +21,7 @@ class Csv(private val locations: List<Location>) {
             "speed",
             "speedAccuracy",
             "verticalAccuracy"
-        ).build()
+        ).get()
 
         val csvPrinter = CSVPrinter(stringBuffer, csvFormat)
 
