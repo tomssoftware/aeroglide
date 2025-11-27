@@ -1,13 +1,16 @@
 package com.alpsfly.aeroglide.core.domain.usecase.location
 
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat.checkSelfPermission
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -66,11 +69,13 @@ class ServiceStarter @Inject constructor(
     private val sensorRepository: SensorRepository
 ) {
     fun startRecordingService() {
-        sensorRepository.enableRecordingListeners()
-        val intent = Intent(appContext, LocationService::class.java).apply {
-            action = LocationService.ACTION_START
+        if (checkSelfPermission(appContext, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            sensorRepository.enableRecordingListeners()
+            val intent = Intent(appContext, LocationService::class.java).apply {
+                action = LocationService.ACTION_START
+            }
+            appContext.startForegroundService(intent)
         }
-        appContext.startForegroundService(intent)
     }
 
     fun stopRecordingService() {

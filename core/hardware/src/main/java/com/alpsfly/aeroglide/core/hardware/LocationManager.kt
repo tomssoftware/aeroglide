@@ -2,11 +2,16 @@ package com.alpsfly.aeroglide.core.hardware
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.location.LocationListener
+import android.location.Location
 import android.location.LocationManager
 import android.location.OnNmeaMessageListener
 import android.os.Handler
 import android.os.Looper
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -15,42 +20,44 @@ import timber.log.Timber
 import java.util.concurrent.Executors
 
 @SuppressLint("MissingPermission")
-fun LocationManager.locationDataFlow(
+fun FusedLocationProviderClient.locationDataFlow(
     context: Context,
     enable: Flow<Boolean>,
     interval: Long
-) = callbackFlow {
+): Flow<Location> = callbackFlow {
     if (!context.hasLocationPermission()) {
         Timber.w("Location permission is not granted")
     }
-    val isGpsEnabled = isProviderEnabled(LocationManager.GPS_PROVIDER)
-    val isNetworkEnabled = isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    if (!isGpsEnabled && !isNetworkEnabled) {
-        Timber.w("GPS and network providers are disabled")
-    }
-    val provider = LocationManager.GPS_PROVIDER
 
-    val listener = LocationListener { location ->
-        Timber.v("GPS_PROVIDER new location: ${location.latitude}, ${location.longitude}")
-        trySend(location)
+    val callback = object : LocationCallback() {
+        override fun onLocationResult(result: LocationResult) {
+            result.lastLocation?.let { location ->
+                Timber.v("Fused location: ${location.latitude}, ${location.longitude}")
+                trySend(location)
+            }
+        }
     }
+
+    val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, interval).build()
 
     enable.collectLatest { isEnabled ->
         if (isEnabled) {
-            requestLocationUpdates(
-                provider,
-                interval,
-                0f,
-                listener,
-                Looper.getMainLooper()
-            )
+            if (context.hasLocationPermission()) {
+                requestLocationUpdates(
+                    request,
+                    callback,
+                    Looper.getMainLooper()
+                )
+            } else {
+                Timber.w("Location permission missing, cannot start updates")
+            }
         } else {
-            removeUpdates(listener)
+            removeLocationUpdates(callback)
         }
     }
 
     awaitClose {
-        removeUpdates(listener)
+        removeLocationUpdates(callback)
     }
 }
 

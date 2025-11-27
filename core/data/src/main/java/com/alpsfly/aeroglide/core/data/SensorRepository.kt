@@ -30,6 +30,7 @@ import com.alpsfly.aeroglide.core.model.database.Pressure
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.model.hardware.SensorType
+import com.google.android.gms.location.FusedLocationProviderClient
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -90,6 +91,7 @@ class SensorRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     @param:ApplicationScope private val applicationScope: CoroutineScope,
     sensorManager: SensorManager,
+    fusedLocationProviderClient: FusedLocationProviderClient,
     locationManager: LocationManager,
     @param:SystemTime private val timeProvider: TimeProvider
 ) : SensorRepository, SensorEventCallback() {
@@ -108,7 +110,7 @@ class SensorRepositoryImpl @Inject constructor(
     /**
      * Location state flow
      */
-    override val locationDataSource = locationManager.locationDataFlow(
+    override val locationDataSource = fusedLocationProviderClient.locationDataFlow(
         context = context,
         enable = isRecordingListenerEnabled,
         interval = 1000
