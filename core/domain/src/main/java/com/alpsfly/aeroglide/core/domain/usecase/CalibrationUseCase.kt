@@ -38,19 +38,7 @@ class CalibrationUseCase @Inject constructor(
                 Timber.i("No recording active, commanding service to stop.")
                 appStateManager.onCalibrationFinished()
                 serviceStarter.stopRecordingService()
-
             }
-        }
-    }
-
-    // You could add a stop() method here if you need to manually cancel calibration
-    fun stop() {
-        if (appStateManager.appState.value is AppState.Calibrating) {
-            Timber.i("CalibrationUseCase: Commanding STOP.")
-            calibrationProcessor.stop()
-            // We don't stop the service here, as a recording might be active.
-            // The AppState logic should handle service shutdown.
-            appStateManager.onCalibrationFinished()
         }
     }
 }

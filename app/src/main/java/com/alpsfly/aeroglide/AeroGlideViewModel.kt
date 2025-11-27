@@ -12,12 +12,7 @@ class AeroGlideViewModel @Inject constructor(
 ) : ViewModel() {
 
     fun onToggleRecording() = flightCoordinator.onToggleRecording()
-    fun onReCalibrate() = flightCoordinator.startCalibration()
-
-    fun startCalibration() {
-        // The ViewModel just tells the coordinator its intent.
-        flightCoordinator.startCalibration()
-    }
+    fun onReCalibrate() = flightCoordinator.onStartCalibration()
 
     override fun onCleared() {
         super.onCleared()

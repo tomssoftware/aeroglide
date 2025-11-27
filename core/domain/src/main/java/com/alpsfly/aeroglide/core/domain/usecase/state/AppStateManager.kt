@@ -8,21 +8,30 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
+enum class FromState {
+    Initial,
+    Idle,
+    Calibrating,
+    Ready,
+    Recording,
+    AutoStart
+}
+
 // The AppState sealed class is already perfectly defined with its 'fromState' property.
 sealed class AppState {
-    abstract val fromState: AppState?
+    abstract val fromState: FromState
 
-    data class Idle(override val fromState: AppState? = null) : AppState()
-    data class Calibrating(override val fromState: AppState) : AppState()
-    data class Ready(override val fromState: AppState) : AppState()
-    data class AutoStart(override val fromState: AppState) : AppState()
-    data class Recording(val activityId: Long, override val fromState: AppState) : AppState()
+    data class Idle(override val fromState: FromState = FromState.Initial) : AppState()
+    data class Calibrating(override val fromState: FromState) : AppState()
+    data class Ready(override val fromState: FromState) : AppState()
+    data class AutoStart(override val fromState: FromState) : AppState()
+    data class Recording(val activityId: Long, override val fromState: FromState) : AppState()
 }
 
 @Singleton
 class AppStateManager @Inject constructor() {
 
-    private val _appState = MutableStateFlow<AppState>(AppState.Idle(null))
+    private val _appState = MutableStateFlow<AppState>(AppState.Idle(FromState.Initial))
     val appState: StateFlow<AppState> = _appState.asStateFlow()
 
     private val stateMachine = createStateMachine()
@@ -38,7 +47,7 @@ class AppStateManager @Inject constructor() {
 
     private fun createStateMachine(): StateMachine<AppState, Event, Unit> {
         return StateMachine.create {
-            initialState(AppState.Idle(null))
+            initialState(AppState.Idle(FromState.Initial))
 
             // The onTransition block is correct. It logs and updates the public state.
             onTransition {
@@ -50,32 +59,35 @@ class AppStateManager @Inject constructor() {
             state<AppState.Idle> {
                 on<Event.OnCalibrationStarted> {
                     // `this` inside a `state<Type>` block refers to the instance of `Type`.
-                    transitionTo(AppState.Calibrating(fromState = this))
+                    transitionTo(AppState.Calibrating(fromState = FromState.Idle))
                 }
             }
 
             state<AppState.Calibrating> {
                 on<Event.OnCalibrationFinished> {
                     // `this` is the `AppState.Calibrating` instance we are transitioning FROM.
-                    transitionTo(AppState.Ready(fromState = this))
+                    transitionTo(AppState.Ready(fromState = FromState.Calibrating))
                 }
             }
 
             state<AppState.Ready> {
                 on<Event.OnToggleRecording> { event ->
-                    transitionTo(AppState.Recording(event.recordId, fromState = this))
+                    transitionTo(AppState.Recording(event.recordId, fromState = FromState.Ready))
+                }
+                on<Event.OnCalibrationStarted> {
+                    transitionTo(AppState.Calibrating(fromState = FromState.Ready))
                 }
                 on<Event.OnAutoStartEnabled> {
-                    transitionTo(AppState.AutoStart(fromState = this))
+                    transitionTo(AppState.AutoStart(fromState = FromState.Ready))
                 }
             }
 
             state<AppState.AutoStart> {
                 on<Event.OnToggleRecording> { event ->
-                    transitionTo(AppState.Recording(event.recordId, fromState = this))
+                    transitionTo(AppState.Recording(event.recordId, fromState = FromState.AutoStart))
                 }
                 on<Event.OnAutoStartDisabled> {
-                    transitionTo(AppState.Ready(fromState = this))
+                    transitionTo(AppState.Ready(fromState = FromState.AutoStart))
                 }
             }
 
@@ -83,7 +95,7 @@ class AppStateManager @Inject constructor() {
                 on<Event.OnToggleRecording> {
                     // `this` is the `AppState.Recording` instance, which contains the activityId.
                     // The new `Ready` state now correctly knows its predecessor.
-                    transitionTo(AppState.Ready(fromState = this))
+                    transitionTo(AppState.Ready(fromState = FromState.Recording))
                 }
             }
         }

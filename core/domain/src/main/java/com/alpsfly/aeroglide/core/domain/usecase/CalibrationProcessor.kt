@@ -29,6 +29,8 @@ class CalibrationProcessor @Inject constructor(
 
         Timber.d("CalibrationProcessor: Starting.")
         accuracyProcessor.reset()
+        sensorRepository.resetCalibration()
+
         val startOfCalibration = System.currentTimeMillis()
         var calibration = Calibration(timestamp = startOfCalibration)
 
@@ -37,7 +39,7 @@ class CalibrationProcessor @Inject constructor(
             sensorRepository.pressureFlowUi,
             sensorRepository.locationFlowUi
         ) { p, l ->
-            val pressure = p.pressure * 100f
+            val pressure = p.pressure
             val altitude = l.altitude
 
             Timber.d("CalibrationProcessor running: $pressure, $altitude")
