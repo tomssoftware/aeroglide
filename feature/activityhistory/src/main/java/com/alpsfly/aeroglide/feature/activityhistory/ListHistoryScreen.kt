@@ -26,7 +26,6 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -37,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.common.toLocalDateString
 import com.alpsfly.aeroglide.core.common.toLocalTimeString
@@ -51,7 +51,7 @@ fun ListHistoryScreen(
     navController: NavController,
     viewModel: ActivityViewModel = hiltViewModel()
 ) {
-    val activityHistoryUiState by viewModel.allActivitiesUiState.collectAsState()
+    val activityHistoryUiState by viewModel.allActivitiesUiState.collectAsStateWithLifecycle()
     when (activityHistoryUiState) {
         ActivityListUiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

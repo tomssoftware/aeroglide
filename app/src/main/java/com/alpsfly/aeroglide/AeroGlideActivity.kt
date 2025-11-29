@@ -5,12 +5,14 @@ import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Activity
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,19 +28,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.core.app.ActivityCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
-import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.R
 import com.alpsfly.aeroglide.theme.AeroGlideTheme
@@ -55,11 +56,7 @@ class AeroGlideActivity : ComponentActivity() {
     @Inject
     lateinit var prefs: SharedPreferences
 
-    @Inject
-    lateinit var appStateManager: AppStateManager
-
-
-    //@RequiresApi(Build.VERSION_CODES.Q)
+    @RequiresApi(Build.VERSION_CODES.Q)
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,16 +72,11 @@ class AeroGlideActivity : ComponentActivity() {
         }
 
         lifecycle.coroutineScope.launch {
-            appStateManager.appState.collect { state ->
+            aeroGlideViewModel.appState.collect { state ->
                 if (state is AppState.Recording) {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                }
-
-                if (state is AppState.Ready) {
-                    val spkAutoStartEnabled = prefs.getBoolean("spk_auto_start_enabled", false)
-                    appStateManager.onAutoStartEnabled(spkAutoStartEnabled)
                 }
             }
         }
@@ -97,7 +89,6 @@ class AeroGlideActivity : ComponentActivity() {
         setContent {
             AeroGlideScreen(
                 navController = rememberNavController(),
-                appStateManager = appStateManager,
                 aeroGlideViewModel = aeroGlideViewModel
             )
         }
@@ -139,7 +130,6 @@ class AeroGlideActivity : ComponentActivity() {
 @Composable
 fun AeroGlideScreen(
     navController: NavController,
-    appStateManager: AppStateManager,
     aeroGlideViewModel: AeroGlideViewModel = hiltViewModel()
 ) {
     val darkTheme = isSystemInDarkTheme()
@@ -151,7 +141,7 @@ fun AeroGlideScreen(
         val drawerState = rememberDrawerState(DrawerValue.Closed)
         val coroutineScope = rememberCoroutineScope()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val appState by appStateManager.appState.collectAsState()
+        val appState by aeroGlideViewModel.appState.collectAsStateWithLifecycle(initialValue = AppState.Idle())
 
         Scaffold(
             modifier = Modifier,
@@ -183,7 +173,7 @@ fun AeroGlideScreen(
                     },
                     actions = {
                         IconButton(
-                            enabled = appState !is AppState.Calibrating,
+                            enabled = appState is AppState.Ready || appState is AppState.Recording,
                             onClick = { aeroGlideViewModel.onToggleRecording() }
                         ) {
                             if (appState is AppState.Recording) {
@@ -200,7 +190,8 @@ fun AeroGlideScreen(
                         }
                         IconButton(
                             enabled = appState is AppState.Ready,
-                            onClick = { aeroGlideViewModel.onReCalibrate() }) {
+                            onClick = { aeroGlideViewModel.onReCalibrate() }
+                        ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.replay_24px),
                                 contentDescription = "Re-calibrate"
