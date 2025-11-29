@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.model.hardware.Calibration
 import com.alpsfly.aeroglide.feature.devicestatus.viewmodel.DeviceStatusViewModel
@@ -40,7 +40,7 @@ fun DeviceStatusScreen(
     navController: NavController,
     deviceStatusViewModel: DeviceStatusViewModel = hiltViewModel()
 ) {
-    val calibrationStatus = deviceStatusViewModel.calibrationFlow.collectAsState(Calibration())
+    val calibrationStatus = deviceStatusViewModel.calibrationFlow.collectAsStateWithLifecycle(Calibration())
 
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -48,7 +48,8 @@ fun DeviceStatusScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        Text(text = "calibration: ${calibrationStatus.value.isCalibrated}, ${calibrationStatus.value.altitude0}, ${calibrationStatus.value.verticalAccuracy}",
+        Text(
+            text = "calibration: ${calibrationStatus.value.isCalibrated}, ${calibrationStatus.value.altitude0}, ${calibrationStatus.value.verticalAccuracy}",
             modifier = Modifier.clickable {
             }
         )
@@ -58,19 +59,22 @@ fun DeviceStatusScreen(
             verticalArrangement = Arrangement.Center
         )
         {
-            Text(text = "pressure",
+            Text(
+                text = "pressure",
                 modifier = Modifier.clickable {
                 }
             )
             LineChart(deviceStatusViewModel.pressureModelProducer, Modifier)
 
-            Text(text = "altitude",
+            Text(
+                text = "altitude",
                 modifier = Modifier.clickable {
                 }
             )
             LineChart(deviceStatusViewModel.altitudeModelProducer, Modifier)
 
-            Text(text = "climbrate",
+            Text(
+                text = "climbrate",
                 modifier = Modifier.clickable {
                 }
             )
@@ -103,7 +107,7 @@ private fun LineChart(modelProducer: CartesianChartModelProducer, modifier: Modi
             zoomEnabled = false,
             initialZoom = Zoom.x(60.0),
 
-        ),
+            ),
         scrollState = rememberVicoScrollState(
             scrollEnabled = true,
             autoScrollCondition = AutoScrollCondition.OnModelGrowth,
