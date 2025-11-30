@@ -14,12 +14,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AeroGlideViewModel @Inject constructor(
-    private val appStateManager: AppStateManager,
+    appStateManager: AppStateManager,
     private val flightCoordinator: FlightSessionCoordinatorUseCase
 ) : ViewModel() {
 
     fun onToggleRecording() = flightCoordinator.onToggleRecording()
     fun onReCalibrate() = flightCoordinator.onStartCalibration()
+    fun onPermissionRequest() = flightCoordinator.onPermissionRequest()
+    fun onPermissionGranted() = flightCoordinator.onPermissionGranted()
+    fun onPermissionDenied() = flightCoordinator.onPermissionDenied()
 
     // Forward the flow.
     // Using stateIn ensures it's a hot flow that replays the latest value
