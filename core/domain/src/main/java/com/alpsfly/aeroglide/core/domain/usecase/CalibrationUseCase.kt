@@ -12,10 +12,6 @@ class CalibrationUseCase @Inject constructor(
     private val serviceStarter: ServiceStarter // Inject the service manager
 ) {
     operator fun invoke() {
-        if (appStateManager.appState.value is AppState.Calibrating) {
-            Timber.w("Calibration is already in progress, ignoring request.")
-            return
-        }
         Timber.i("CalibrationUseCase: Commanding START.")
 
         // 1. Tell the app to enter the 'Calibrating' state

@@ -37,7 +37,11 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
                     is AppState.Idle -> {
                         // The app has started. The coordinator decides the first
                         // action is to begin calibration.
-                        Timber.d("Coordinator: App is Idle, commanding calibration to start.")
+                        Timber.d("Coordinator: App is Idle.")
+                    }
+
+                    is AppState.Calibrating -> {
+                        Timber.d("Coordinator: App is Calibrating, commanding calibration to start.")
                         onStartCalibration() // Call the invoke() operator
                     }
 
@@ -106,9 +110,18 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
     }
 
     fun onStartCalibration() {
-        val currentState = appStateManager.appState.value
-        if (currentState is AppState.Idle || currentState is AppState.Ready) {
-            calibrationUseCase()
-        }
+        calibrationUseCase()
+    }
+
+    fun onPermissionRequest() {
+        appStateManager.onPermissionRequest()
+    }
+
+    fun onPermissionGranted() {
+        appStateManager.onPermissionGranted()
+    }
+
+    fun onPermissionDenied() {
+        appStateManager.onPermissionDenied()
     }
 }

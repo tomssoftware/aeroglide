@@ -65,8 +65,10 @@ class AeroGlideActivity : ComponentActivity() {
         val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         if (permission) {
             Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
+            aeroGlideViewModel.onPermissionGranted()
         } else {
             Timber.i("REQUEST ACCESS_FINE_LOCATION PERMISSION")
+            aeroGlideViewModel.onPermissionRequest()
             val permissions = arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION)
             requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
         }
@@ -107,7 +109,10 @@ class AeroGlideActivity : ComponentActivity() {
             val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
             if (permission) {
                 Timber.i("REQUESTED ACCESS_FINE_LOCATION PERMISSION GRANTED")
-                aeroGlideViewModel.onReCalibrate()
+                aeroGlideViewModel.onPermissionGranted()
+            } else {
+                Timber.i("REQUESTED ACCESS_FINE_LOCATION PERMISSION DENIED")
+                aeroGlideViewModel.onPermissionDenied()
             }
         }
     }
