@@ -45,6 +45,12 @@ class AppStateManager @Inject constructor() {
         else stateMachine.transition(Event.OnAutoStartDisabled)
     }
 
+    fun onPermissionRequest() = stateMachine.transition(Event.OnPermissionRequest)
+    fun onPermissionGranted() = stateMachine.transition(Event.OnPermissionGranted)
+    fun onPermissionDenied() = stateMachine.transition(Event.OnPermissionDenied)
+
+    // --- Private Helpers ---
+
     private fun createStateMachine(): StateMachine<AppState, Event, Unit> {
         return StateMachine.create {
             initialState(AppState.Idle(FromState.Initial))
@@ -57,15 +63,19 @@ class AppStateManager @Inject constructor() {
             }
 
             state<AppState.Idle> {
-                on<Event.OnCalibrationStarted> {
-                    // `this` inside a `state<Type>` block refers to the instance of `Type`.
+                on<Event.OnPermissionRequest> {
+                    transitionTo(AppState.Idle(fromState = FromState.Idle))
+                }
+                on<Event.OnPermissionGranted> {
                     transitionTo(AppState.Calibrating(fromState = FromState.Idle))
+                }
+                on<Event.OnPermissionDenied> {
+                    transitionTo(AppState.Idle(fromState = FromState.Idle))
                 }
             }
 
             state<AppState.Calibrating> {
                 on<Event.OnCalibrationFinished> {
-                    // `this` is the `AppState.Calibrating` instance we are transitioning FROM.
                     transitionTo(AppState.Ready(fromState = FromState.Calibrating))
                 }
             }
@@ -108,5 +118,8 @@ class AppStateManager @Inject constructor() {
         data object OnCalibrationStarted : Event()
         data object OnAutoStartEnabled : Event()
         data object OnAutoStartDisabled : Event()
+        data object OnPermissionRequest : Event()
+        data object OnPermissionGranted : Event()
+        data object OnPermissionDenied : Event()
     }
 }
