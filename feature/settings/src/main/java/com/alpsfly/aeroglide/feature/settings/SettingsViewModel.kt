@@ -1,10 +1,16 @@
-package com.alpsfly.aeroglide.feature.settings.viewmodel
+package com.alpsfly.aeroglide.feature.settings
 
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alpsfly.aeroglide.core.data.AuthRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +24,7 @@ fun SharedPreferences.getFloat(key: String, defaultValue: Float): Float {
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
     private val appStateManager: AppStateManager,
     private val prefs: SharedPreferences // Inject SharedPreferences via Hilt
 ) : ViewModel() {
@@ -100,5 +107,32 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    // Add update functions for other settings...
+    fun signInWithGoogle(context: Context) {
+        viewModelScope.launch {
+            val credentialManager = CredentialManager.create(context)
+
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId("YOUR_WEB_CLIENT_ID_FROM_FIREBASE_CONSOLE")
+                .setAutoSelectEnabled(true)
+                .build()
+
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+
+            try {
+                val result = credentialManager.getCredential(context, request)
+                val credential = result.credential
+
+                if (credential is androidx.credentials.CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                    // Call Repository to sign in with Firebase
+                    authRepository.signInWithGoogle(googleIdTokenCredential.idToken)
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
 }

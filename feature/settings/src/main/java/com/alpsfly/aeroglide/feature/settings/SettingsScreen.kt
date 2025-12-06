@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.feature.settings.presentation
+package com.alpsfly.aeroglide.feature.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.alpsfly.aeroglide.feature.settings.viewmodel.SettingsViewModel
 import java.text.DecimalFormat
 
 @Composable
