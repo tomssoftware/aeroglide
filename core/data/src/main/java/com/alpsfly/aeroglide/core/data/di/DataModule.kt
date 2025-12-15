@@ -31,6 +31,8 @@ import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.ElevationRepository
 import com.alpsfly.aeroglide.core.data.ElevationRepositoryImpl
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
+import com.alpsfly.aeroglide.core.data.RemoteDataRepository
+import com.alpsfly.aeroglide.core.data.RemoteDataRepositoryInterface
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
 import com.alpsfly.aeroglide.core.model.common.User
@@ -129,6 +131,16 @@ interface BillingRepositoryModule {
     @Binds
     @Singleton
     fun bindBillingRepository(impl: BillingRepositoryImpl): BillingRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface RemoteDataRepositoryModule {
+    @Singleton
+    @Binds
+    fun bindsRemoteDataRepository(
+        remoteDataRepository: RemoteDataRepository
+    ): RemoteDataRepositoryInterface
 }
 
 @Module

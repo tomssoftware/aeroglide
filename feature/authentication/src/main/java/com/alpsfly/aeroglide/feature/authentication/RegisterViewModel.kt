@@ -27,7 +27,7 @@ class RegisterViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun onNameChange(value: String) = _uiState.update { it.copy(name = value, error = null) }
+    fun onNameChange(value: String) = _uiState.update { it.copy(fullName = value, error = null) }
     fun onEmailChange(value: String) = _uiState.update { it.copy(email = value, error = null) }
     fun onPasswordChange(value: String) = _uiState.update { it.copy(password = value, error = null) }
     fun onConfirmPasswordChange(value: String) = _uiState.update { it.copy(confirmPassword = value, error = null) }
@@ -38,7 +38,7 @@ class RegisterViewModel @Inject constructor(
         val state = _uiState.value
 
         // Validation
-        if (state.name.isBlank()) {
+        if (state.fullName.isBlank()) {
             _uiState.update { it.copy(error = "Please enter your name") }
             return
         }
@@ -61,8 +61,7 @@ class RegisterViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            // TODO: Implement createUser in your Repository
-            // authRepository.createUserWithEmail(state.name, state.email, state.password)
+            authRepository.createUserWithEmail(state.fullName, state.email, state.password)
             _uiState.update { it.copy(isLoading = false) }
         }
     }
@@ -103,7 +102,7 @@ class RegisterViewModel @Inject constructor(
 }
 
 data class RegisterUiState(
-    val name: String = "",
+    val fullName: String = "",
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",

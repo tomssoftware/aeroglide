@@ -25,9 +25,12 @@ class UserRds @Inject constructor(
      * Creates or overwrites a user in Firestore.
      * We use 'set' because the User ID is provided by Auth (we don't generate a random ID).
      */
-    suspend fun addUser(userId: String, user: User): Result<Unit> {
+    suspend fun addUser(user: User): Result<Unit> {
         return try {
-            collection.document(userId).set(user).await()
+            collection
+                .document(user.uid)
+                .set(user)
+                .await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

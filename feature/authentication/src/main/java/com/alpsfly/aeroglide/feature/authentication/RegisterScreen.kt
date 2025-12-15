@@ -101,7 +101,7 @@ fun RegisterScreen(
 
                 // --- Inputs ---
                 OutlinedTextField(
-                    value = uiState.name,
+                    value = uiState.fullName,
                     onValueChange = viewModel::onNameChange,
                     label = { Text("Full Name") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },

@@ -67,7 +67,7 @@ dependencies {
     api(project(":core:model"))
     api(project(":core:hardware"))
     api(project(":core:database"))
-    //api(project(":core:firebase"))
+    api(project(":core:firebase"))
 
     // Arch Components
     implementation(libs.hilt.android)
@@ -95,8 +95,6 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage)
 
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.mockwebserver)

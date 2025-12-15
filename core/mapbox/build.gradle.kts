@@ -43,6 +43,7 @@ android {
 }
 
 dependencies {
+    api(project(":core:model"))
     api(project(":core:firebase"))
 
     implementation(libs.kotlinx.coroutines.android)
@@ -64,7 +65,7 @@ dependencies {
     implementation(libs.okhttpLoggingInterceptor)
 
     // Mapbox
-    implementation (libs.mapbox.android)
-    implementation (libs.mapbox.compose)
+    implementation(libs.mapbox.android)
+    implementation(libs.mapbox.compose)
 }
 
