@@ -48,13 +48,11 @@ android {
 
     buildTypes {
         getByName("release") {
-            //isMinifyEnabled = true
-            //isShrinkResources = true
-            //proguardFiles
+            isMinifyEnabled = false
+            isShrinkResources = false
+            proguardFiles
         }
         getByName("debug") {
-            //isMinifyEnabled = false
-            //isDebuggable = true
             buildConfigField("String", "FIREBASE_EMULATOR_HOST_ADDRESS", "\"10.0.2.2\"")
             buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_AUTH", "9099")
             buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FIRESTORE", "8080")
