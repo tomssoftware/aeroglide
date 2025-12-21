@@ -62,5 +62,5 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     // Google
-    implementation (libs.google.code.gson)
+    implementation(libs.google.code.gson)
 }

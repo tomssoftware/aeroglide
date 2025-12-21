@@ -1,9 +1,9 @@
 package com.alpsfly.aeroglide.core.firebase
 
 import com.alpsfly.aeroglide.core.model.common.Pilot
-import com.alpsfly.aeroglide.core.model.common.firebase.Blacklist
-import com.alpsfly.aeroglide.core.model.common.firebase.Purchase
-import com.alpsfly.aeroglide.core.model.common.firebase.User
+import com.alpsfly.aeroglide.core.model.firebase.Blacklist
+import com.alpsfly.aeroglide.core.model.firebase.Purchase
+import com.alpsfly.aeroglide.core.model.firebase.User
 import com.google.firebase.Firebase
 import com.google.firebase.crashlytics.crashlytics
 import com.google.firebase.firestore.FieldValue
@@ -22,7 +22,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CloudStorageFirebase @Inject constructor(): CloudStorage {
+class CloudStorageFirebase @Inject constructor() : CloudStorage {
     private val firestore = Firebase.firestore
     private val crashlytics = Firebase.crashlytics
 
@@ -41,7 +41,7 @@ class CloudStorageFirebase @Inject constructor(): CloudStorage {
         }
     }
 
-    override suspend fun readPurchase(purchaseToken: String): Flow<Response<Purchase?>> = callbackFlow  {
+    override suspend fun readPurchase(purchaseToken: String): Flow<Response<Purchase?>> = callbackFlow {
         val ref = firestore
             .collection(CloudStorage.PURCHASES)
             .document(purchaseToken)

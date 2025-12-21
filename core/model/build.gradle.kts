@@ -51,4 +51,10 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Import the BoM for Firebase
+    implementation(platform(libs.firebase.bom))
+
+    // Add Firebase libraries
+    implementation(libs.firebase.firestore)
 }

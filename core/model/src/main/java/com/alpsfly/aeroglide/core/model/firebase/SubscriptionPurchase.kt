@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.core.model.common.firebase
+package com.alpsfly.aeroglide.core.model.firebase
 
 // todo: add missing fields
 data class SubscriptionPurchase(

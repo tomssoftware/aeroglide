@@ -22,11 +22,21 @@ class FirebaseInitializer @Inject constructor(
         FirebaseApp.initializeApp(context)
         val firestore = Firebase.firestore
         val auth = Firebase.auth
+        val appCheck = FirebaseAppCheck.getInstance()
 
         if (BuildConfig.DEBUG) {
-            FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+            // Point to Emulator
+            auth.useEmulator(
+                BuildConfig.FIREBASE_EMULATOR_HOST_ADDRESS,
+                BuildConfig.FIREBASE_EMULATOR_PORT_AUTH
+            )
+            // Disable App Verification (reCAPTCHA/Play Integrity) for testing
+            auth.firebaseAuthSettings.setAppVerificationDisabledForTesting(true)
+
+            appCheck.installAppCheckProviderFactory(
                 DebugAppCheckProviderFactory.getInstance()
             )
+
             firestore.useEmulator(
                 BuildConfig.FIREBASE_EMULATOR_HOST_ADDRESS,
                 BuildConfig.FIREBASE_EMULATOR_PORT_FIRESTORE
@@ -34,12 +44,8 @@ class FirebaseInitializer @Inject constructor(
             firestore.firestoreSettings = firestoreSettings {
                 isPersistenceEnabled = false
             }
-            auth.useEmulator(
-                BuildConfig.FIREBASE_EMULATOR_HOST_ADDRESS,
-                BuildConfig.FIREBASE_EMULATOR_PORT_AUTH
-            )
         } else {
-            FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+            appCheck.installAppCheckProviderFactory(
                 PlayIntegrityAppCheckProviderFactory.getInstance()
             )
         }
