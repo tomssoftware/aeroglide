@@ -21,6 +21,8 @@ import android.hardware.SensorManager
 import android.location.LocationManager
 import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.AppRepositoryImpl
+import com.alpsfly.aeroglide.core.data.AuthRepository
+import com.alpsfly.aeroglide.core.data.AuthRepositoryImpl
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProviderImpl
 import com.alpsfly.aeroglide.core.data.BillingRepository
@@ -29,6 +31,8 @@ import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.ElevationRepository
 import com.alpsfly.aeroglide.core.data.ElevationRepositoryImpl
 import com.alpsfly.aeroglide.core.data.LocalDataRepository
+import com.alpsfly.aeroglide.core.data.RemoteDataRepository
+import com.alpsfly.aeroglide.core.data.RemoteDataRepositoryInterface
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
 import com.alpsfly.aeroglide.core.model.common.User
@@ -84,6 +88,16 @@ interface AppRepositoryModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
+interface AuthRepositoryModule {
+    @Singleton
+    @Binds
+    fun bindsAuthRepository(
+        authRepository: AuthRepositoryImpl
+    ): AuthRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
 interface RepositoryModule {
     @Binds
     @Singleton
@@ -117,6 +131,16 @@ interface BillingRepositoryModule {
     @Binds
     @Singleton
     fun bindBillingRepository(impl: BillingRepositoryImpl): BillingRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface RemoteDataRepositoryModule {
+    @Singleton
+    @Binds
+    fun bindsRemoteDataRepository(
+        remoteDataRepository: RemoteDataRepository
+    ): RemoteDataRepositoryInterface
 }
 
 @Module

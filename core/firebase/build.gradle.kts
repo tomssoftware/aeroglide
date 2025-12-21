@@ -56,7 +56,7 @@ android {
 }
 
 dependencies {
-    api(project(":core:domain"))
+    api(project(":core:model"))
 
     // Arch Components
     implementation(libs.androidx.room.runtime)

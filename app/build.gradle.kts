@@ -48,8 +48,8 @@ android {
         }
 
         buildConfigField("String", "FIREBASE_FUNCTIONS_URL", "\"https://us-central1-thermalscout.cloudfunctions.net/\"")
-        buildConfigField("String", "FIREBASE_EMULATOR_HOST_ADDRESS", "\"10.0.2.2\"")
         buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_AUTH", "9099")
+        buildConfigField("String", "FIREBASE_EMULATOR_HOST_ADDRESS", "\"10.0.2.2\"")
         buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FUNCTIONS", "5001")
         buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FIRESTORE", "8080")
         buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_PUBSUB", "8085")
@@ -94,6 +94,7 @@ dependencies {
     api(project(":core:ui"))
 
     api(project(":feature:activityhistory"))
+    api(project(":feature:authentication"))
     api(project(":feature:billing"))
     api(project(":feature:dataexchange"))
     api(project(":feature:devicestatus"))

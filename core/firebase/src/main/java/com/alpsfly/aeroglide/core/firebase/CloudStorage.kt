@@ -1,9 +1,9 @@
 package com.alpsfly.aeroglide.core.firebase
 
 import com.alpsfly.aeroglide.core.model.common.Pilot
-import com.alpsfly.aeroglide.core.model.common.firebase.User
-import com.alpsfly.aeroglide.core.model.common.firebase.Blacklist
-import com.alpsfly.aeroglide.core.model.common.firebase.Purchase
+import com.alpsfly.aeroglide.core.model.firebase.Blacklist
+import com.alpsfly.aeroglide.core.model.firebase.Purchase
+import com.alpsfly.aeroglide.core.model.firebase.User
 import kotlinx.coroutines.flow.Flow
 
 interface CloudStorage {

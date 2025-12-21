@@ -26,7 +26,6 @@ android {
 
     defaultConfig {
         minSdk = 26
-
         testInstrumentationRunner = "com.alpsfly.aeroglide.core.testing.HiltTestRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -42,6 +41,23 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            isShrinkResources = false
+            proguardFiles
+        }
+        getByName("debug") {
+            buildConfigField("String", "FIREBASE_EMULATOR_HOST_ADDRESS", "\"10.0.2.2\"")
+            buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_AUTH", "9099")
+            buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_FIRESTORE", "8080")
+        }
+    }
 }
 
 dependencies {
@@ -49,6 +65,7 @@ dependencies {
     api(project(":core:model"))
     api(project(":core:hardware"))
     api(project(":core:database"))
+    api(project(":core:firebase"))
 
     // Arch Components
     implementation(libs.hilt.android)
@@ -73,6 +90,9 @@ dependencies {
     implementation(libs.retrofitConverterScalars)
     implementation(libs.okhttp)
     implementation(libs.okhttpLoggingInterceptor)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.mockwebserver)

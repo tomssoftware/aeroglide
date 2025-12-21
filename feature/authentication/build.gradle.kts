@@ -23,7 +23,7 @@ plugins {
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.feature.settings"
+    namespace = "com.alpsfly.aeroglide.feature.authentication"
     compileSdk = 36
 
     defaultConfig {
@@ -59,6 +59,14 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
 
+    val composeBomAuthentication = platform(libs.androidx.compose.bom)
+    implementation(composeBomAuthentication)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+
+
     // Logging
     implementation(libs.timber)
 
@@ -74,9 +82,4 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-
-    // Vico chart library
-    implementation(libs.vico.core)
-    implementation(libs.vico.compose)
-    implementation(libs.vico.compose.m3)
 }
