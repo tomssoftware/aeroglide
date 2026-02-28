@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="de">
+﻿<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="de">
 
     <!-- Device Status Activity -->
     <string name="sid_device_status_activity_check_location_sensor">GPS Sensor</string>
@@ -19,13 +19,6 @@
     <string name="sid_low">Niedrig</string>
     <string name="sid_mid">Mittel</string>
     <string name="sid_none">Unbekannt</string>
-
-    <!-- Abkürzungen -->
-    <string name="sid_abbr_acc">ACC</string>
-    <string name="sid_abbr_agl">AGL</string>
-    <string name="sid_abbr_atm">ATM</string>
-    <string name="sid_abbr_gps">GPS</string>
-    <string name="sid_abbr_ms">m/s</string>
 
     <!-- Allgemein -->
     <string name="sid_acceleration">Beschleunigung</string>
@@ -136,4 +129,6 @@
     <string name="sid_y_axis">Y-Achse</string>
     <string name="sid_z_axis">Z-Achse</string>
     <string name="sid_elevation">Höhenmodell</string>
+    <string name="sid_activity_deleted">Aktivität gelöscht</string>
+    <string name="sid_undo">Rückgängig</string>
 </resources>
