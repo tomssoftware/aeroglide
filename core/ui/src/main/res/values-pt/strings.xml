@@ -5,7 +5,7 @@
     <string name="sid_accel_y">Accel. S</string>
     <string name="sid_accel_z">Accel. Z</string>
     <string name="sid_accuracy_result">A exatidão do Vário é: </string>
-    <string name="sid_device_status_activity_check_acceleration_sensor">Sensor de aceleração</string>
+    <string name="sid_device_status_activity_check_acceleration_sensor">Sensor de aceleracao</string>
     <string name="sid_device_status_activity_check_location_sensor">Sensor de localização</string>
     <string name="sid_device_status_activity_check_pressure_sensor">sensor de pressão</string>
     <!-- Geral -->
@@ -68,7 +68,7 @@
     <string name="sid_max_climbrate">Velocità di salita máxima</string>
     <string name="sid_max_grade">Grau máximo</string>
     <string name="sid_max_speed">Velocidade máxima</string>
-    <string name="sid_min_altitude">Altitudine minima</string>-
+    <string name="sid_min_altitude">Altitudine minima</string>
     <string name="sid_min_climbrate">Velocità di salita minima</string>
     <string name="sid_min_grade">Grado minimo</string>
     <string name="sid_min_speed">Velocità minima</string>

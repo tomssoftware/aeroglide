@@ -64,11 +64,11 @@
     <string name="sid_location">Localisation</string>
     <string name="sid_map">Carte</string>
     <string name="sid_map_manager">Gestionnaire de cartes</string>
-    <string name="sid_max_altitude">Altitude maximale</string>-
+    <string name="sid_max_altitude">Altitude maximale</string>
     <string name="sid_max_climbrate">Taux de montée maximum</string>
     <string name="sid_max_grade">Note maximale</string>
     <string name="sid_max_speed">Vitesse maximale</string>
-    <string name="sid_min_altitude">Altitude minimale</string>-
+    <string name="sid_min_altitude">Altitude minimale</string>
     <string name="sid_min_climbrate">Taux de montée minimal</string>
     <string name="sid_min_grade">Note minimale</string>
     <string name="sid_min_speed">Vitesse minimale</string>

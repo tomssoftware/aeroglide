@@ -64,7 +64,7 @@
     <string name="sid_location">Localización</string>
     <string name="sid_map">Mapa</string>
     <string name="sid_map_manager">Gestor del mapa</string>
-    <string name="sid_max_altitude">Altitud máxima</string>-
+    <string name="sid_max_altitude">Altitud máxima</string>
     <string name="sid_max_climbrate">Tasa de ascenso máximo</string>
     <string name="sid_max_grade">Grado máximo</string>
     <string name="sid_max_speed">Velocidad máxima</string>

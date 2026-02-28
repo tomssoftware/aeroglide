@@ -75,13 +75,13 @@
     <string name="sid_minus">-</string>
     <string name="sid_name">Nome</string>
     <string name="sid_phone">Telefono</string>
-    <string name="sid_pilot">Pilota</string>
+    <string name="sid_pilot">Piloto</string>
     <string name="sid_premium">Premium</string>
     <string name="sid_pressure">Pressione</string>
     <string name="sid_progress_deleting">Cancellazione…</string>
     <string name="sid_progress_downloading">Downloading…</string>
     <string name="sid_progress_uploading">Uploading…</string>
-    <string name="sid_recording">Attività di registrazione</string>.
+    <string name="sid_recording">Attività di registrazione</string>
     <string name="sid_region">Regione</string>
     <string name="sid_safety_note">Nota di sicurezza</string>
     <string name="sid_safety_notice">Avviso di sicurezza</string>
@@ -108,10 +108,10 @@
     <string name="sid_welcome">Benvenuto</string>
     <string name="sid_wind">Vento</string>
     <!-- Istruzioni -->
-    <string name="sid_exit_app_instruction">"Premi di nuovo per uscire"</string>.
-    <string name="sid_select_share_format">"Selezionare un formato"</string>.
-    <string name="sid_notification_subsection">Il calcolo del clima è attivato</string>.
-    <string name="sid_notification_content">Premere il pulsante indietro per uscire da vario</string>.
+    <string name="sid_exit_app_instruction">"Premi di nuovo per uscire"</string>
+    <string name="sid_select_share_format">"Selezionare un formato"</string>
+    <string name="sid_notification_subsection">Il calcolo del clima è attivato</string>
+    <string name="sid_notification_content">Premere il pulsante indietro per uscire da vario</string>
     <string name="sid_sign_in_instruction">Effettuare il login per creare un file IGC</string>
     <!-- Informazioni -->
     <string name="sid_no_location_access_permission">"Il variometro non è autorizzato ad accedere alla posizione del dispositivo"</string>
