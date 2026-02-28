@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Activités -->
     <string name="sid_accel_x">Accel. X</string>
@@ -8,7 +8,6 @@
     <string name="sid_device_status_activity_check_acceleration_sensor">Capteur d\'accélération</string>
     <string name="sid_device_status_activity_check_location_sensor">Capteur de localisation</string>
     <string name="sid_device_status_activity_check_pressure_sensor">Capteur de pression</string>
-
     <!-- Général -->
     <string name="sid_accuracy_high">Haute précision</string>
     <string name="sid_accuracy_low">Vérification des capteurs</string>
@@ -22,7 +21,6 @@
     <string name="sid_x_axis">x-axe</string>
     <string name="sid_y_axis">y-axe</string>
     <string name="sid_z_axis">z-axe</string>
-
     <!-- Général -->
     <string name="sid_acceleration">Accélération</string>
     <string name="sid_accept">Accepter</string>
@@ -66,11 +64,11 @@
     <string name="sid_location">Localisation</string>
     <string name="sid_map">Carte</string>
     <string name="sid_map_manager">Gestionnaire de cartes</string>
-    <string name="sid_max_altitude">Altitude maximale</string>-
+    <string name="sid_max_altitude">Altitude maximale</string>
     <string name="sid_max_climbrate">Taux de montée maximum</string>
     <string name="sid_max_grade">Note maximale</string>
     <string name="sid_max_speed">Vitesse maximale</string>
-    <string name="sid_min_altitude">Altitude minimale</string>-
+    <string name="sid_min_altitude">Altitude minimale</string>
     <string name="sid_min_climbrate">Taux de montée minimal</string>
     <string name="sid_min_grade">Note minimale</string>
     <string name="sid_min_speed">Vitesse minimale</string>
@@ -102,32 +100,30 @@
     <string name="sid_thermal">Thermique</string>
     <string name="sid_thermal_spot">Thermal Spot</string>
     <string name="sid_time">Heure</string>
-    <string name="sid_upload_failure">Upload échoué</string>\.
+    <string name="sid_upload_failure">Upload échoué</string>
     <string name="sid_upload_success">Transfert terminé</string>
     <string name="sid_vario">Vario</string>
     <string name="sid_vario_tone">Vario Tone</string>
     <string name="sid_variotone">Variotone</string>
     <string name="sid_welcome">Bienvenue</string>
     <string name="sid_wind">Vent</string>
-
     <!-- Instructions -->
-    <string name="sid_exit_app_instruction">"Appuyez à nouveau pour quitter"</string>.
+    <string name="sid_exit_app_instruction">"Appuyez à nouveau pour quitter"</string>
     <string name="sid_select_share_format">"Sélectionnez un format"</string>
-    <string name="sid_notification_subsection">Le calcul du climat est activé</string>.
-    <string name="sid_notification_content">Appuyez sur le bouton retour pour quitter vario</string>.
+    <string name="sid_notification_subsection">Le calcul du climat est activé</string>
+    <string name="sid_notification_content">Appuyez sur le bouton retour pour quitter vario</string>
     <string name="sid_sign_in_instruction">Veuillez vous identifier, afin de générer un fichier IGC</string>
-
     <!-- Informations -->
-    <string name="sid_no_location_access_permission">"Le variomètre n'est pas autorisé à accéder à la localisation de l'appareil"</string>.
+    <string name="sid_no_location_access_permission">"Le variomètre n'est pas autorisé à accéder à la localisation de l'appareil"</string>
     <string name="sid_low_climbrate_accuracy">"Aucun capteur de pression disponible ! Le taux de montée et de descente est donc imprécis !"</string>
     <string name="sid_authentication_failed">"L'authentification a échoué ! Veuillez vous connecter !"</string>
     <string name="sid_igc_hint">"(*) Mandatory for IGC export"</string>
-
     <!-- Multilingual assets -->
-    <!-- Todo: add tranlated htm files -->
     <string name="beep">beep</string>
     <string name="sid_url_alpsfly">"https://www.alpsfly.com"</string>
     <string name="sid_url_safety">"safety.htm"</string>
     <string name="sid_url_tac">"tac.htm"</string>
     <string name="sid_url_privacy">"privacy.htm"</string>
+    <string name="sid_activity_deleted">Activité supprimée</string>
+    <string name="sid_undo">Annuler</string>
 </resources>

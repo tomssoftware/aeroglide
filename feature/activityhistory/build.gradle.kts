@@ -87,4 +87,12 @@ dependencies {
     // Mapbox
     implementation(libs.mapbox.android)
     implementation(libs.mapbox.compose)
+
+    // UI Tests
+    val composeBomTest = platform(libs.androidx.compose.bom)
+    androidTestImplementation(composeBomTest)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

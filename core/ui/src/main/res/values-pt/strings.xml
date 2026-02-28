@@ -1,14 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Atividades -->
     <string name="sid_accel_x">Accel. X</string>
     <string name="sid_accel_y">Accel. S</string>
     <string name="sid_accel_z">Accel. Z</string>
     <string name="sid_accuracy_result">A exatidão do Vário é: </string>
-    <string name="sid_device_status_activity_check_acceleration_sensor">Sensor de aceleração</string>
+    <string name="sid_device_status_activity_check_acceleration_sensor">Sensor de aceleracao</string>
     <string name="sid_device_status_activity_check_location_sensor">Sensor de localização</string>
     <string name="sid_device_status_activity_check_pressure_sensor">sensor de pressão</string>
-
     <!-- Geral -->
     <string name="sid_accuracy_high">Alta precisão</string>
     <string name="sid_accuracy_low">Sensores de verificação</string>
@@ -22,7 +21,6 @@
     <string name="sid_x_axis">x-eixo</string>
     <string name="sid_y_axis">y-eixo</string>
     <string name="sid_z_axis">z-eixo</string>
-
     <!-- Geral -->
     <string name="sid_acceleration">Aceleração</string>
     <string name="sid_accept">Aceptar</string>
@@ -66,11 +64,11 @@
     <string name="sid_location">Local</string>
     <string name="sid_map">Mapa</string>
     <string name="sid_map_manager">Gerente do mapa</string>
-    <string name="sid_max_altitude">Altitude máxima</string>-
+    <string name="sid_max_altitude">Altitude máxima</string>
     <string name="sid_max_climbrate">Velocità di salita máxima</string>
     <string name="sid_max_grade">Grau máximo</string>
     <string name="sid_max_speed">Velocidade máxima</string>
-    <string name="sid_min_altitude">Altitudine minima</string>-
+    <string name="sid_min_altitude">Altitudine minima</string>
     <string name="sid_min_climbrate">Velocità di salita minima</string>
     <string name="sid_min_grade">Grado minimo</string>
     <string name="sid_min_speed">Velocità minima</string>
@@ -102,32 +100,30 @@
     <string name="sid_thermal">Termal</string>
     <string name="sid_thermal_spot">Ponto Térmico</string>
     <string name="sid_time">Hora</string>
-    <string name="sid_upload_failure">Upload falhou</string>\
+    <string name="sid_upload_failure">Upload falhou</string>
     <string name="sid_upload_success">Upload terminado</string>
     <string name="sid_vario">Vario</string>
     <string name="sid_vario_tone">Vario Tone</string>
     <string name="sid_variotone">Variotone</string>
     <string name="sid_welcome">Bem-vindo</string>
     <string name="sid_wind">Vento</string>
-
     <!-- Instruções -->
     <string name="sid_exit_app_instruction">"Pressione novamente para sair"</string>
     <string name="sid_select_share_format">"Selecione um formato"</string>
     <string name="sid_notification_subsection">Cálculo da taxa de subida é ligado</string>
     <string name="sid_notification_content">Pressione o botão voltar para sair do vario</string>
     <string name="sid_sign_in_instruction">Por favor, faça o login, a fim de gerar um arquivo IGC</string>
-
     <!-- Informações -->
     <string name="sid_no_location_access_permission">"Não é permitido o acesso ao variômetro à localização do dispositivo"</string>
     <string name="sid_low_climbrate_accuracy">"Nenhum sensor de pressão disponível! A taxa de subida e descida é, portanto, imprecisa!"</string>
     <string name="sid_authentication_failed">"A autenticação falhou! Por favor, faça o login!"</string>
     <string name="sid_igc_hint">"(*) Mandatory for IGC export"</string>
-
     <!-- Multilingual assets -->
-    <!-- Todo: add tranlated htm files -->
     <string name="beep">beep</string>
     <string name="sid_url_alpsfly">"https://www.alpsfly.com"</string>
     <string name="sid_url_safety">"safety.htm"</string>
     <string name="sid_url_tac">"tac.htm"</string>
     <string name="sid_url_privacy">"privacy.htm"</string>
+    <string name="sid_activity_deleted">Atividade excluída</string>
+    <string name="sid_undo">Desfazer</string>
 </resources>

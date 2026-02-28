@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- Attività -->
     <string name="sid_accel_x">Accel. X</string>
     <string name="sid_accel_y">Accel. Y</string>
@@ -9,7 +8,6 @@
     <string name="sid_device_status_activity_check_acceleration_sensor">Sensore di accelerazione</string>
     <string name="sid_device_status_activity_check_location_sensor">Sensore di localizzazione</string>
     <string name="sid_device_status_activity_check_pressure_sensor">Sensore di pressione</string>
-
     <!-- Generale -->
     <string name="sid_accuracy_high">Alta precisione</string>
     <string name="sid_accuracy_low">Controllo dei sensori</string>
@@ -23,8 +21,6 @@
     <string name="sid_x_axis">assex</string>
     <string name="sid_y_axis">assey</string>
     <string name="sid_z_axis">z-axis</string>
-
-
     <!-- Generale -->
     <string name="sid_acceleration">Accelerazione</string>
     <string name="sid_accept">Accetta</string>
@@ -68,7 +64,7 @@
     <string name="sid_location">Localizzazione</string>
     <string name="sid_map">Mappa</string>
     <string name="sid_map_manager">Gestore della mappa</string>
-    <string name="sid_max_altitude">Altitudine massima</string>-
+    <string name="sid_max_altitude">Altitudine massima</string>
     <string name="sid_max_climbrate">Velocità massima di salita</string>
     <string name="sid_max_grade">Grado massimo</string>
     <string name="sid_max_speed">Velocità massima</string>
@@ -79,13 +75,13 @@
     <string name="sid_minus">-</string>
     <string name="sid_name">Nome</string>
     <string name="sid_phone">Telefono</string>
-    <string name="sid_pilot">Pilota</string>
+    <string name="sid_pilot">Piloto</string>
     <string name="sid_premium">Premium</string>
     <string name="sid_pressure">Pressione</string>
     <string name="sid_progress_deleting">Cancellazione…</string>
     <string name="sid_progress_downloading">Downloading…</string>
     <string name="sid_progress_uploading">Uploading…</string>
-    <string name="sid_recording">Attività di registrazione</string>.
+    <string name="sid_recording">Attività di registrazione</string>
     <string name="sid_region">Regione</string>
     <string name="sid_safety_note">Nota di sicurezza</string>
     <string name="sid_safety_notice">Avviso di sicurezza</string>
@@ -111,25 +107,23 @@
     <string name="sid_variotone">Variotone</string>
     <string name="sid_welcome">Benvenuto</string>
     <string name="sid_wind">Vento</string>
-
     <!-- Istruzioni -->
-    <string name="sid_exit_app_instruction">"Premi di nuovo per uscire"</string>.
-    <string name="sid_select_share_format">"Selezionare un formato"</string>.
-    <string name="sid_notification_subsection">Il calcolo del clima è attivato</string>.
-    <string name="sid_notification_content">Premere il pulsante indietro per uscire da vario</string>.
+    <string name="sid_exit_app_instruction">"Premi di nuovo per uscire"</string>
+    <string name="sid_select_share_format">"Selezionare un formato"</string>
+    <string name="sid_notification_subsection">Il calcolo del clima è attivato</string>
+    <string name="sid_notification_content">Premere il pulsante indietro per uscire da vario</string>
     <string name="sid_sign_in_instruction">Effettuare il login per creare un file IGC</string>
-
     <!-- Informazioni -->
     <string name="sid_no_location_access_permission">"Il variometro non è autorizzato ad accedere alla posizione del dispositivo"</string>
     <string name="sid_low_climbrate_accuracy">"Nessun sensore di pressione disponibile! Il tasso di salita e discesa è quindi impreciso!"</string>
     <string name="sid_authentication_failed">"Autenticazione fallita! Effettuare il login!"</string>
     <string name="sid_igc_hint">"(*) Mandatory for IGC export"</string>
-
     <!-- Multilingual assets -->
-    <!-- Todo: add tranlated htm files -->
     <string name="beep">beep</string>
     <string name="sid_url_alpsfly">"https://www.alpsfly.com"</string>
     <string name="sid_url_safety">"safety.htm"</string>
     <string name="sid_url_tac">"tac.htm"</string>
     <string name="sid_url_privacy">"privacy.htm"</string>
+    <string name="sid_activity_deleted">Attività eliminata</string>
+    <string name="sid_undo">Annulla</string>
 </resources>
