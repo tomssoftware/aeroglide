@@ -105,20 +105,17 @@
     <string name="sid_variotone">Varioton</string>
     <string name="sid_welcome">Willkommen</string>
     <string name="sid_wind">Wind</string>
-
     <!-- Anweisungen -->
     <string name="sid_exit_app_instruction">"Erneut drücken zum Beenden"</string>
     <string name="sid_select_share_format">"Format wählen"</string>
     <string name="sid_notification_subsection">Berechnung der Steigrate ist aktiv</string>
     <string name="sid_notification_content">Zum Beenden Backbutton drücken</string>
     <string name="sid_sign_in_instruction">Bitte melden Sie sich an, um eine IGC-Datei zu erstellen</string>
-
     <!-- Informationen -->
     <string name="sid_no_location_access_permission">"Variometer darf nicht auf den Standort des Geräts zugreifen"</string>
     <string name="sid_low_climbrate_accuracy">Kein Drucksensor vorhanden! Steig- und Sinkrate ist deshalb ungenau!</string>
     <string name="sid_authentication_failed">"Authentifizierung fehlgeschlagen! Bitte loggen Sie sich ein!"</string>
     <string name="sid_igc_hint">"(*) Mandatory for IGC export"</string>
-
     <!-- Mulitlanguage assets -->
     <string name="beep">beep</string>
     <string name="sid_url_alpsfly">"https://www.alpsfly.com"</string>
