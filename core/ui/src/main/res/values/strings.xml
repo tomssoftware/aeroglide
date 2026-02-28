@@ -176,4 +176,8 @@
 
     <!-- Application keys -->
     <string name="spk_policy_confirmation" translatable="false">policy_confirmation</string>
+
+    <!-- Activity history -->
+    <string name="sid_activity_deleted">Activity deleted</string>
+    <string name="sid_undo">Undo</string>
 </resources>

@@ -26,7 +26,9 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +47,9 @@ import com.alpsfly.aeroglide.core.common.units.UnitConverter
 import com.alpsfly.aeroglide.core.model.database.Activity
 import com.alpsfly.aeroglide.navigation.navigateToDataExportScreen
 
+/**
+ * Main screen for viewing the history of recorded activities.
+ */
 @Composable
 fun ListHistoryScreen(
     modifier: Modifier = Modifier,
@@ -52,22 +57,25 @@ fun ListHistoryScreen(
     viewModel: ActivityViewModel = hiltViewModel()
 ) {
     val activityHistoryUiState by viewModel.allActivitiesUiState.collectAsStateWithLifecycle()
-    when (activityHistoryUiState) {
+    
+    // Smart casting using a local variable
+    val state = activityHistoryUiState
+    
+    when (state) {
         ActivityListUiState.Loading -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         }
 
         is ActivityListUiState.Success -> {
-            val activityHistoryList = (activityHistoryUiState as ActivityListUiState.Success).list
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = modifier.fillMaxSize(),
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(
-                    items = activityHistoryList,
+                    items = state.list,
                     key = { activity -> activity.activityId }
                 ) { activity ->
                     ActivityItem(
@@ -82,6 +90,9 @@ fun ListHistoryScreen(
     }
 }
 
+/**
+ * A card representing an individual flight activity.
+ */
 @Composable
 fun ActivityCard(
     modifier: Modifier = Modifier,
@@ -89,7 +100,7 @@ fun ActivityCard(
     activity: Activity
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(4.dp),
         onClick = {
@@ -142,34 +153,38 @@ fun ActivityCard(
     }
 }
 
+/**
+ * Provides the background visuals for the swipe-to-dismiss action.
+ */
 @Composable
 fun DismissBackground(dismissState: SwipeToDismissBoxState) {
     val color = when (dismissState.dismissDirection) {
-        SwipeToDismissBoxValue.StartToEnd -> Color(0xFFFF1744)
-        SwipeToDismissBoxValue.EndToStart -> Color(0xFF1DE9B6)
+        SwipeToDismissBoxValue.StartToEnd -> Color(0xFFFF1744) // Red for delete
+        SwipeToDismissBoxValue.EndToStart -> Color(0xFF1DE9B6) // Teal for archive/timer
         SwipeToDismissBoxValue.Settled -> Color.Transparent
     }
     Row(
         modifier = Modifier
             .fillMaxSize()
             .background(color)
-            .padding(12.dp, 8.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Icon(
             imageVector = Icons.Default.Delete,
-            contentDescription = "delete"
+            contentDescription = "Delete"
         )
-        Spacer(modifier = Modifier)
         Icon(
-            // make sure add baseline_archive_24 resource to drawable folder
             painter = painterResource(R.drawable.timer_24px),
             contentDescription = "Archive"
         )
     }
 }
 
+/**
+ * A wrapper for [ActivityCard] that implements the swipe-to-dismiss pattern.
+ */
 @Composable
 fun ActivityItem(
     activity: Activity,
@@ -178,23 +193,20 @@ fun ActivityItem(
     onRemove: (Activity) -> Unit
 ) {
     val currentItem by rememberUpdatedState(activity)
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = {
-            when (it) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onRemove(currentItem)
-                }
-
-                SwipeToDismissBoxValue.EndToStart -> {
-                    onRemove(currentItem)
-                }
-
-                SwipeToDismissBoxValue.Settled -> return@rememberSwipeToDismissBoxState false
-            }
-            return@rememberSwipeToDismissBoxState true
-        },
-        positionalThreshold = { it * .50f }
-    )
+    
+    // Explicit key fixes the "disappearing items" bug by ensuring state is tied to the ID
+    val dismissState = key(activity.activityId) {
+        rememberSwipeToDismissBoxState(
+            positionalThreshold = { distance -> distance * 0.5f }
+        )
+    }
+    
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
+            onRemove(currentItem)
+        }
+    }
+    
     SwipeToDismissBox(
         state = dismissState,
         modifier = modifier,

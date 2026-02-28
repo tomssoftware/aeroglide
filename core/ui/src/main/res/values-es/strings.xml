@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Actividades -->
     <string name="sid_accel_x">Accel. X</string>
@@ -8,7 +8,6 @@
     <string name="sid_device_status_activity_check_acceleration_sensor">Sensor de aceleración</string>
     <string name="sid_device_status_activity_check_location_sensor">Sensor de localización</string>
     <string name="sid_device_status_activity_check_pressure_sensor">Sensor de presión</string>
-
     <!-- Generalidades -->
     <string name="sid_accuracy_high">Alta precisión</string>
     <string name="sid_accuracy_low">Comprobación de sensores</string>
@@ -22,7 +21,6 @@
     <string name="sid_x_axis">ejex</string>
     <string name="sid_y_axis">ejey</string>
     <string name="sid_z_axis">ejez</string>
-
     <!-- Generalidades -->
     <string name="sid_acceleration">Aceleración</string>
     <string name="sid_accept">Aceptar</string>
@@ -66,7 +64,7 @@
     <string name="sid_location">Localización</string>
     <string name="sid_map">Mapa</string>
     <string name="sid_map_manager">Gestor del mapa</string>
-    <string name="sid_max_altitude">Altitud máxima</string>-
+    <string name="sid_max_altitude">Altitud máxima</string>
     <string name="sid_max_climbrate">Tasa de ascenso máximo</string>
     <string name="sid_max_grade">Grado máximo</string>
     <string name="sid_max_speed">Velocidad máxima</string>
@@ -109,25 +107,23 @@
     <string name="sid_variotone">Tono de Vario</string>
     <string name="sid_welcome">Bienvenida</string>
     <string name="sid_wind">Viento</string>
-
     <!-- Instrucciones -->
     <string name="sid_exit_app_instruction">"Pulsa de nuevo para salir"</string>
     <string name="sid_select_share_format">"Selecciona un formato"</string>
     <string name="sid_notification_subsection">El cálculo de la climatología está activado</string>
     <string name="sid_notification_content">Pulsa el botón de retroceso para salir del vario</string>
     <string name="sid_sign_in_instruction">Por favor, regístrese para generar un archivo IGC</string>
-
     <!-- Información -->
     <string name="sid_no_location_access_permission">"El variómetro no tiene permiso para acceder a la ubicación del dispositivo"</string>
     <string name="sid_low_climbrate_accuracy">"¡No hay sensor de presión disponible! Por lo tanto, ¡la velocidad de ascenso y descenso es imprecisa!"</string>
     <string name="sid_authentication_failed">"¡Ha fallado la autenticación! Por favor, inicie sesión!"</string>
     <string name="sid_igc_hint">"(*) Mandatory for IGC export"</string>
-
     <!-- Multilingual assets -->
-    <!-- Todo: add tranlated htm files -->
     <string name="beep">beep</string>
     <string name="sid_url_alpsfly">"https://www.alpsfly.com"</string>
     <string name="sid_url_safety">"safety.htm"</string>
     <string name="sid_url_tac">"tac.htm"</string>
     <string name="sid_url_privacy">"privacy.htm"</string>
+    <string name="sid_activity_deleted">Actividad eliminada</string>
+    <string name="sid_undo">Deshacer</string>
 </resources>
