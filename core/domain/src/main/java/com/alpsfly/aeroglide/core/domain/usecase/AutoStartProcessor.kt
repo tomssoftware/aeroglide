@@ -115,11 +115,18 @@ class AutoStartProcessor @Inject constructor(
     /**
      * Stops sensor collection, cancels all settings subscriptions, and resets the detector.
      *
-     * Idempotent: calling [stop] while already stopped has no effect.
+     * Idempotent: returns early only when **both** [collectorJob] and [settingsJobs] have
+     * no active work. Checking only [collectorJob] would leave settings observers running
+     * and the detector mutating thresholds if [collectorJob] was cancelled or completed
+     * unexpectedly outside of this method.
      */
     fun stop() {
-        if (collectorJob?.isActive != true) return
-        Timber.i("AutoStartProcessor: Stopping.")
+        val hasActiveCollector = collectorJob?.isActive == true
+        val hasActiveSettingsJobs = settingsJobs.any { it.isActive }
+
+        if (!hasActiveCollector && !hasActiveSettingsJobs) return
+
+        Timber.i("AutoStartProcessor: Stopping (collector=$hasActiveCollector, settingsJobs=$hasActiveSettingsJobs).")
         collectorJob?.cancel()
         collectorJob = null
         settingsJobs.forEach { it.cancel() }
@@ -166,13 +173,13 @@ class AutoStartDetector(
 
     // --- Detection Thresholds ---
 
-    // Default values are 5 km/h converted to m/s (1 km/h ≈ 1/3.6 m/s ≈ 0.278 m/s → 5 km/h ≈ 1.39 m/s).
-    // Using 2 * 1.38f as an approximation.
+    // Default velocity thresholds are ~10 km/h expressed in m/s.
+    // Derivation: 1.38f ≈ 5 km/h / 3.6  →  2 * 1.38f ≈ 2.76 m/s ≈ 10 km/h.
 
-    /** Minimum ground speed in m/s that is considered "airborne" for take-off detection. */
+    /** Minimum ground speed in m/s that is considered "airborne" for take-off detection (~10 km/h). */
     var velocityFlying = 2 * 1.38f
 
-    /** Maximum ground speed in m/s that qualifies as "on the ground" for landing confirmation. */
+    /** Maximum ground speed in m/s that qualifies as "on the ground" for landing confirmation (~10 km/h). */
     var velocityLanded = 2 * 1.38f
 
     /** Minimum climb rate in m/s required to trigger the take-off state. */
