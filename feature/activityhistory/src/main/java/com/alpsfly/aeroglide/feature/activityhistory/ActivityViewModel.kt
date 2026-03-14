@@ -72,6 +72,9 @@ class ActivityViewModel @Inject constructor(
     val altitudeModelProducer = CartesianChartModelProducer()
     val climbrateModelProducer = CartesianChartModelProducer()
 
+    // Placeholder data to prevent Vico from crashing on empty series
+    private val emptySeriesData = listOf(0L to 0f)
+
     // 1. Reactive Altitude State
     @OptIn(ExperimentalCoroutinesApi::class)
     // 3. Reactive Altitude State - now driven by `activityId`
@@ -181,7 +184,15 @@ class ActivityViewModel @Inject constructor(
                     }
                 }
 
-                else -> lineSeries { series(x = emptyList(), y = emptyList()) }
+                else -> {
+                    // Use placeholder data instead of empty lists to avoid "Series can't be empty" crash
+                    lineSeries {
+                        series(
+                            x = emptySeriesData.map { it.first },
+                            y = emptySeriesData.map { it.second }
+                        )
+                    }
+                }
             }
         }
     }
@@ -190,14 +201,14 @@ class ActivityViewModel @Inject constructor(
     val altitudeRangeProvider = object : CartesianLayerRangeProvider {
         override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = altitudeUiState.value) {
-                is HistoryChartUiState.Success -> (state.minValue - 10.0).toDouble()
+                is HistoryChartUiState.Success -> (state.minValue - 10.0)
                 else -> 0.0
             }
         }
 
         override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = altitudeUiState.value) {
-                is HistoryChartUiState.Success -> (state.maxValue + 10.0).toDouble()
+                is HistoryChartUiState.Success -> (state.maxValue + 10.0)
                 else -> 100.0
             }
         }
@@ -206,14 +217,14 @@ class ActivityViewModel @Inject constructor(
     val climbrateRangeProvider = object : CartesianLayerRangeProvider {
         override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = climbrateUiState.value) {
-                is HistoryChartUiState.Success -> (state.minValue - 0.5).toDouble()
+                is HistoryChartUiState.Success -> (state.minValue - 0.5)
                 else -> -2.0
             }
         }
 
         override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = climbrateUiState.value) {
-                is HistoryChartUiState.Success -> (state.maxValue + 0.5).toDouble()
+                is HistoryChartUiState.Success -> (state.maxValue + 0.5)
                 else -> 2.0
             }
         }
@@ -221,35 +232,21 @@ class ActivityViewModel @Inject constructor(
 
     // --- Formatters ---
 
-    val yAxisLabelFormatter = object : CartesianValueFormatter {
-        override fun format(
-            context: CartesianMeasuringContext,
-            value: Double,
-            verticalAxisPosition: Axis.Position.Vertical?
-        ): CharSequence {
-            return "${value.toInt()} m"
-        }
-    }
+    val yAxisLabelFormatter = CartesianValueFormatter { context, value, verticalAxisPosition -> "${value.toInt()} m" }
 
     val yAxisLabelFormatterClimbrate = CartesianValueFormatter { _, value, _ ->
         "%.1f m/s".format(value)
     }
 
-    val xAxisLabelFormatter = object : CartesianValueFormatter {
-        override fun format(
-            context: CartesianMeasuringContext,
-            value: Double,
-            verticalAxisPosition: Axis.Position.Vertical?
-        ): CharSequence {
-            val totalSeconds = value.toLong()
-            val hours = totalSeconds / 3600
-            val minutes = (totalSeconds % 3600) / 60
-            val seconds = totalSeconds % 60
+    val xAxisLabelFormatter = CartesianValueFormatter { context, value, verticalAxisPosition ->
+        val totalSeconds = value.toLong()
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        val seconds = totalSeconds % 60
 
-            return when {
-                hours > 0 -> "%02d:%02d".format(hours, minutes)
-                else -> "%02d:%02d".format(minutes, seconds)
-            }
+        when {
+            hours > 0 -> "%02d:%02d".format(hours, minutes)
+            else -> "%02d:%02d".format(minutes, seconds)
         }
     }
 }
