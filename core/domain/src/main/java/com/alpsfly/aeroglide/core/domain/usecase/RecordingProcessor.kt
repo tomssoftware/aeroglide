@@ -8,15 +8,14 @@ import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
-import com.alpsfly.aeroglide.core.model.database.Altitude
-import com.alpsfly.aeroglide.core.model.database.Climbrate
-import com.alpsfly.aeroglide.core.model.database.Location
-import com.alpsfly.aeroglide.core.model.database.Pressure
+import com.alpsfly.aeroglide.core.model.database.TrackPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -43,7 +42,7 @@ class RecordingProcessor @Inject constructor(
     private val recordingJobs = mutableListOf<Job>()
     private var sessionActivity: Activity? = null
     private val verticallyMoving = VerticallyMoving()
-    private var lastLocation: Location? = null
+    private var lastLocation: TrackPoint? = null
     private var recordingWakeLock: PowerManager.WakeLock? = null
 
     fun start(activityId: Long) {
@@ -83,21 +82,12 @@ class RecordingProcessor @Inject constructor(
         sessionActivity = null
     }
 
+    @OptIn(FlowPreview::class)
     private fun collectSensors() {
-        sensorRepository.altitudeFlowUi.onEach {
-            processAltitude(it)
-        }.launchIn(applicationScope)
-            .also { recordingJobs.add(it) }
-        sensorRepository.climbrateFlowUi.onEach {
-            processClimbrate(it)
-        }.launchIn(applicationScope)
-            .also { recordingJobs.add(it) }
-        sensorRepository.pressureFlowUi.onEach {
-            processPressure(it)
-        }.launchIn(applicationScope)
-            .also { recordingJobs.add(it) }
-        sensorRepository.locationFlowUi.onEach {
-            processLocation(it)
+        sensorRepository.trackPointFlow
+            .sample(1000)
+            .onEach {
+                processTrackpoint(it)
         }.launchIn(applicationScope)
             .also { recordingJobs.add(it) }
     }
@@ -108,40 +98,43 @@ class RecordingProcessor @Inject constructor(
 
     // --- All data processing logic is now correctly placed here ---
 
-    private suspend fun processAltitude(altitude: Altitude) {
+    private suspend fun processTrackpoint(trackpoint: TrackPoint) {
         sessionActivity?.let { activity ->
-            dataRepository.addAltitude(altitude)
+            dataRepository.addTrack(trackpoint)
+            processAltitude(trackpoint)
+            processClimbrate(trackpoint)
+            processPressure(trackpoint)
+            processLocation(trackpoint)
+        }
+        persist()
+    }
+
+    private fun processAltitude(altitude: TrackPoint) {
+        sessionActivity?.let { activity ->
             activity.maxAltitude = max(altitude.altitude, activity.maxAltitude)
             activity.minAltitude = min(altitude.altitude, activity.minAltitude)
             verticallyMoving.update(altitude.altitude)
             activity.ascent = verticallyMoving.getAscent()
             activity.descent = verticallyMoving.getDescent()
-            persist()
         }
     }
 
-    // ... (processClimbrate, processPressure, processLocation, computeDistance, WakeLock methods are all correct) ...
-    private suspend fun processClimbrate(climbrate: Climbrate) {
+    private fun processClimbrate(climbrate: TrackPoint) {
         sessionActivity?.let { activity ->
-            dataRepository.addClimbrate(climbrate)
             activity.maxClimbrate = max(climbrate.climbrate, activity.maxClimbrate)
             activity.minClimbrate = min(climbrate.climbrate, activity.minClimbrate)
-            persist()
         }
     }
 
-    private suspend fun processPressure(pressure: Pressure) {
+    private fun processPressure(pressure: TrackPoint) {
         sessionActivity?.let { activity ->
-            dataRepository.addPressure(pressure)
             activity.maxPressure = max(pressure.pressure, activity.maxPressure)
             activity.minPressure = min(pressure.pressure, activity.minPressure)
-            persist()
         }
     }
 
-    private suspend fun processLocation(loc: Location) {
+    private fun processLocation(loc: TrackPoint) {
         sessionActivity?.let { activity ->
-            dataRepository.addLocation(loc)
             val distanceDelta = computeDistance(lastLocation, loc)
             activity.distance += distanceDelta
             activity.end = System.currentTimeMillis()
@@ -155,11 +148,10 @@ class RecordingProcessor @Inject constructor(
                 activity.negativeAvgClimbrate = activity.descent / duration
             }
             lastLocation = loc
-            persist()
         }
     }
 
-    private fun computeDistance(prev: Location?, current: Location): Float {
+    private fun computeDistance(prev: TrackPoint?, current: TrackPoint): Float {
         if (prev?.timestamp == 0L || prev == null) return 0f
         val locC = android.location.Location("c").apply {
             latitude = current.latitude.toDouble()

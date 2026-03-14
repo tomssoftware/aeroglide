@@ -1,7 +1,7 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
 import com.alpsfly.aeroglide.core.data.SensorRepository
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.database.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

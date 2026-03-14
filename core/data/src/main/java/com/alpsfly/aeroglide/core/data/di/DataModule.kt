@@ -35,26 +35,19 @@ import com.alpsfly.aeroglide.core.data.RemoteDataRepository
 import com.alpsfly.aeroglide.core.data.RemoteDataRepositoryInterface
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.data.SensorRepositoryImpl
-import com.alpsfly.aeroglide.core.model.common.User
-import com.alpsfly.aeroglide.core.model.database.Activity
-import com.alpsfly.aeroglide.core.model.database.Altitude
-import com.alpsfly.aeroglide.core.model.database.Climbrate
-import com.alpsfly.aeroglide.core.model.database.GlideRatio
-import com.alpsfly.aeroglide.core.model.database.Location
-import com.alpsfly.aeroglide.core.model.database.Pressure
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.database.User
+import com.alpsfly.aeroglide.core.model.hardware.Altitude
+import com.alpsfly.aeroglide.core.model.hardware.Climbrate
+import com.alpsfly.aeroglide.core.model.hardware.Pressure
+import com.alpsfly.aeroglide.core.model.database.Calibration
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import okhttp3.OkHttpClient
-import javax.inject.Inject
 import javax.inject.Singleton
-
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -172,93 +165,101 @@ object ElevationRepositoryModule {
     }
 }
 
-class FakeDataRepository @Inject constructor(
-    override val allActivities: Flow<List<Activity>>,
-    override val allLocations: Flow<List<Location>>,
-) : DataRepository {
-    override val allAltitudes: Flow<List<Altitude>> = flowOf(fakeAltitude)
-    override fun getAltitude(timestamp: Long): Flow<Altitude> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getAltitudesBetween(start: Long, end: Long): Flow<List<Altitude>> {
-        TODO("Not yet implemented")
-    }
-
-    override val calibration: Flow<List<Calibration>> = flowOf(fakeCalibration)
-    override val allClimbrates: Flow<List<Climbrate>> = flowOf(fakeClimbrate)
-    override fun getClimbrate(timestamp: Long): Flow<Climbrate> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getClimbratesBetween(start: Long, end: Long): Flow<List<Climbrate>> {
-        TODO("Not yet implemented")
-    }
-
-    override val pressure: Flow<List<Pressure>> = flowOf(fakePressure)
-    override val users: Flow<List<User>> = flowOf(fakeUsers)
-
-
-    override suspend fun addActivity(activity: Activity) {
-        throw NotImplementedError()
-    }
-
-    override suspend fun addAltitude(altitude: Altitude) {
-        throw NotImplementedError()
-    }
-
-    override suspend fun addClimbrate(climbrate: Climbrate) {
-        throw NotImplementedError()
-    }
-
-    override suspend fun addPressure(pressure: Pressure) {
-        throw NotImplementedError()
-    }
-
-    override suspend fun addUser(user: User) {
-        throw NotImplementedError()
-    }
-
-    override fun getActivityFlow(activityId: Long): Flow<Activity> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getActivity(activityId: Long): Activity {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun updateActivity(activity: Activity) {
-        throw NotImplementedError()
-    }
-
-    override suspend fun deleteActivity(activity: Activity) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun addCalibration(calibration: Calibration) {
-        throw NotImplementedError()
-    }
-
-    override suspend fun addLocation(location: Location) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getLocation(timestamp: Long): Flow<Location> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getPressuresBetween(start: Long, end: Long): Flow<List<Pressure>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getGlideRatiosBetween(start: Long, end: Long): Flow<List<GlideRatio>> {
-        TODO("Not yet implemented")
-    }
-}
+//class FakeDataRepository @Inject constructor(
+//    override val allActivities: Flow<List<Activity>>,
+//    override val allLocations: Flow<List<Location>>,
+//) : DataRepository {
+//    override val allAltitudes: Flow<List<Altitude>> = flowOf(fakeAltitude)
+//    override fun getAltitude(timestamp: Long): Flow<Altitude> {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun getAltitudesBetween(start: Long, end: Long): Flow<List<Altitude>> {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override val calibration: Flow<List<Calibration>> = flowOf(fakeCalibration)
+//    override val allClimbrates: Flow<List<Climbrate>> = flowOf(fakeClimbrate)
+//    override fun getClimbrate(timestamp: Long): Flow<Climbrate> {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun getClimbratesBetween(start: Long, end: Long): Flow<List<Climbrate>> {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override val pressure: Flow<List<Pressure>> = flowOf(fakePressure)
+//    override val users: Flow<List<User>> = flowOf(fakeUsers)
+//
+//
+//    override suspend fun addActivity(activity: Activity) {
+//        throw NotImplementedError()
+//    }
+//
+//    override suspend fun addAltitude(altitude: Altitude) {
+//        throw NotImplementedError()
+//    }
+//
+//    override suspend fun addClimbrate(climbrate: Climbrate) {
+//        throw NotImplementedError()
+//    }
+//
+//    override suspend fun addPressure(pressure: Pressure) {
+//        throw NotImplementedError()
+//    }
+//
+//    override suspend fun addTrack(track: Track) {
+//        throw NotImplementedError()
+//    }
+//
+//    override suspend fun addUser(user: User) {
+//        throw NotImplementedError()
+//    }
+//
+//    override fun getActivityFlow(activityId: Long): Flow<Activity> {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override suspend fun getActivity(activityId: Long): Activity {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override suspend fun updateActivity(activity: Activity) {
+//        throw NotImplementedError()
+//    }
+//
+//    override suspend fun deleteActivity(activity: Activity) {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override suspend fun addCalibration(calibration: Calibration) {
+//        throw NotImplementedError()
+//    }
+//
+//    override suspend fun addLocation(location: Location) {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun getLocation(timestamp: Long): Flow<Location> {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun getLocationsBetween(start: Long, end: Long): Flow<List<Location>> {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun getPressuresBetween(start: Long, end: Long): Flow<List<Pressure>> {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun getGlideRatiosBetween(start: Long, end: Long): Flow<List<GlideRatio>> {
+//        TODO("Not yet implemented")
+//    }
+//
+//    override fun getTracksBetween(start: Long, end: Long): Flow<List<Track>> {
+//        TODO("Not yet implemented")
+//    }
+//}
 
 val fakeUsers = listOf(
     User("", "", "", "", "", "", ""),

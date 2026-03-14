@@ -32,7 +32,7 @@ fun FusedLocationProviderClient.locationDataFlow(
     val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             result.lastLocation?.let { location ->
-                Timber.v("Fused location: ${location.latitude}, ${location.longitude}")
+                Timber.v("Fused location: ${location.latitude}, ${location.longitude}, ${location.altitude}, ${location.accuracy}")
                 trySend(location)
             }
         }

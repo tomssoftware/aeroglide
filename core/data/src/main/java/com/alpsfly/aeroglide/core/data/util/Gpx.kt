@@ -1,11 +1,11 @@
 package com.alpsfly.aeroglide.core.data.util
 
-import com.alpsfly.aeroglide.core.model.database.Location
+import com.alpsfly.aeroglide.core.model.database.TrackPoint
 import org.xmlpull.v1.XmlPullParserFactory
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-class Gpx(private val locations: List<Location>) {
+class Gpx(private val locations: List<TrackPoint>) {
     @OptIn(ExperimentalTime::class)
     fun buildPath(): String {
         val xmlSerializer = XmlPullParserFactory.newInstance().newSerializer()

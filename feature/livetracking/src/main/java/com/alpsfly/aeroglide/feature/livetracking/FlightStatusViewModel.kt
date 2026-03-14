@@ -10,11 +10,11 @@ import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.alpsfly.aeroglide.core.model.database.Activity
-import com.alpsfly.aeroglide.core.model.database.Altitude
-import com.alpsfly.aeroglide.core.model.database.Climbrate
-import com.alpsfly.aeroglide.core.model.database.GlideRatio
-import com.alpsfly.aeroglide.core.model.database.Location
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.hardware.Altitude
+import com.alpsfly.aeroglide.core.model.hardware.Climbrate
+import com.alpsfly.aeroglide.core.model.hardware.GlideRatio
+import com.alpsfly.aeroglide.core.model.hardware.Location
+import com.alpsfly.aeroglide.core.model.database.Calibration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted

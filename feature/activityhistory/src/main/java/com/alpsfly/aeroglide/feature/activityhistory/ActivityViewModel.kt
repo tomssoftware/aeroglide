@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
-import com.alpsfly.aeroglide.core.model.database.Altitude
-import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.hardware.Altitude
+import com.alpsfly.aeroglide.core.model.hardware.Climbrate
 import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
 import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
@@ -80,7 +80,8 @@ class ActivityViewModel @Inject constructor(
             if (id == 0L) return@flatMapLatest flowOf(HistoryChartUiState.Loading)
             createChartFlow(
                 activityId = id,
-                getDataFlow = { start, end -> dataRepository.getAltitudesBetween(start, end) },
+                getDataFlow = { start, end -> dataRepository.getTracksBetween(start, end) },
+                extractTimestamp = { it.timestamp },
                 extractValue = { it.altitude }
             )
         }
@@ -96,7 +97,8 @@ class ActivityViewModel @Inject constructor(
             if (id == 0L) return@flatMapLatest flowOf(HistoryChartUiState.Loading)
             createChartFlow(
                 activityId = id,
-                getDataFlow = { start, end -> dataRepository.getClimbratesBetween(start, end) },
+                getDataFlow = { start, end -> dataRepository.getTracksBetween(start, end) },
+                extractTimestamp = { it.timestamp },
                 extractValue = { it.climbrate }
             )
         }
@@ -125,6 +127,7 @@ class ActivityViewModel @Inject constructor(
     private fun <T> createChartFlow(
         activityId: Long,
         getDataFlow: (start: Long, end: Long) -> Flow<List<T>>,
+        extractTimestamp: (T) -> Long,
         extractValue: (T) -> Float
     ): Flow<HistoryChartUiState> {
         return dataRepository.getActivityFlow(activityId).flatMapLatest { activity ->
@@ -138,7 +141,7 @@ class ActivityViewModel @Inject constructor(
                 } else {
                     val startTime = list.firstOrNull()?.let { (it as? Any).getTimestamp() } ?: activity.begin
                     val points = list.map { item ->
-                        val timestamp = (item as? Any).getTimestamp()
+                        val timestamp = extractTimestamp(item)
                         val timeDeltaSeconds = (timestamp - startTime) / 1000
                         timeDeltaSeconds to extractValue(item)
                     }

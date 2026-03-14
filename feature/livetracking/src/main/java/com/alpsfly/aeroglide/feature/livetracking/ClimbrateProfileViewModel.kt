@@ -3,7 +3,7 @@ package com.alpsfly.aeroglide.feature.livetracking
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
-import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.hardware.Climbrate
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
@@ -35,9 +35,9 @@ class ClimbrateProfileViewModel @Inject constructor(
                 flowOf(emptyList())
             } else {
                 // If activity exists, get the altitudes and map them.
-                dataRepository.getClimbratesBetween(activity.begin, activity.end).map { climbrates ->
-                    val startTime = climbrates.firstOrNull()?.timestamp ?: 0L
-                    climbrates.map {
+                dataRepository.getTracksBetween(activity.begin, activity.end).map { tracks ->
+                    val startTime = tracks.firstOrNull()?.timestamp ?: 0L
+                    tracks.map {
                         val timeDeltaSeconds = (it.timestamp - startTime) / 1000
                         timeDeltaSeconds to it.climbrate
                     }
