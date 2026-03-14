@@ -1,28 +1,27 @@
 package com.alpsfly.aeroglide.core.mapbox.data
 
 import com.alpsfly.aeroglide.core.model.configuration.ColorMapping
-import com.alpsfly.aeroglide.core.model.database.Climbrate
-import com.alpsfly.aeroglide.core.model.database.Location
+import com.alpsfly.aeroglide.core.model.database.TrackPoint
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 
-fun zipMapBoxLocations(locations: List<Location>, climbrates: List<Climbrate>): List<MapBoxLocation> {
+fun zipMapBoxLocations(trackPointPoints: List<TrackPoint>): List<MapBoxLocation> {
     val colorMapping = ColorMapping()
     var pathSegment = 0
     var lastColor = ""
-    return locations.zip(climbrates).map { (location, climbrate) ->
-        val color = colorMapping.getClimbrateColor(climbrate.climbrate)
+    return trackPointPoints.map { trkpt ->
+        val color = colorMapping.getClimbrateColor(trkpt.climbrate)
         if (color != lastColor) {
             lastColor = color
             pathSegment++
         }
 
         MapBoxLocation(
-            timestamp = location.timestamp,
+            timestamp = trkpt.timestamp,
             segment = pathSegment,
-            point = Point.fromLngLat(location.longitude.toDouble(), location.latitude.toDouble()),
+            point = Point.fromLngLat(trkpt.longitude.toDouble(), trkpt.latitude.toDouble()),
             color = color
         )
     }

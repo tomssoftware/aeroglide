@@ -5,7 +5,7 @@ package com.alpsfly.aeroglide.core.database
  */
 
 import androidx.room.*
-import com.alpsfly.aeroglide.core.model.common.User
+import com.alpsfly.aeroglide.core.model.database.User
 import kotlinx.coroutines.flow.Flow
 
 @Dao

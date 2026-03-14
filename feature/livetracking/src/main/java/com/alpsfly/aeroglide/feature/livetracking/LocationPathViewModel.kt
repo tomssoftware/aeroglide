@@ -7,14 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.mapbox.data.MapBoxLocation
 import com.alpsfly.aeroglide.core.mapbox.data.zipMapBoxLocations
-import com.alpsfly.aeroglide.core.model.database.Climbrate
-import com.alpsfly.aeroglide.core.model.database.Location
+import com.alpsfly.aeroglide.core.model.database.TrackPoint
 import com.mapbox.geojson.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -44,25 +42,18 @@ class LocationPathViewModel @Inject constructor(
     }
 
     private fun getMapboxLocationCollection(): Flow<List<MapBoxLocation>> {
-        val locations = sensorRepository.locationFlowUi
-        val climbrates = sensorRepository.climbrateFlowUi
-        val locationList = mutableListOf<Location>()
-        val climbrateList = mutableListOf<Climbrate>()
+        val trackFlow = sensorRepository.trackPointFlow
+        val trackPointPoints = mutableListOf<TrackPoint>()
 
-        locationList.clear()
-        climbrateList.clear()
-        return combine(locations, climbrates) { l, c ->
-            locationList.add(l)
-            climbrateList.add(c)
+        trackPointPoints.clear()
+        return trackFlow.map { trkPt ->
+            trackPointPoints.add(trkPt)
 
-            if (locationList.size > 120) {
-                locationList.removeAt(0)
-            }
-            if (climbrateList.size > 120) {
-                climbrateList.removeAt(0)
+            if (trackPointPoints.size > 120) {
+                trackPointPoints.removeAt(0)
             }
 
-            zipMapBoxLocations(locationList, climbrateList)
+            zipMapBoxLocations(trackPointPoints)
                 .sortedBy { it.timestamp }
         }
     }

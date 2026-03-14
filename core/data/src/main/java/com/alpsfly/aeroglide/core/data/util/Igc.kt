@@ -1,7 +1,7 @@
 package com.alpsfly.aeroglide.core.data.util
 
 
-import com.alpsfly.aeroglide.core.model.database.Location
+import com.alpsfly.aeroglide.core.model.database.TrackPoint
 import java.text.DecimalFormat
 import java.time.Instant
 import java.time.LocalDateTime
@@ -13,7 +13,7 @@ import kotlin.math.round
 // https://xp-soaring.github.io/igc_file_format/igc_format_2008.html#link_4.1
 
 class Igc(
-    private val trackLog: List<Location>,
+    private val trackPoints: List<TrackPoint>,
     private val departureDate: Long,
     private val pilot: String,
     private val gliderType: String,
@@ -21,7 +21,7 @@ class Igc(
 ) {
     private val headerList = StringBuilder()
     private val recordList = StringBuilder()
-    private val accuracy = trackLog.map { item -> item.horizontalAccuracy }.average().toInt()
+    private val accuracy = trackPoints.map { item -> item.horizontalAccuracy }.average().toInt()
 
     // B1602455107126N00149300WA002880042919509020
     // B1602505107134N00149283WA002900043221009015
@@ -31,7 +31,7 @@ class Igc(
     // HHMMSSDDMMmmmHDDDMMmmmHFPPPPPGGGGG
     fun buildIgc(): String {
         buildHeader()
-        trackLog.forEach { record ->
+        trackPoints.forEach { record ->
             val time = toTimeStr(record.timestamp)
             val lat = toLatStr2(record.latitude.toDouble())
             val lon = toLonStr2(record.longitude.toDouble())

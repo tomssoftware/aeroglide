@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -49,13 +50,8 @@ class MapHistoryViewModel @Inject constructor(
                     flowOf(MapHistoryUiState.Success(trackPolyline = emptyList()))
                 } else {
                     // If activity is valid, combine the data sources to build the track.
-                    combine(
-                        dataRepository.getLocationsBetween(activity.begin, activity.end),
-                        dataRepository.getClimbratesBetween(activity.begin, activity.end)
-                    ) { locations, climbrates ->
-                        val zippedLocations =
-                            zipMapBoxLocations(locations, climbrates).sortedBy { it.timestamp }
-
+                    dataRepository.getTracksBetween(activity.begin, activity.end).map { trkpt ->
+                        val zippedLocations =zipMapBoxLocations(trkpt).sortedBy { it.timestamp }
                         val polylineOptions = zippedLocations.zipWithNext().map { (start, end) ->
                             PolylineAnnotationOptions()
                                 .withPoints(listOf(start.point, end.point))

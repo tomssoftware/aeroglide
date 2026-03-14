@@ -18,38 +18,36 @@ package com.alpsfly.aeroglide.core.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import com.alpsfly.aeroglide.core.model.common.User
+import com.alpsfly.aeroglide.core.model.database.User
 import com.alpsfly.aeroglide.core.model.database.Activity
-import com.alpsfly.aeroglide.core.model.database.Altitude
-import com.alpsfly.aeroglide.core.model.database.Climbrate
-import com.alpsfly.aeroglide.core.model.database.GlideRatio
-import com.alpsfly.aeroglide.core.model.database.Location
-import com.alpsfly.aeroglide.core.model.database.Pressure
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
-import com.alpsfly.aeroglide.core.model.hardware.SensorData
+import com.alpsfly.aeroglide.core.model.database.TrackPoint
+import com.alpsfly.aeroglide.core.model.database.SyncState
+import com.alpsfly.aeroglide.core.model.database.Calibration
 
 @Database(
     entities = [
         Activity::class,
-        Altitude::class,
         Calibration::class,
-        Climbrate::class,
-        GlideRatio::class,
-        Location::class,
-        Pressure::class,
+        TrackPoint::class,
         User::class,
     ],
     version = 1
 )
 
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun activityDao(): ActivityDao
-    abstract fun altitudeDao(): AltitudeDao
     abstract fun calibrationDao(): CalibrationDao
-    abstract fun climbrateDao(): ClimbrateDao
-    abstract fun glideRatioDao(): GlideRatioDao
-    abstract fun locationDao(): LocationDao
-    abstract fun pressureDao(): PressureDao
+    abstract fun trackDao(): TrackPointDao
     abstract fun userDao(): UserDao
+}
+
+class Converters {
+    @TypeConverter
+    fun fromSyncState(value: SyncState) = value.name
+
+    @TypeConverter
+    fun toSyncState(value: String) = SyncState.valueOf(value)
 }

@@ -34,12 +34,12 @@ class Exporter @Inject constructor(
 
         return when (format.uppercase()) {
             "ZIP" -> createZipArchive(activity, exportDir)
-            "GPX" -> createSingleFile(activity, exportDir, "gpx") { locations ->
-                Gpx(locations).buildPath()
+            "GPX" -> createSingleFile(activity, exportDir, "gpx") { trackPoints ->
+                Gpx(trackPoints).buildPath()
             }
 
-            "IGC" -> createSingleFile(activity, exportDir, "igc") { locations ->
-                Igc(locations, activity.begin, "Pilot", "Glider", "GliderID").buildIgc()
+            "IGC" -> createSingleFile(activity, exportDir, "igc") { trackPoints ->
+                Igc(trackPoints, activity.begin, "Pilot", "Glider", "GliderID").buildIgc()
             }
 
             else -> null
@@ -51,19 +51,12 @@ class Exporter @Inject constructor(
      */
     private suspend fun createZipArchive(activity: Activity, exportDir: File): File {
         val zipFile = File(exportDir, "track_${activity.activityId}.zip")
-        val locations = dataRepository.getLocationsBetween(activity.begin, activity.end).first()
-        val altitudes = dataRepository.getAltitudesBetween(activity.begin, activity.end).first()
-        val climbrates = dataRepository.getClimbratesBetween(activity.begin, activity.end).first()
-        val pressures = dataRepository.getPressuresBetween(activity.begin, activity.end).first()
-        val glideRatios = dataRepository.getGlideRatiosBetween(activity.begin, activity.end).first()
+        val trackPoints = dataRepository.getTracksBetween(activity.begin, activity.end).first()
+
 
         // Create a list of temporary files to be zipped
         val filesToZip = mutableListOf<File>()
-        filesToZip.add(createTempFile(exportDir, "location.csv", CsvExporter.buildCsv(locations)))
-        filesToZip.add(createTempFile(exportDir, "altitude.csv", CsvExporter.buildCsv(altitudes)))
-        filesToZip.add(createTempFile(exportDir, "climbrate.csv", CsvExporter.buildCsv(climbrates)))
-        filesToZip.add(createTempFile(exportDir, "pressure.csv", CsvExporter.buildCsv(pressures)))
-        filesToZip.add(createTempFile(exportDir, "glide_ratio.csv", CsvExporter.buildCsv(glideRatios)))
+        filesToZip.add(createTempFile(exportDir, "track_points.csv", CsvExporter.buildCsv(trackPoints)))
 
         // Create the ZIP file
         FileOutputStream(zipFile).use { fos ->
@@ -89,11 +82,11 @@ class Exporter @Inject constructor(
         activity: Activity,
         exportDir: File,
         extension: String,
-        contentBuilder: suspend (List<com.alpsfly.aeroglide.core.model.database.Location>) -> String
+        contentBuilder: suspend (List<com.alpsfly.aeroglide.core.model.database.TrackPoint>) -> String
     ): File {
         val file = File(exportDir, "track_${activity.activityId}.$extension")
-        val locations = dataRepository.getLocationsBetween(activity.begin, activity.end).first()
-        file.writeText(contentBuilder(locations))
+        val trackPoints = dataRepository.getTracksBetween(activity.begin, activity.end).first()
+        file.writeText(contentBuilder(trackPoints))
         return file
     }
 

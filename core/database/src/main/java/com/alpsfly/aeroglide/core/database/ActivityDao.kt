@@ -5,8 +5,10 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.TypeConverter
 import androidx.room.Update
 import com.alpsfly.aeroglide.core.model.database.Activity
+import com.alpsfly.aeroglide.core.model.database.SyncState
 import kotlinx.coroutines.flow.Flow
 
 @Dao

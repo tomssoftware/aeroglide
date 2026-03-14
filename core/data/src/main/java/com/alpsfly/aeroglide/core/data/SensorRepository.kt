@@ -22,12 +22,14 @@ import com.alpsfly.aeroglide.core.hardware.linearAccelerationSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.locationDataFlow
 import com.alpsfly.aeroglide.core.hardware.pressureSensorDataFlow
 import com.alpsfly.aeroglide.core.hardware.rotationVectorSensorDataFlow
-import com.alpsfly.aeroglide.core.model.database.Altitude
-import com.alpsfly.aeroglide.core.model.database.Climbrate
-import com.alpsfly.aeroglide.core.model.database.GlideRatio
-import com.alpsfly.aeroglide.core.model.database.Location
-import com.alpsfly.aeroglide.core.model.database.Pressure
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.hardware.Altitude
+import com.alpsfly.aeroglide.core.model.hardware.Climbrate
+import com.alpsfly.aeroglide.core.model.hardware.GlideRatio
+import com.alpsfly.aeroglide.core.model.hardware.Location
+import com.alpsfly.aeroglide.core.model.hardware.Pressure
+import com.alpsfly.aeroglide.core.model.database.SyncState
+import com.alpsfly.aeroglide.core.model.database.TrackPoint
+import com.alpsfly.aeroglide.core.model.database.Calibration
 import com.alpsfly.aeroglide.core.model.hardware.SensorData
 import com.alpsfly.aeroglide.core.model.hardware.SensorType
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -76,6 +78,8 @@ interface SensorRepository {
     /** Fused sensor */
     val glideRatioFlow: Flow<SensorData>
     val glideRatioFlowUi: Flow<GlideRatio>
+
+    val trackPointFlow: Flow<TrackPoint>
 
     val calibration: StateFlow<Calibration>
     fun setCalibration(calibration: Calibration)
@@ -360,6 +364,39 @@ class SensorRepositoryImpl @Inject constructor(
                     )
                 }
         }
+
+    override val trackPointFlow: Flow<TrackPoint> = combine(locationFlow,
+        altitudeFlow,
+        pressureDataSource,
+        climbRateFlow,
+        glideRatioFlow
+    ) { location, altitude, pressure, climbRate, glideRatio ->
+        TrackPoint(
+            timestamp = location.timestamp, // Wir nutzen den GPS-Zeitstempel als Anker
+            latitude = location.latitude,
+            longitude = location.longitude,
+            gpsAltitude = location.altitude,
+            bearing = location.bearing,
+            speed = location.speed,
+            geoidCorrection = location.geoidCorrection,
+            hasHorizontalAccuracy = location.hasHorizontalAccuracy,
+            horizontalAccuracy = location.horizontalAccuracy,
+            hasVerticalAccuracy = location.hasVerticalAccuracy,
+            verticalAccuracy = location.verticalAccuracy,
+            bearingAccuracy = location.bearingAccuracy,
+            speedAccuracy = location.speedAccuracy,
+            provider = location.provider,
+
+            // Barometrische & berechnete Daten
+            altitude = altitude.values[0],
+            pressure = pressure.values[0],
+            climbrate = climbRate.values[0],
+            glideRatio = glideRatio.values[0],
+
+            // Initialer Sync-Status
+            syncState = SyncState.LOCAL
+        )
+    }.shareSensorData() // Wichtig: Damit nur eine Pipe für alle Observer offen ist
 
     private fun calcAltitude(pressure: Float, pressure0: Float, altitude0: Float): Float {
         val h0 = altitude0.toDouble() // meter
