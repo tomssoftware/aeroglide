@@ -1,7 +1,23 @@
 package com.alpsfly.aeroglide.core.data.util
 
+import timber.log.Timber
+
+/**
+ * Prozessrauschen der Beschleunigung.
+ * Höher = schnellere Reaktion auf Beschleunigungsänderungen, aber mehr Rauschen.
+ * Empirisch ermittelt für den eingesetzten Barometer-Sensor.
+ */
 const val Q_ACCELERATION = 0.9f
+
+/**
+ * Messrauschen der Höhe in Metern².
+ * Höher = stärkere Glättung, aber langsamere Reaktion auf Höhenänderungen.
+ * Empirisch ermittelt für den eingesetzten Barometer-Sensor.
+ */
 const val R_ALTITUDE = 0.1f
+
+/** Hohe initiale Kovarianz-Diagonale → Filter konvergiert schnell auf die erste Messung. */
+private const val P_INITIAL = 1000f
 
 /** Standardstarthöhe (m) – als Initialwert für [IKalmanFilter.reset] nutzbar */
 @Suppress("unused")
@@ -74,17 +90,26 @@ class KalmanFilter(private var qAccel: Float, private var rAltitude: Float) : IK
 
     /**
      * Vollständiger Reset: setzt Höhe, Steigrate und Kovarianzmatrix zurück.
-     * Ohne Reset der Kovarianz würde der Filter mit alten Unsicherheitswerten arbeiten.
+     *
+     * P wird auf [P_INITIAL] gesetzt (hohe initiale Unsicherheit), damit der Filter
+     * bei der ersten Messung sofort einen Kalman-Gain > 0 hat und konvergiert.
+     * P = 0 würde bedeuten: Gain = 0 → erste Messung wird komplett ignoriert.
      */
     override fun reset(h: Float) {
         this.h = h
         this.v = 0f
-        // Kovarianzmatrix auf Null zurücksetzen (hohe initiale Sicherheit)
-        p[0][0] = 0f; p[0][1] = 0f
-        p[1][0] = 0f; p[1][1] = 0f
+        // Hohe initiale Unsicherheit → Kalman-Gain bei erster update()-Messung > 0
+        p[0][0] = P_INITIAL; p[0][1] = 0f
+        p[1][0] = 0f;        p[1][1] = P_INITIAL
     }
 
     override fun predict(a: Float, dt: Float) {
+        // Guard: ungültige Eingaben schützen den Filter vor dauerhafter NaN/Infinity-Vergiftung
+        if (!a.isFinite() || !dt.isFinite() || dt <= 0f) {
+            Timber.w("KalmanFilter.predict: ungültige Eingabe ignoriert (a=$a, dt=$dt)")
+            return
+        }
+
         val dt2 = dt * dt
         val dt2div2 = dt2 / 2f
         val dt2div4 = dt2 / 4f
@@ -93,28 +118,36 @@ class KalmanFilter(private var qAccel: Float, private var rAltitude: Float) : IK
         h += v * dt + a * dt2div2
         v += a * dt
 
-        // Q = Prozessrauschen-Matrix
-        val q00 = dt2div4 * qAccel
-        val q01 = dt2div2 * qAccel
-        val q10 = dt2div2 * qAccel
-        val q11 = dt2 * qAccel
+        // Q = Prozessrauschen-Matrix (symmetrisch: q01 == q10)
+        val q00  = dt2div4 * qAccel
+        val q0110 = dt2div2 * qAccel  // q01 == q10, da Q symmetrisch
+        val q11  = dt2 * qAccel
 
         // P = F·P·Fᵀ + Q  (Kovarianzfortschreibung)
-        p[0][0] = p[0][0] + (p[1][0] + p[0][1] + (p[1][1] + q00) * dt) * dt
-        p[0][1] = p[0][1] + (p[1][1] + q01) * dt
-        p[1][0] = p[1][0] + (p[1][1] + q10) * dt
+        p[0][0] = p[0][0] + (p[1][0] + p[0][1] + (p[1][1] + q00)   * dt) * dt
+        p[0][1] = p[0][1] + (p[1][1] + q0110) * dt
+        p[1][0] = p[1][0] + (p[1][1] + q0110) * dt
         p[1][1] = p[1][1] + q11
     }
 
     override fun update(h: Float) {
+        // Guard: ungültige Eingabe schützt den Filter vor NaN/Infinity-Vergiftung
+        if (!h.isFinite()) {
+            Timber.w("KalmanFilter.update: ungültige Höhenmessung ignoriert (h=$h)")
+            return
+        }
+
         // y = z - H·x  (Innovationsresiduum)
         val y = h - this.h
 
         // S = H·P·Hᵀ + R  (Innovationskovarianz)
         val s = p[0][0] + rAltitude
 
-        // Guard: Division durch (near-)Zero verhindern → NaN/Infinity im Filter vermeiden
-        if (s < 1e-10f) return
+        // Guard: Division durch (near-)Zero verhindern → tritt auf wenn Kovarianzmatrix korrumpiert
+        if (s < 1e-10f) {
+            Timber.w("KalmanFilter.update: Kovarianzmatrix korrumpiert (s=$s, p00=${p[0][0]}), Update übersprungen")
+            return
+        }
 
         val si = 1.0f / s
 
