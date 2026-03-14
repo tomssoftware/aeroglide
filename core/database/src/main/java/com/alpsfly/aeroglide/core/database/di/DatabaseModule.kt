@@ -19,19 +19,15 @@ package com.alpsfly.aeroglide.core.database.di
 import android.content.Context
 import androidx.room.Room
 import com.alpsfly.aeroglide.core.database.ActivityDao
-import com.alpsfly.aeroglide.core.database.AltitudeDao
+import com.alpsfly.aeroglide.core.database.AppDatabase
+import com.alpsfly.aeroglide.core.database.CalibrationDao
+import com.alpsfly.aeroglide.core.database.TrackPointDao
+import com.alpsfly.aeroglide.core.database.UserDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import com.alpsfly.aeroglide.core.database.AppDatabase
-import com.alpsfly.aeroglide.core.database.CalibrationDao
-import com.alpsfly.aeroglide.core.database.ClimbrateDao
-import com.alpsfly.aeroglide.core.database.GlideRatioDao
-import com.alpsfly.aeroglide.core.database.LocationDao
-import com.alpsfly.aeroglide.core.database.PressureDao
-import com.alpsfly.aeroglide.core.database.UserDao
 import javax.inject.Singleton
 
 @Module
@@ -53,28 +49,8 @@ class DatabaseModule {
     }
 
     @Provides
-    fun provideAltitudeDao(appDatabase: AppDatabase): AltitudeDao {
-        return appDatabase.altitudeDao()
-    }
-
-    @Provides
-    fun providePressureDao(appDatabase: AppDatabase): PressureDao {
-        return appDatabase.pressureDao()
-    }
-
-    @Provides
-    fun provideClimbrateDao(appDatabase: AppDatabase): ClimbrateDao {
-        return appDatabase.climbrateDao()
-    }
-
-    @Provides
-    fun provideGlideRatioDao(appDatabase: AppDatabase): GlideRatioDao {
-        return appDatabase.glideRatioDao()
-    }
-
-    @Provides
-    fun provideLocationDao(appDatabase: AppDatabase): LocationDao {
-        return appDatabase.locationDao()
+    fun provideTrackDao(appDatabase: AppDatabase): TrackPointDao {
+        return appDatabase.trackDao()
     }
 
     @Provides

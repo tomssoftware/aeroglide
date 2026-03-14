@@ -3,7 +3,7 @@ package com.alpsfly.aeroglide.feature.livetracking
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
-import com.alpsfly.aeroglide.core.model.database.Altitude
+import com.alpsfly.aeroglide.core.model.hardware.Altitude
 import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
 import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
@@ -36,9 +36,9 @@ class AltitudeProfileViewModel @Inject constructor(
                 flowOf(emptyList<Pair<Long, Float>>())
             } else {
                 // If activity exists, get the altitudes and map them.
-                dataRepository.getAltitudesBetween(activity.begin, activity.end).map { altitudes ->
-                    val startTime = altitudes.firstOrNull()?.timestamp ?: 0L
-                    altitudes.map {
+                dataRepository.getTracksBetween(activity.begin, activity.end).map { tracks ->
+                    val startTime = tracks.firstOrNull()?.timestamp ?: 0L
+                    tracks.map {
                         val timeDeltaSeconds = (it.timestamp - startTime) / 1000
                         timeDeltaSeconds to it.altitude
                     }

@@ -17,8 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.Screen
-import com.alpsfly.aeroglide.core.model.database.Pressure
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.hardware.Pressure
+import com.alpsfly.aeroglide.core.model.database.Calibration
 import com.alpsfly.aeroglide.feature.diagnosis.viewmodel.DiagnosisViewModel
 
 @Composable

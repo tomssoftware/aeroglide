@@ -1,6 +1,6 @@
 package com.alpsfly.aeroglide.feature.disclaimer.presentation
 
-import com.alpsfly.aeroglide.core.model.hardware.Calibration
+import com.alpsfly.aeroglide.core.model.database.Calibration
 
 sealed interface  DisclaimerUiState {
     data object Loading : DisclaimerUiState

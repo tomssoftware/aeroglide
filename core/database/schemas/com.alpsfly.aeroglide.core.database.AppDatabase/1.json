@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fe61349a9b8045ec4510aff1826dfd02",
+    "identityHash": "fdd217084050c60e99f54139942c5f00",
     "entities": [
       {
         "tableName": "activity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activity_id` INTEGER NOT NULL, `user_id` TEXT NOT NULL, `begin` INTEGER NOT NULL, `end` INTEGER NOT NULL, `distance` REAL NOT NULL, `duration` INTEGER NOT NULL, `ascent` REAL NOT NULL, `descent` REAL NOT NULL, `min_pressure` REAL NOT NULL, `max_pressure` REAL NOT NULL, `min_altitude` REAL NOT NULL, `max_altitude` REAL NOT NULL, `min_speed` REAL NOT NULL, `max_speed` REAL NOT NULL, `avg_speed` REAL NOT NULL, `max_climbrate` REAL NOT NULL, `min_climbrate` REAL NOT NULL, `positive_avg_climbrate` REAL NOT NULL, `negative_avg_climbrate` REAL NOT NULL, `max_grade` REAL NOT NULL, `min_grade` REAL NOT NULL, `max_heartrate` INTEGER NOT NULL, `min_heartrate` INTEGER NOT NULL, PRIMARY KEY(`activity_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activity_id` INTEGER NOT NULL, `user_id` TEXT NOT NULL, `begin` INTEGER NOT NULL, `end` INTEGER NOT NULL, `distance` REAL NOT NULL, `duration` INTEGER NOT NULL, `ascent` REAL NOT NULL, `descent` REAL NOT NULL, `min_pressure` REAL NOT NULL, `max_pressure` REAL NOT NULL, `min_altitude` REAL NOT NULL, `max_altitude` REAL NOT NULL, `min_speed` REAL NOT NULL, `max_speed` REAL NOT NULL, `avg_speed` REAL NOT NULL, `max_climbrate` REAL NOT NULL, `min_climbrate` REAL NOT NULL, `positive_avg_climbrate` REAL NOT NULL, `negative_avg_climbrate` REAL NOT NULL, `max_grade` REAL NOT NULL, `min_grade` REAL NOT NULL, `max_heart_rate` INTEGER NOT NULL, `min_heart_rate` INTEGER NOT NULL, `firestore_id` TEXT, `sync_state` TEXT NOT NULL, `last_synced_at` INTEGER NOT NULL, `sync_error` TEXT, PRIMARY KEY(`activity_id`))",
         "fields": [
           {
             "fieldPath": "activityId",
@@ -135,16 +135,38 @@
             "notNull": true
           },
           {
-            "fieldPath": "maxHeartrate",
-            "columnName": "max_heartrate",
+            "fieldPath": "maxHeartRate",
+            "columnName": "max_heart_rate",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "minHeartrate",
-            "columnName": "min_heartrate",
+            "fieldPath": "minHeartRate",
+            "columnName": "min_heart_rate",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "firestoreId",
+            "columnName": "firestore_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "syncState",
+            "columnName": "sync_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSyncedAt",
+            "columnName": "last_synced_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -152,41 +174,7 @@
           "columnNames": [
             "activity_id"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "altitude",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `altitude` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
-        "fields": [
-          {
-            "fieldPath": "timestamp",
-            "columnName": "timestamp",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "frequency",
-            "columnName": "frequency",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "altitude",
-            "columnName": "altitude",
-            "affinity": "REAL",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "timestamp"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "calibration",
@@ -264,77 +252,11 @@
           "columnNames": [
             "timestamp"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
-        "tableName": "climbrate",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `climbrate` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
-        "fields": [
-          {
-            "fieldPath": "timestamp",
-            "columnName": "timestamp",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "frequency",
-            "columnName": "frequency",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "climbrate",
-            "columnName": "climbrate",
-            "affinity": "REAL",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "timestamp"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "glide_ratio",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `glide_ratio` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
-        "fields": [
-          {
-            "fieldPath": "timestamp",
-            "columnName": "timestamp",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "frequency",
-            "columnName": "frequency",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "glideRatio",
-            "columnName": "glide_ratio",
-            "affinity": "REAL",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "timestamp"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "location",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `altitude` REAL NOT NULL, `bearing` REAL NOT NULL, `speed` REAL NOT NULL, `geoid_correction` REAL NOT NULL, `has_horizontal_accuracy` INTEGER NOT NULL, `horizontal_accuracy` REAL NOT NULL, `has_vertical_accuracy` INTEGER NOT NULL, `vertical_accuracy` REAL NOT NULL, `bearing_accuracy` REAL NOT NULL, `speed_accuracy` REAL NOT NULL, `provider` TEXT NOT NULL, PRIMARY KEY(`timestamp`))",
+        "tableName": "track_point",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `gps_altitude` REAL NOT NULL, `bearing` REAL NOT NULL, `speed` REAL NOT NULL, `geoid_correction` REAL NOT NULL, `has_horizontal_accuracy` INTEGER NOT NULL, `horizontal_accuracy` REAL NOT NULL, `has_vertical_accuracy` INTEGER NOT NULL, `vertical_accuracy` REAL NOT NULL, `bearing_accuracy` REAL NOT NULL, `speed_accuracy` REAL NOT NULL, `provider` TEXT NOT NULL, `altitude` REAL NOT NULL, `pressure` REAL NOT NULL, `climbrate` REAL NOT NULL, `glide_ratio` REAL NOT NULL, `firestore_id` TEXT, `sync_state` TEXT NOT NULL, `last_synced_at` INTEGER NOT NULL, `sync_error` TEXT, PRIMARY KEY(`timestamp`))",
         "fields": [
           {
             "fieldPath": "timestamp",
@@ -355,8 +277,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "altitude",
-            "columnName": "altitude",
+            "fieldPath": "gpsAltitude",
+            "columnName": "gps_altitude",
             "affinity": "REAL",
             "notNull": true
           },
@@ -419,30 +341,10 @@
             "columnName": "provider",
             "affinity": "TEXT",
             "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "timestamp"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "pressure",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `frequency` REAL NOT NULL, `pressure` REAL NOT NULL, PRIMARY KEY(`timestamp`))",
-        "fields": [
-          {
-            "fieldPath": "timestamp",
-            "columnName": "timestamp",
-            "affinity": "INTEGER",
-            "notNull": true
           },
           {
-            "fieldPath": "frequency",
-            "columnName": "frequency",
+            "fieldPath": "altitude",
+            "columnName": "altitude",
             "affinity": "REAL",
             "notNull": true
           },
@@ -451,6 +353,40 @@
             "columnName": "pressure",
             "affinity": "REAL",
             "notNull": true
+          },
+          {
+            "fieldPath": "climbrate",
+            "columnName": "climbrate",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "glideRatio",
+            "columnName": "glide_ratio",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firestoreId",
+            "columnName": "firestore_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "syncState",
+            "columnName": "sync_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSyncedAt",
+            "columnName": "last_synced_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -458,9 +394,7 @@
           "columnNames": [
             "timestamp"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "user",
@@ -514,15 +448,12 @@
           "columnNames": [
             "user_id"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       }
     ],
-    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fe61349a9b8045ec4510aff1826dfd02')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fdd217084050c60e99f54139942c5f00')"
     ]
   }
 }

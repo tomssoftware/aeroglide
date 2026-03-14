@@ -64,4 +64,6 @@ include(":feature:variometer")
 include(":feature:disclaimer")
 include(":feature:diagnosis")
 include(":feature:settings")
+include(":sync:work")
+
 

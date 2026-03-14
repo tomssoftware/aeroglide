@@ -42,7 +42,7 @@ import androidx.navigation.NavController
 import com.alpsfly.aeroglide.core.MenuItem
 import com.alpsfly.aeroglide.core.common.units.LocalUnit
 import com.alpsfly.aeroglide.core.common.units.UnitConverter
-import com.alpsfly.aeroglide.core.model.database.Climbrate
+import com.alpsfly.aeroglide.core.model.hardware.Climbrate
 import com.alpsfly.aeroglide.core.presentation.AeroGlideBottomBar
 import com.alpsfly.aeroglide.core.presentation.centered
 import com.alpsfly.aeroglide.feature.variometer.viewmodel.VariometerViewModel

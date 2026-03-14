@@ -4,6 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+import com.alpsfly.aeroglide.core.model.firebase.Activity as ActivityDto
+
 @Entity(tableName = "activity")
 data class Activity (
     @PrimaryKey
@@ -28,6 +30,42 @@ data class Activity (
     @ColumnInfo(name = "negative_avg_climbrate") var negativeAvgClimbrate: Float = 0f,
     @ColumnInfo(name = "max_grade") var maxGrade: Float = Float.MIN_VALUE,
     @ColumnInfo(name = "min_grade") var minGrade: Float = Float.MAX_VALUE,
-    @ColumnInfo(name = "max_heartrate") var maxHeartrate: Long = Long.MIN_VALUE,
-    @ColumnInfo(name = "min_heartrate") var minHeartrate: Long = Long.MAX_VALUE
+    @ColumnInfo(name = "max_heart_rate") var maxHeartRate: Long = Long.MIN_VALUE,
+    @ColumnInfo(name = "min_heart_rate") var minHeartRate: Long = Long.MAX_VALUE,
+
+    // Fields to track the synchronization state with Firebase
+    @ColumnInfo(name = "firestore_id") var firestoreId: String? = null,
+    @ColumnInfo(name = "sync_state") var syncState: SyncState = SyncState.LOCAL,
+    @ColumnInfo(name = "last_synced_at") var lastSyncedAt: Long = 0,
+    @ColumnInfo(name = "sync_error") var syncError: String? = null
 )
+
+// In your local Activity.kt or a Mapper class
+fun Activity.toFirestore(): ActivityDto {
+    return ActivityDto(
+        id = this.firestoreId, // Use existing ID if we are updating
+        userId = this.userId,
+        begin = this.begin,
+        end = this.end,
+        distance = this.distance,
+        duration = this.duration,
+        ascent = this.ascent,
+        descent = this.descent,
+        minPressure = this.minPressure,
+        maxPressure = this.maxPressure,
+        minAltitude = this.minAltitude,
+        maxAltitude = this.maxAltitude,
+        minSpeed = this.minSpeed,
+        maxSpeed = this.maxSpeed,
+        avgSpeed = this.avgSpeed,
+        maxClimbrate = this.maxClimbrate,
+        minClimbrate = this.minClimbrate,
+        positiveAvgClimbrate = this.positiveAvgClimbrate,
+        negativeAvgClimbrate = this.negativeAvgClimbrate,
+        maxGrade = this.maxGrade,
+        minGrade = this.minGrade,
+        maxHeartRate = this.maxHeartRate,
+        minHeartRate = this.minHeartRate,
+        updatedAt = System.currentTimeMillis()
+    )
+}

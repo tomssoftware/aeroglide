@@ -1,7 +1,7 @@
 package com.alpsfly.aeroglide.core.data.util
 
 
-import com.alpsfly.aeroglide.core.model.database.Location
+import com.alpsfly.aeroglide.core.model.hardware.Location
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
