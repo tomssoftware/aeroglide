@@ -1,6 +1,7 @@
 package com.alpsfly.aeroglide.core.data
 
 import android.content.SharedPreferences
+import com.alpsfly.aeroglide.core.common.getBooleanFlow
 import com.alpsfly.aeroglide.core.common.getFloatFlow
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -16,4 +17,6 @@ class AutoStartSettingsProviderImpl @Inject constructor(
         get() = prefs.getFloatFlow("spk_auto_start_climbrate", 0.5f)
     override val climbrateLimitLanding: Flow<Float>
         get() = prefs.getFloatFlow("spk_auto_start_climbrate_landing", -0.5f)
+    override val isAutoStartEnabled: Flow<Boolean>
+        get() = prefs.getBooleanFlow("spk_auto_start_enabled", false)
 }

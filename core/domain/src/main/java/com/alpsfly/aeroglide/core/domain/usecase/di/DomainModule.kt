@@ -87,6 +87,7 @@ object DomainModule {
         autoStartUseCase: AutoStartUseCase,
         downloadElevationUseCase: DownloadElevationUseCase,
         sensorRepository: SensorRepository,
+        autoStartSettingsProvider: AutoStartSettingsProvider,
         @ApplicationScope applicationScope: CoroutineScope
     ): FlightSessionCoordinatorUseCase {
         return FlightSessionCoordinatorUseCase(
@@ -96,6 +97,7 @@ object DomainModule {
             autoStartUseCase,
             downloadElevationUseCase,
             sensorRepository,
+            autoStartSettingsProvider,
             applicationScope
         )
     }
@@ -120,9 +122,10 @@ object DomainModule {
 
     /**
      * Provides the "Manager" use case for auto-start.
-     * This can be a regular (non-singleton) provider as it is lightweight.
+     * Singleton to ensure the init block (callback registration) only runs once.
      */
     @Provides
+    @Singleton
     fun provideAutoStartUseCase(
         appStateManager: AppStateManager,
         autoStartProcessor: AutoStartProcessor,

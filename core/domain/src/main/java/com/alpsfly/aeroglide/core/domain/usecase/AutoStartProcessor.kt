@@ -25,6 +25,7 @@ class AutoStartProcessor @Inject constructor(
 ) {
     private val autoStartDetector = AutoStartDetector()
     private var collectorJob: Job? = null
+    private val settingsJobs = mutableListOf<Job>()
 
     // Callback properties for the UseCase to implement
     var onTakeOffDetected: () -> Unit = {}
@@ -46,13 +47,21 @@ class AutoStartProcessor @Inject constructor(
         if (collectorJob?.isActive == true) return
         Timber.i("AutoStartProcessor: Starting.")
 
-        // The processor listens to setting changes and updates the detector.
-        settingsProvider.velocityLimitTakeOff
+        // Subscribe to all setting changes and track their jobs for later cancellation.
+        settingsJobs += settingsProvider.velocityLimitTakeOff
             .onEach { autoStartDetector.velocityFlying = it }
             .launchIn(applicationScope)
 
-        settingsProvider.velocityLimitLanding
+        settingsJobs += settingsProvider.velocityLimitLanding
             .onEach { autoStartDetector.velocityLanded = it }
+            .launchIn(applicationScope)
+
+        settingsJobs += settingsProvider.climbrateLimitTakeOff
+            .onEach { autoStartDetector.climbrateTakeOff = it }
+            .launchIn(applicationScope)
+
+        settingsJobs += settingsProvider.climbrateLimitLanding
+            .onEach { autoStartDetector.climbrateLanding = it }
             .launchIn(applicationScope)
 
         // The processor collects sensor data and feeds it to the detector.
@@ -71,6 +80,8 @@ class AutoStartProcessor @Inject constructor(
         Timber.i("AutoStartProcessor: Stopping.")
         collectorJob?.cancel()
         collectorJob = null
+        settingsJobs.forEach { it.cancel() }
+        settingsJobs.clear()
         autoStartDetector.reset()
     }
 }
@@ -83,15 +94,15 @@ class AutoStartDetector(
     var climbrate: Float = Float.MIN_VALUE
     var velocity: Float = Float.MIN_VALUE
 
-    // Callbacks
-    lateinit var onTakeOff: () -> Unit
-    lateinit var onLanded: () -> Unit
+    // Callbacks – default empty lambdas prevent UninitializedPropertyAccessException
+    var onTakeOff: () -> Unit = {}
+    var onLanded: () -> Unit = {}
 
-    // Limits
+    // Limits (var so they can be updated at runtime via settings)
     var velocityFlying = 2 * 1.38f // 2 * 5 km/h
     var velocityLanded = 2 * 1.38f // 2 * 5 km/h
-    val climbrateTakeOff = 0.5f // ms
-    val climbrateLanding = -0.5f // ms
+    var climbrateTakeOff = 0.5f    // m/s
+    var climbrateLanding = -0.5f   // m/s
 
     private fun isTakeOffCondition() = velocity >= velocityFlying && climbrate >= climbrateTakeOff
     private fun isFlyingCondition() = velocity >= velocityFlying

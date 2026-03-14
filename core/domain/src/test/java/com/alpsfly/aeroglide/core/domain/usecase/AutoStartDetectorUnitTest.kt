@@ -4,6 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -147,6 +148,180 @@ class AutoStartDetectorTest {
         autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
 
         assertTrue("Should be able to start a new flight after reset", takeOffCalled)
+    }
+
+    @Test
+    fun `detect() does nothing when sensor data is not yet initialized`() = runTest {
+        // GIVEN: No sensor data set – both remain at default Float.MIN_VALUE
+        // (velocity and climbrate are not assigned in this test)
+
+        // WHEN: detect() is called for longer than any detection duration
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 1.seconds)
+
+        // THEN: No callbacks should fire because the guard returns early
+        assertFalse("onTakeOff should not fire without initialized sensor data", takeOffCalled)
+        assertFalse("onLanded should not fire without initialized sensor data", landedCalled)
+    }
+
+    @Test
+    fun `Landed state auto-resets to WaitForTakeOff after resetDuration`() = runTest {
+        // GIVEN: Full flight and landing cycle
+        takeOff()
+        flying()
+        landing()
+        landed()
+        assertTrue("onLanded should have been called", landedCalled)
+
+        // WHEN: Landed conditions persist for the full resetDuration (30 s)
+        autoStartDetector.velocity = autoStartDetector.velocityLanded - 1f
+        autoStartDetector.climbrate = 0f
+        autoStartDetector.simulateTimePassing(autoStartDetector.resetDuration + 500.milliseconds)
+
+        // THEN: The state machine should have auto-reset to WaitForTakeOff,
+        // so a new take-off cycle must be fully detectable again.
+        takeOffCalled = false
+        autoStartDetector.velocity = autoStartDetector.velocityFlying + 1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
+
+        assertTrue("After auto-reset a new take-off should be detected", takeOffCalled)
+    }
+
+    @Test
+    fun `landing detection returns to Flying state when flying conditions are restored`() = runTest {
+        // GIVEN: Detector is in Flying state
+        autoStartDetector.velocity = autoStartDetector.velocityFlying + 1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
+        autoStartDetector.simulateTimePassing(autoStartDetector.flyingDuration + 100.milliseconds)
+
+        // AND: Landing conditions begin but do NOT last the full landingDuration
+        autoStartDetector.climbrate = autoStartDetector.climbrateLanding - 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.landingDuration - 1.seconds)
+
+        // WHEN: Flying conditions are restored for the full flyingDuration
+        // → triggers the Landing → Flying back-transition
+        autoStartDetector.climbrate = 0f // neutral climbrate, speed stays above threshold
+        autoStartDetector.simulateTimePassing(autoStartDetector.flyingDuration + 100.milliseconds)
+
+        // THEN: No landing should have been detected
+        assertFalse("onLanded should not be called when landing was aborted mid-state", landedCalled)
+
+        // AND: A full landing cycle is still possible from this point
+        autoStartDetector.climbrate = autoStartDetector.climbrateLanding - 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.landingDuration + 100.milliseconds)
+        autoStartDetector.velocity = autoStartDetector.velocityLanded - 1f
+        autoStartDetector.climbrate = 0f
+        autoStartDetector.simulateTimePassing(autoStartDetector.landedDuration + 500.milliseconds)
+
+        assertTrue("onLanded should be called after the full subsequent landing", landedCalled)
+    }
+
+    // -------------------------------------------------------------------------
+    // 🟡 Wichtig: Korrektheitsnachweise
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `onTakeOff is called exactly once regardless of how long conditions persist`() = runTest {
+        // GIVEN: Track the exact invocation count
+        var takeOffCount = 0
+        autoStartDetector.onTakeOff = { takeOffCount++ }
+
+        // WHEN: Take-off conditions persist for three times the required duration
+        autoStartDetector.velocity = autoStartDetector.velocityFlying + 1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration * 3)
+
+        // THEN: Callback fired exactly once (no repeated TakeOff side effect)
+        assertEquals("onTakeOff must be called exactly once", 1, takeOffCount)
+    }
+
+    @Test
+    fun `onLanded is called exactly once regardless of how long conditions persist`() = runTest {
+        // GIVEN: Track the exact invocation count
+        var landedCount = 0
+        autoStartDetector.onLanded = { landedCount++ }
+
+        // WHEN: A complete flight with an extended landed phase
+        autoStartDetector.velocity = autoStartDetector.velocityFlying + 1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
+        autoStartDetector.simulateTimePassing(autoStartDetector.flyingDuration + 100.milliseconds)
+        autoStartDetector.climbrate = autoStartDetector.climbrateLanding - 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.landingDuration + 100.milliseconds)
+        autoStartDetector.velocity = autoStartDetector.velocityLanded - 1f
+        autoStartDetector.climbrate = 0f
+        autoStartDetector.simulateTimePassing(autoStartDetector.landedDuration * 3)
+
+        // THEN: Callback fired exactly once
+        assertEquals("onLanded must be called exactly once", 1, landedCount)
+    }
+
+    @Test
+    fun `take-off requires both velocity AND climbrate conditions simultaneously`() = runTest {
+        // Case 1: only velocity above threshold, climbrate below climbrateTakeOff
+        autoStartDetector.velocity = autoStartDetector.velocityFlying + 1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff - 0.1f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 1.seconds)
+        assertFalse("onTakeOff must not fire when only velocity condition is met", takeOffCalled)
+
+        // Case 2: only climbrate above threshold, velocity below velocityFlying
+        autoStartDetector.velocity = autoStartDetector.velocityFlying - 0.1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 1.seconds)
+        assertFalse("onTakeOff must not fire when only climbrate condition is met", takeOffCalled)
+    }
+
+    @Test
+    fun `take-off triggers when velocity is exactly at the threshold boundary`() = runTest {
+        // GIVEN: velocity == velocityFlying (boundary – the condition uses >=)
+        autoStartDetector.velocity = autoStartDetector.velocityFlying
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+
+        // WHEN
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
+
+        // THEN: >= is inclusive, so exactly-at-threshold must trigger
+        assertTrue("onTakeOff should fire when velocity is exactly at the threshold", takeOffCalled)
+    }
+
+    // -------------------------------------------------------------------------
+    // 🟢 Robustheit: neue var-Features aus dem Fix
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `changing velocityFlying threshold at runtime immediately affects detection`() = runTest {
+        // GIVEN: Velocity above the original threshold
+        val originalThreshold = autoStartDetector.velocityFlying
+        autoStartDetector.velocity = originalThreshold + 1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+
+        // WHEN: Threshold is raised above current velocity mid-flight
+        autoStartDetector.velocityFlying = autoStartDetector.velocity + 1f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 1.seconds)
+
+        // THEN: No take-off (velocity now below the new threshold)
+        assertFalse("onTakeOff must not fire when velocity is below the updated threshold", takeOffCalled)
+
+        // WHEN: Threshold is restored below the current velocity
+        autoStartDetector.velocityFlying = originalThreshold
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
+
+        // THEN: Take-off now detectable with the restored threshold
+        assertTrue("onTakeOff should fire after threshold is restored below velocity", takeOffCalled)
+    }
+
+    @Test
+    fun `default empty callbacks do not throw when triggered without explicit assignment`() = runTest {
+        // GIVEN: A fresh detector with no callbacks assigned (uses default = {})
+        val freshDetector = AutoStartDetector(timeProvider = { testTimeMillis })
+
+        // WHEN: A full take-off cycle runs through (SideEffect.TakeOff fires)
+        freshDetector.velocity = freshDetector.velocityFlying + 1f
+        freshDetector.climbrate = freshDetector.climbrateTakeOff + 0.5f
+
+        // THEN: No UninitializedPropertyAccessException – reaching here means success
+        freshDetector.simulateTimePassing(freshDetector.takeOffDuration + 200.milliseconds)
     }
 
     /**

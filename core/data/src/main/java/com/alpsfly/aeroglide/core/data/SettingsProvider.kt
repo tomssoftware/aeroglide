@@ -7,4 +7,5 @@ interface AutoStartSettingsProvider {
     val velocityLimitLanding: Flow<Float>
     val climbrateLimitTakeOff: Flow<Float>
     val climbrateLimitLanding: Flow<Float>
+    val isAutoStartEnabled: Flow<Boolean>
 }
