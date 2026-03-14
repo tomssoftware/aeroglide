@@ -17,21 +17,52 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * Orchestrates automatic take-off and landing detection by connecting
+ * [SensorRepository] data and [AutoStartSettingsProvider] configuration to [AutoStartDetector].
+ *
+ * Acts as a thin coordinator: it owns no application state itself and only
+ * forwards detected events through [onTakeOffDetected] and [onLandingDetected].
+ * Call [start] to activate sensor collection and [stop] to release all resources.
+ *
+ * @see AutoStartDetector
+ */
+// Singleton: the init block wires callbacks on the shared AutoStartDetector.
+// Multiple instances would silently overwrite each other's callbacks.
 @Singleton
 class AutoStartProcessor @Inject constructor(
     private val sensorRepository: SensorRepository,
     private val settingsProvider: AutoStartSettingsProvider,
     @param:ApplicationScope private val applicationScope: CoroutineScope
 ) {
+
+    // --- Internal State ---
+
     private val autoStartDetector = AutoStartDetector()
+
+    /**
+     * Combines location and climb-rate emissions and feeds each tick into [AutoStartDetector.detect].
+     *
+     * Launched in [applicationScope] so detection survives Activity recreation.
+     * **Must** be cancelled by calling [stop] when auto-start is disabled to release
+     * the sensor wake-lock.
+     */
     private var collectorJob: Job? = null
 
-    // Callback properties for the UseCase to implement
+    /** Holds subscriptions to individual settings Flows so they can be cancelled together in [stop]. */
+    private val settingsJobs = mutableListOf<Job>()
+
+    // --- Callbacks ---
+
+    /** Invoked exactly once when [AutoStartDetector] transitions to [AutoStartDetector.Companion.State.TakeOff]. */
     var onTakeOffDetected: () -> Unit = {}
+
+    /** Invoked exactly once when [AutoStartDetector] transitions to [AutoStartDetector.Companion.State.Landed]. */
     var onLandingDetected: () -> Unit = {}
 
     init {
-        // The processor now just calls the simple callbacks. It has no knowledge of app state.
+        // The processor forwards detector events through simple callbacks so it stays
+        // ignorant of application state (recording, UI, etc.).
         autoStartDetector.onTakeOff = {
             Timber.i("AutoStartProcessor: Take-off detected, invoking callback.")
             onTakeOffDetected()
@@ -42,20 +73,35 @@ class AutoStartProcessor @Inject constructor(
         }
     }
 
+    // --- Public API ---
+
+    /**
+     * Starts collecting sensor data and observing settings changes.
+     *
+     * Idempotent: calling [start] while already running has no effect.
+     */
     fun start() {
         if (collectorJob?.isActive == true) return
         Timber.i("AutoStartProcessor: Starting.")
 
-        // The processor listens to setting changes and updates the detector.
-        settingsProvider.velocityLimitTakeOff
+        // Mirror every settings change into the detector immediately so thresholds
+        // are always in sync without requiring a restart.
+        settingsJobs += settingsProvider.velocityLimitTakeOff
             .onEach { autoStartDetector.velocityFlying = it }
             .launchIn(applicationScope)
 
-        settingsProvider.velocityLimitLanding
+        settingsJobs += settingsProvider.velocityLimitLanding
             .onEach { autoStartDetector.velocityLanded = it }
             .launchIn(applicationScope)
 
-        // The processor collects sensor data and feeds it to the detector.
+        settingsJobs += settingsProvider.climbrateLimitTakeOff
+            .onEach { autoStartDetector.climbrateTakeOff = it }
+            .launchIn(applicationScope)
+
+        settingsJobs += settingsProvider.climbrateLimitLanding
+            .onEach { autoStartDetector.climbrateLanding = it }
+            .launchIn(applicationScope)
+
         collectorJob = combine(
             sensorRepository.locationFlowUi,
             sensorRepository.climbrateFlowUi
@@ -66,56 +112,121 @@ class AutoStartProcessor @Inject constructor(
         }.launchIn(applicationScope)
     }
 
+    /**
+     * Stops sensor collection, cancels all settings subscriptions, and resets the detector.
+     *
+     * Idempotent: returns early only when **both** [collectorJob] and [settingsJobs] have
+     * no active work. Checking only [collectorJob] would leave settings observers running
+     * and the detector mutating thresholds if [collectorJob] was cancelled or completed
+     * unexpectedly outside of this method.
+     */
     fun stop() {
-        if (collectorJob?.isActive != true) return
-        Timber.i("AutoStartProcessor: Stopping.")
+        val hasActiveCollector = collectorJob?.isActive == true
+        val hasActiveSettingsJobs = settingsJobs.any { it.isActive }
+
+        if (!hasActiveCollector && !hasActiveSettingsJobs) return
+
+        Timber.i("AutoStartProcessor: Stopping (collector=$hasActiveCollector, settingsJobs=$hasActiveSettingsJobs).")
         collectorJob?.cancel()
         collectorJob = null
+        settingsJobs.forEach { it.cancel() }
+        settingsJobs.clear()
         autoStartDetector.reset()
     }
 }
 
+/**
+ * Detects take-off and landing events based on velocity and climb-rate sensor data.
+ *
+ * Operates as a finite state machine:
+ * [Companion.State.WaitForTakeOff] → [Companion.State.TakeOff] → [Companion.State.Flying]
+ * → [Companion.State.Landing] → [Companion.State.Landed].
+ *
+ * Each transition requires the corresponding sensor condition to be satisfied
+ * continuously for a minimum [Duration] (e.g. [takeOffDuration]).
+ * If a condition breaks before the timer expires the accumulator is reset,
+ * preventing false positives from brief sensor spikes.
+ *
+ * @param timeProvider Returns the current wall-clock time in milliseconds.
+ *                     Override with a fake clock in unit tests for deterministic behaviour.
+ * @see AutoStartProcessor
+ */
 class AutoStartDetector(
     private val timeProvider: () -> Long = { System.currentTimeMillis() }
 ) {
 
-    // Input
+    // --- Sensor Inputs ---
+
+    /** Vertical speed in m/s. Positive = climbing, negative = sinking. */
     var climbrate: Float = Float.MIN_VALUE
+
+    /** Ground speed in m/s as reported by the GPS sensor. */
     var velocity: Float = Float.MIN_VALUE
 
-    // Callbacks
-    lateinit var onTakeOff: () -> Unit
-    lateinit var onLanded: () -> Unit
+    // --- Callbacks ---
 
-    // Limits
-    var velocityFlying = 2 * 1.38f // 2 * 5 km/h
-    var velocityLanded = 2 * 1.38f // 2 * 5 km/h
-    val climbrateTakeOff = 0.5f // ms
-    val climbrateLanding = -0.5f // ms
+    /** Invoked exactly once when the machine transitions to [Companion.State.TakeOff]. */
+    var onTakeOff: () -> Unit = {}
 
+    /** Invoked exactly once when the machine transitions to [Companion.State.Landed]. */
+    var onLanded: () -> Unit = {}
+
+    // --- Detection Thresholds ---
+
+    // Default velocity thresholds are ~10 km/h expressed in m/s.
+    // Derivation: 1.38f ≈ 5 km/h / 3.6  →  2 * 1.38f ≈ 2.76 m/s ≈ 10 km/h.
+
+    /** Minimum ground speed in m/s that is considered "airborne" for take-off detection (~10 km/h). */
+    var velocityFlying = 2 * 1.38f
+
+    /** Maximum ground speed in m/s that qualifies as "on the ground" for landing confirmation (~10 km/h). */
+    var velocityLanded = 2 * 1.38f
+
+    /** Minimum climb rate in m/s required to trigger the take-off state. */
+    var climbrateTakeOff = 0.5f
+
+    /** Maximum (most negative) climb rate in m/s that marks the start of a landing approach. */
+    var climbrateLanding = -0.5f
+
+    // --- Guard Conditions (private helpers) ---
+
+    // >= is intentional: a value exactly at the threshold still qualifies (inclusive boundary).
     private fun isTakeOffCondition() = velocity >= velocityFlying && climbrate >= climbrateTakeOff
     private fun isFlyingCondition() = velocity >= velocityFlying
     private fun isLandingCondition() = velocity >= velocityFlying && climbrate <= climbrateLanding
     private fun isLandedCondition() =
         velocity <= velocityLanded && (climbrate in climbrateLanding..climbrateTakeOff)
 
-    // Time-based Durations for Guards
+    // --- Time-Based Guard Durations ---
+
+    /** Minimum continuous time in take-off condition before [Companion.SideEffect.TakeOff] fires. */
     @VisibleForTesting
     internal val takeOffDuration = 5.seconds
 
+    /** Minimum continuous time in flying condition before transitioning to [Companion.State.Flying]. */
     @VisibleForTesting
     internal val flyingDuration = 3.seconds
 
+    /** Minimum continuous time in landing condition before transitioning to [Companion.State.Landing]. */
     @VisibleForTesting
     internal val landingDuration = 3.seconds
 
+    /** Minimum continuous time in landed condition before [Companion.SideEffect.Landed] fires. */
     @VisibleForTesting
     internal val landedDuration = 5.seconds
 
+    /**
+     * Idle time after landing before the machine resets to [Companion.State.WaitForTakeOff].
+     *
+     * Prevents an immediate re-trigger when the pilot taxis after touchdown.
+     */
     @VisibleForTesting
     internal val resetDuration = 30.seconds
 
-    // These will accumulate time when conditions are met
+    // --- Time Accumulators ---
+
+    // Each accumulator tracks how long the corresponding guard condition has been met
+    // consecutively. They are zeroed on any state transition or condition break.
     private var timeInTakeOffCondition = Duration.ZERO
     private var timeInFlyingCondition = Duration.ZERO
     private var timeInLandingCondition = Duration.ZERO
@@ -130,25 +241,35 @@ class AutoStartDetector(
 
     private var lastUpdateTime: Long = 0
 
+    // --- Public API ---
+
+    /**
+     * Processes the latest sensor readings and advances the state machine if guard
+     * conditions are satisfied.
+     *
+     * Should be called on every sensor tick. Returns immediately if either
+     * [climbrate] or [velocity] has not yet been set (still at [Float.MIN_VALUE]).
+     */
     fun detect() {
         if (climbrate == Float.MIN_VALUE || velocity == Float.MIN_VALUE) {
-            return // Not enough data yet
+            return // Not enough data yet; skip until both sensors have reported.
         }
 
         val currentTime = timeProvider()
-        // If this is the first update, just set the time and exit
+        // First call: anchor the clock without advancing the machine to avoid
+        // an artificially large elapsed time on the very first tick.
         if (lastUpdateTime == 0L) {
             lastUpdateTime = currentTime
             return
         }
 
-        // Calculate elapsed time in seconds since last detection
         val elapsedTime = (currentTime - lastUpdateTime).milliseconds
         lastUpdateTime = currentTime
 
         stateMachine.transition(Event.OnUpdate(elapsedTime))
     }
 
+    /** Resets the detector to [Companion.State.WaitForTakeOff] and clears all time accumulators. */
     fun reset() {
         timeInTakeOffCondition = Duration.ZERO
         timeInFlyingCondition = Duration.ZERO
@@ -158,17 +279,16 @@ class AutoStartDetector(
         stateMachine.transition(Event.OnReset)
     }
 
-    /* auto start state machine */
+    // --- State Machine ---
+
     private val stateMachine = StateMachine.create<State, Event, SideEffect> {
         initialState(State.WaitForTakeOff)
 
         state<State.WaitForTakeOff> {
             on<Event.OnUpdate> { event ->
-                // This 'if' statement is your Guard Condition
                 if (doTakeOff()) {
                     transitionTo(State.TakeOff, SideEffect.TakeOff)
                 } else {
-                    // If the guard is not met, stay in this state and continue monitoring
                     dontTransition(sideEffect = SideEffect.Monitor(event.elapsedTime))
                 }
             }
@@ -179,7 +299,6 @@ class AutoStartDetector(
 
         state<State.TakeOff> {
             on<Event.OnUpdate> { event ->
-                // Guard: Has enough time passed in the "flying" condition?
                 if (doFlying()) {
                     transitionTo(State.Flying)
                 } else {
@@ -193,7 +312,6 @@ class AutoStartDetector(
 
         state<State.Flying> {
             on<Event.OnUpdate> { event ->
-                // Guard: Has enough time passed in the "landing" condition?
                 if (doLanding()) {
                     transitionTo(State.Landing)
                 } else {
@@ -207,7 +325,8 @@ class AutoStartDetector(
 
         state<State.Landing> {
             on<Event.OnUpdate> { event ->
-                // Guard: Has the craft been "landed" for long enough?
+                // Flying takes priority over landed so a brief speed-up during the landing
+                // roll returns the machine to Flying rather than completing the landing.
                 if (doFlying()) {
                     transitionTo(State.Flying)
                 } else if (doLanded()) {
@@ -223,9 +342,8 @@ class AutoStartDetector(
 
         state<State.Landed> {
             on<Event.OnUpdate> { event ->
-                // Guard: Has it been long enough since landing to reset the machine?
                 if (doReset()) {
-                    transitionTo(State.WaitForTakeOff) // Reset the machine
+                    transitionTo(State.WaitForTakeOff)
                 } else {
                     dontTransition(sideEffect = SideEffect.Monitor(event.elapsedTime))
                 }
@@ -238,7 +356,8 @@ class AutoStartDetector(
         onTransition {
             val validTransition = it as? StateMachine.Transition.Valid ?: return@onTransition
 
-            // Reset time accumulators when leaving a state
+            // Clear all accumulators whenever the state actually changes so the
+            // next state starts its timer from zero.
             if (validTransition.fromState != validTransition.toState) {
                 timeInTakeOffCondition = Duration.ZERO
                 timeInFlyingCondition = Duration.ZERO
@@ -248,22 +367,19 @@ class AutoStartDetector(
             }
 
             when (val sideEffect = validTransition.sideEffect) {
-                is SideEffect.TakeOff -> {
-                    onTakeOff()
-                }
+                is SideEffect.TakeOff -> onTakeOff()
 
-                is SideEffect.Landed -> {
-                    onLanded()
-                }
+                is SideEffect.Landed -> onLanded()
 
                 is SideEffect.Monitor -> {
-                    // This is where we check conditions and accumulate time for our guards
+                    // Accumulate time only while the guard condition holds continuously.
+                    // Any interruption resets the counter to prevent false positives.
                     when (validTransition.fromState) {
                         State.WaitForTakeOff -> {
                             if (isTakeOffCondition()) {
                                 timeInTakeOffCondition += sideEffect.elapsedTime
                             } else {
-                                timeInTakeOffCondition = Duration.ZERO // Reset if condition fails
+                                timeInTakeOffCondition = Duration.ZERO
                             }
                         }
 
@@ -284,6 +400,8 @@ class AutoStartDetector(
                         }
 
                         State.Landing -> {
+                            // Both flying and landed timers may advance simultaneously
+                            // since the machine must choose between two exit transitions.
                             if (isLandedCondition()) {
                                 timeInLandedCondition += sideEffect.elapsedTime
                             } else if (isFlyingCondition()) {
@@ -311,23 +429,68 @@ class AutoStartDetector(
 
     companion object {
 
-        /* state machine */
+        // --- State Machine Types ---
+
+        /**
+         * Represents all possible states of the auto-start detection machine.
+         *
+         * Sealed to guarantee exhaustive `when` handling.
+         */
         sealed class State {
+            /** Waiting for the pilot to begin a take-off run. This is the initial state. */
             data object WaitForTakeOff : State()
+
+            /** Take-off conditions are met; [AutoStartDetector.takeOffDuration] timer is running. */
             data object TakeOff : State()
+
+            /** Airborne and flying; monitoring for the start of a landing approach. */
             data object Flying : State()
+
+            /** Landing approach detected; timer running to confirm touch-down. */
             data object Landing : State()
+
+            /**
+             * Touch-down confirmed. Machine remains here until [AutoStartDetector.resetDuration]
+             * elapses, then returns to [WaitForTakeOff].
+             */
             data object Landed : State()
         }
 
+        /**
+         * Events that drive the state machine forward.
+         *
+         * Sealed to guarantee exhaustive `when` handling.
+         */
         sealed class Event {
+            /**
+             * Emitted on every sensor tick.
+             *
+             * @property elapsedTime Wall-clock time since the previous [OnUpdate] call.
+             */
             data class OnUpdate(val elapsedTime: Duration) : Event()
+
+            /** Forces an immediate reset to [State.WaitForTakeOff] and clears all accumulators. */
             data object OnReset : Event()
         }
 
+        /**
+         * Side effects produced by state transitions.
+         *
+         * Sealed to guarantee exhaustive `when` handling.
+         */
         sealed class SideEffect {
+            /**
+             * Carries the elapsed time so the `onTransition` handler can advance
+             * the correct time accumulator.
+             *
+             * @property elapsedTime Wall-clock time since the previous sensor tick.
+             */
             data class Monitor(val elapsedTime: Duration) : SideEffect()
+
+            /** Fired exactly once when the machine enters [State.TakeOff]. */
             data object TakeOff : SideEffect()
+
+            /** Fired exactly once when the machine enters [State.Landed]. */
             data object Landed : SideEffect()
         }
     }

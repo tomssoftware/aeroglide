@@ -16,3 +16,14 @@ fun SharedPreferences.getFloatFlow(key: String, defaultValue: Float): Flow<Float
     awaitClose { unregisterOnSharedPreferenceChangeListener(listener) }
 }
 
+fun SharedPreferences.getBooleanFlow(key: String, defaultValue: Boolean): Flow<Boolean> = callbackFlow {
+    val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, updatedKey ->
+        if (updatedKey == key) {
+            trySend(sharedPrefs.getBoolean(key, defaultValue))
+        }
+    }
+    trySend(getBoolean(key, defaultValue))
+    registerOnSharedPreferenceChangeListener(listener)
+    awaitClose { unregisterOnSharedPreferenceChangeListener(listener) }
+}
+
