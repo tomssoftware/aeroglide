@@ -282,6 +282,15 @@ class SensorRepositoryImpl @Inject constructor(
             var lastVerticalAcceleration = 0L
             var isKalmanFilterConfigured = false
             return combine(altitudeFlow, verticalAccelerationFlow) { a, v ->
+                // Schritt 1 – Prädiktionsschritt (predict VOR update, korrekter Kalman-Zyklus)
+                if (v.timestamp != lastVerticalAcceleration) {
+                    if (isKalmanFilterConfigured && sensorFrequency.get() > 0) {
+                        kalmanFilter.predict(v.values[0], 1f / sensorFrequency.get())
+                    }
+                    lastVerticalAcceleration = v.timestamp
+                    sensorFrequency.inc()
+                }
+                // Schritt 2 – Korrekturschritt
                 if (a.timestamp != lastAltitude) {
                     if (lastAltitude == 0L) {
                         kalmanFilter.configure(Q_ACCELERATION, R_ALTITUDE, a.values[0])
@@ -289,13 +298,6 @@ class SensorRepositoryImpl @Inject constructor(
                     }
                     kalmanFilter.update(a.values[0])
                     lastAltitude = a.timestamp
-                }
-                if (v.timestamp != lastVerticalAcceleration) {
-                    if (isKalmanFilterConfigured && sensorFrequency.get() > 0) {
-                        kalmanFilter.predict(v.values[0], 1f / sensorFrequency.get())
-                    }
-                    lastVerticalAcceleration = v.timestamp
-                    sensorFrequency.inc()
                 }
                 kalmanFilter.climbrate
             }.movingAverage(20)
