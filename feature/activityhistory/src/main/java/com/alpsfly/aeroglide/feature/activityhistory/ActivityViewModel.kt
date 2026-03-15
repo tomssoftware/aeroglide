@@ -5,10 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
-import com.alpsfly.aeroglide.core.model.hardware.Altitude
-import com.alpsfly.aeroglide.core.model.hardware.Climbrate
-import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
-import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
@@ -142,7 +138,7 @@ class ActivityViewModel @Inject constructor(
                 if (list.isEmpty()) {
                     HistoryChartUiState.NoData
                 } else {
-                    val startTime = list.firstOrNull()?.let { (it as? Any).getTimestamp() } ?: activity.begin
+                    val startTime = list.firstOrNull()?.let { extractTimestamp(it) } ?: activity.begin
                     val points = list.map { item ->
                         val timestamp = extractTimestamp(item)
                         val timeDeltaSeconds = (timestamp - startTime) / 1000
@@ -159,15 +155,6 @@ class ActivityViewModel @Inject constructor(
         }
     }
 
-    // This is a helper to generically get a timestamp if the object has one.
-    // A more robust solution would be a shared interface like `interface Timestamped { val timestamp: Long }`
-    private fun Any?.getTimestamp(): Long {
-        return when (this) {
-            is Altitude -> this.timestamp
-            is Climbrate -> this.timestamp
-            else -> 0L
-        }
-    }
 
     private suspend fun updateProducer(
         producer: CartesianChartModelProducer,
