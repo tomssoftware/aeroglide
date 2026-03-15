@@ -144,6 +144,7 @@ fun AeroGlideScreen(
         val coroutineScope = rememberCoroutineScope()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val appState by aeroGlideViewModel.appState.collectAsStateWithLifecycle(initialValue = AppState.Idle())
+        val isToneEnabled by aeroGlideViewModel.isToneEnabled.collectAsStateWithLifecycle()
 
         Scaffold(
             modifier = Modifier,
@@ -199,10 +200,14 @@ fun AeroGlideScreen(
                                 contentDescription = "Re-calibrate"
                             )
                         }
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { aeroGlideViewModel.onToggleTone() }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.volume_off_24px),
-                                contentDescription = "Volume off"
+                                painter = painterResource(
+                                    id = if (isToneEnabled) R.drawable.volume_up_24px
+                                         else R.drawable.volume_off_24px
+                                ),
+                                contentDescription = if (isToneEnabled) "Vario-Ton deaktivieren"
+                                                     else "Vario-Ton aktivieren"
                             )
                         }
                     },
