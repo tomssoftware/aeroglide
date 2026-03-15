@@ -1,0 +1,181 @@
+package com.alpsfly.aeroglide.core.domain.usecase
+
+import android.content.SharedPreferences
+import com.alpsfly.aeroglide.core.common.audio.VarioTone
+import com.alpsfly.aeroglide.core.common.di.ApplicationScope
+import com.alpsfly.aeroglide.core.data.SensorRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
+
+// SharedPreferences keys – must match the values written by SettingsViewModel.
+private const val PREFS_KEY_CLIMB_THRESHOLD = "spk_vario_tone_threshold_climb"
+private const val PREFS_KEY_SINK_THRESHOLD  = "spk_vario_tone_threshold_sink"
+
+// Default thresholds used when the user has not changed the settings yet.
+private const val DEFAULT_CLIMB_THRESHOLD =  0.2f  // m/s
+private const val DEFAULT_SINK_THRESHOLD  = -0.3f  // m/s (negative)
+
+/**
+ * Manages the variometer tone lifecycle.
+ *
+ * Observes [SensorRepository.climbrateFlowUi], maps each 1-second averaged climb-rate
+ * sample to a [VarioToneState] using the LX-Navia tone algorithm, and drives [VarioTone]
+ * accordingly.  The tone is only restarted when the **zone type** changes
+ * (Silence → Climb, Climb → Sink, etc.) to prevent audible clicking during normal flight.
+ *
+ * ## Tone algorithm (LX Navia style)
+ * | Zone   | Frequency formula                                   | Note                          |
+ * |--------|-----------------------------------------------------|-------------------------------|
+ * | Climb  | `(700 + climbrate × 150) clipped to [700, 2200] Hz` | pulsed; 50 % duty-cycle beep  |
+ * | Sink   | `(500 + climbrate × 30)  clipped to [220, 500]  Hz` | continuous; climbrate < 0     |
+ * | Silence| –                                                   | dead-zone between thresholds  |
+ *
+ * Beep timing for climb: `beepMs = (500 − climbrate × 45) clipped to [60, 500] ms`.
+ *
+ * ## Lifecycle
+ * The use case is a [Singleton] and outlives Activities.  Call [enable] / [disable]
+ * from the UI layer; the [ApplicationScope] coroutine keeps the tone alive during
+ * screen rotation.
+ *
+ * @param sensorRepository Source of [SensorRepository.climbrateFlowUi].
+ * @param varioTone        Audio backend that produces the actual tones.
+ * @param prefs            App-wide [SharedPreferences] for reading threshold settings.
+ * @param scope            Long-lived [CoroutineScope] tied to the application process.
+ */
+@Singleton
+class VarioToneUseCase @Inject constructor(
+    private val sensorRepository: SensorRepository,
+    private val varioTone: VarioTone,
+    private val prefs: SharedPreferences,
+    @param:ApplicationScope private val scope: CoroutineScope,
+) {
+
+    // --- Public state ---
+
+    private val _isToneEnabled = MutableStateFlow(false)
+
+    /**
+     * `true` while the tone engine is active and listening to climb-rate updates.
+     * Observed by the UI to reflect the correct volume icon in the top app bar.
+     */
+    val isToneEnabled: StateFlow<Boolean> = _isToneEnabled.asStateFlow()
+
+    // --- Internal job handle ---
+
+    // Holds the active collection job; null when the tone is disabled.
+    private var collectJob: Job? = null
+
+    // --- Public API ---
+
+    /**
+     * Activates the tone engine.
+     *
+     * Starts collecting [SensorRepository.climbrateFlowUi] and drives [varioTone]
+     * based on the current climb rate and the user-configured thresholds.
+     * Calling [enable] while already enabled is a no-op.
+     */
+    fun enable() {
+        if (_isToneEnabled.value) return
+        Timber.i("VarioToneUseCase: enabling tone engine")
+        _isToneEnabled.value = true
+        collectJob = scope.launch { collectAndPlay() }
+    }
+
+    /**
+     * Deactivates the tone engine and silences any currently playing tone.
+     *
+     * Cancels the internal collection job, stops [varioTone], and updates
+     * [isToneEnabled] to `false`.  Calling [disable] while already disabled is a no-op.
+     */
+    fun disable() {
+        if (!_isToneEnabled.value) return
+        Timber.i("VarioToneUseCase: disabling tone engine")
+        collectJob?.cancel()
+        collectJob = null
+        varioTone.stop()
+        _isToneEnabled.value = false
+    }
+
+    // --- Internal implementation ---
+
+    /**
+     * Collects [SensorRepository.climbrateFlowUi], maps each sample to a [VarioToneState],
+     * and drives [varioTone] only when the zone type changes.
+     *
+     * Thresholds are read once per activation from [SharedPreferences] so a settings change
+     * takes effect the next time the user enables the tone.
+     */
+    private suspend fun collectAndPlay() {
+        // Read thresholds once at activation time.
+        val climbThreshold = prefs.getFloat(PREFS_KEY_CLIMB_THRESHOLD, DEFAULT_CLIMB_THRESHOLD)
+        val sinkThreshold  = prefs.getFloat(PREFS_KEY_SINK_THRESHOLD,  DEFAULT_SINK_THRESHOLD)
+        Timber.d("VarioToneUseCase: climbThreshold=$climbThreshold, sinkThreshold=$sinkThreshold")
+
+        var lastState: VarioToneState = VarioToneState.Silence
+
+        sensorRepository.climbrateFlowUi.collect { climbrate ->
+            val newState = mapToState(climbrate.climbrate, climbThreshold, sinkThreshold)
+
+            // Only restart the tone when the zone TYPE changes.  Restarting on every
+            // parameter change (every 1-second tick) would cause audible clicking.
+            if (!newState.isSameZoneAs(lastState)) {
+                Timber.d("VarioToneUseCase: zone transition ${lastState::class.simpleName} → ${newState::class.simpleName} @ ${climbrate.climbrate} m/s")
+                lastState = newState
+                when (newState) {
+                    is VarioToneState.Climb   -> varioTone.startClimbTone(newState.frequencyHz, newState.beepMs, newState.pauseMs)
+                    is VarioToneState.Sink    -> varioTone.startSinkTone(newState.frequencyHz)
+                    is VarioToneState.Silence -> varioTone.stop()
+                }
+            }
+        }
+    }
+
+    /**
+     * Maps a raw climb-rate value to a [VarioToneState] using the LX-Navia algorithm.
+     *
+     * @param climbrate      Current climb rate in m/s (positive = climbing, negative = sinking).
+     * @param climbThreshold Minimum climb rate in m/s above which climb tone is active.
+     * @param sinkThreshold  Maximum (negative) sink rate in m/s below which sink tone is active.
+     */
+    private fun mapToState(
+        climbrate: Float,
+        climbThreshold: Float,
+        sinkThreshold: Float,
+    ): VarioToneState = when {
+        climbrate > climbThreshold -> {
+            val beepMs = (500L - (climbrate * 45f).toLong()).coerceIn(60L, 500L)
+            VarioToneState.Climb(
+                frequencyHz = (700f + climbrate * 150f).coerceIn(700f, 2200f),
+                beepMs      = beepMs,
+                pauseMs     = beepMs, // 50 % duty-cycle
+            )
+        }
+        climbrate < sinkThreshold -> VarioToneState.Sink(
+            // climbrate is negative here, so frequency decreases as sink worsens.
+            frequencyHz = (500f + climbrate * 30f).coerceIn(220f, 500f),
+        )
+        else -> VarioToneState.Silence
+    }
+
+    /**
+     * Returns `true` if both states belong to the same zone type, ignoring parameter values.
+     *
+     * Used to suppress tone restarts caused by small climb-rate fluctuations within
+     * the same zone.
+     */
+    private fun VarioToneState.isSameZoneAs(other: VarioToneState): Boolean = when {
+        this is VarioToneState.Silence && other is VarioToneState.Silence -> true
+        this is VarioToneState.Climb   && other is VarioToneState.Climb   -> true
+        this is VarioToneState.Sink    && other is VarioToneState.Sink    -> true
+        else -> false
+    }
+}
+
+
