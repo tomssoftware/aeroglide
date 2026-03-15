@@ -33,7 +33,7 @@ class AeroGlideViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = AppState.Idle() // Or appStateManager.value if available
+            initialValue = AppState.Idle(), // Or appStateManager.value if available
         )
 
     // --- Vario tone ---

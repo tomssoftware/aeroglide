@@ -13,14 +13,15 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.pow
 
 // SharedPreferences keys – must match the values written by SettingsViewModel.
 private const val PREFS_KEY_CLIMB_THRESHOLD = "spk_vario_tone_threshold_climb"
-private const val PREFS_KEY_SINK_THRESHOLD  = "spk_vario_tone_threshold_sink"
+private const val PREFS_KEY_SINK_THRESHOLD = "spk_vario_tone_threshold_sink"
 
 // Default thresholds used when the user has not changed the settings yet.
-private const val DEFAULT_CLIMB_THRESHOLD =  0.2f  // m/s
-private const val DEFAULT_SINK_THRESHOLD  = -0.3f  // m/s (negative)
+private const val DEFAULT_CLIMB_THRESHOLD = 0.2f  // m/s
+private const val DEFAULT_SINK_THRESHOLD = -0.3f  // m/s (negative)
 
 /**
  * Manages the variometer tone lifecycle.
@@ -30,14 +31,16 @@ private const val DEFAULT_SINK_THRESHOLD  = -0.3f  // m/s (negative)
  * accordingly.  The tone is only restarted when the **zone type** changes
  * (Silence → Climb, Climb → Sink, etc.) to prevent audible clicking during normal flight.
  *
- * ## Tone algorithm (LX Navia style)
- * | Zone   | Frequency formula                                   | Note                          |
- * |--------|-----------------------------------------------------|-------------------------------|
- * | Climb  | `(700 + climbrate × 150) clipped to [700, 2200] Hz` | pulsed; 50 % duty-cycle beep  |
- * | Sink   | `(500 + climbrate × 30)  clipped to [220, 500]  Hz` | continuous; climbrate < 0     |
- * | Silence| –                                                   | dead-zone between thresholds  |
+ * ## Tone algorithm (real-vario style)
+ * | Zone   | Frequency formula                                          | Note                             |
+ * |--------|------------------------------------------------------------|----------------------------------|
+ * | Climb  | `700 × 2^(cr/5)` clipped to [700, 2800] Hz (exp. curve)   | pulsed; asymmetric duty-cycle    |
+ * | Sink   | `(500 + cr × 30)` clipped to [220, 500] Hz                 | continuous; cr < 0               |
+ * | Silence| –                                                          | dead-zone between thresholds     |
  *
- * Beep timing for climb: `beepMs = (500 − climbrate × 45) clipped to [60, 500] ms`.
+ * Climb beep timing: `totalPeriodMs = (600 − cr × 35) in [120, 600] ms`,
+ * `dutyCycle = (0.35 + cr × 0.04) in [0.35, 0.70]`,
+ * `beepMs = totalPeriodMs × dutyCycle`, `pauseMs = totalPeriodMs − beepMs`.
  *
  * ## Lifecycle
  * The use case is a [Singleton] and outlives Activities.  Call [enable] / [disable]
@@ -99,7 +102,7 @@ class VarioToneUseCase @Inject constructor(
         Timber.i("VarioToneUseCase: disabling tone engine")
         collectJob?.cancel()
         collectJob = null
-        varioTone.stop()
+        varioTone.shutdown()   // release AudioTrack – user explicitly turned off the tone
         _isToneEnabled.value = false
     }
 
@@ -115,7 +118,7 @@ class VarioToneUseCase @Inject constructor(
     private suspend fun collectAndPlay() {
         // Read thresholds once at activation time.
         val climbThreshold = prefs.getFloat(PREFS_KEY_CLIMB_THRESHOLD, DEFAULT_CLIMB_THRESHOLD)
-        val sinkThreshold  = prefs.getFloat(PREFS_KEY_SINK_THRESHOLD,  DEFAULT_SINK_THRESHOLD)
+        val sinkThreshold = prefs.getFloat(PREFS_KEY_SINK_THRESHOLD, DEFAULT_SINK_THRESHOLD)
         Timber.d("VarioToneUseCase: climbThreshold=$climbThreshold, sinkThreshold=$sinkThreshold")
 
         var lastState: VarioToneState = VarioToneState.Silence
@@ -129,8 +132,13 @@ class VarioToneUseCase @Inject constructor(
                 Timber.d("VarioToneUseCase: zone transition ${lastState::class.simpleName} → ${newState::class.simpleName} @ ${climbrate.climbrate} m/s")
                 lastState = newState
                 when (newState) {
-                    is VarioToneState.Climb   -> varioTone.startClimbTone(newState.frequencyHz, newState.beepMs, newState.pauseMs)
-                    is VarioToneState.Sink    -> varioTone.startSinkTone(newState.frequencyHz)
+                    is VarioToneState.Climb -> varioTone.startClimbTone(
+                        newState.frequencyHz,
+                        newState.beepMs,
+                        newState.pauseMs,
+                    )
+
+                    is VarioToneState.Sink -> varioTone.startSinkTone(newState.frequencyHz)
                     is VarioToneState.Silence -> varioTone.stop()
                 }
             }
@@ -150,17 +158,29 @@ class VarioToneUseCase @Inject constructor(
         sinkThreshold: Float,
     ): VarioToneState = when {
         climbrate > climbThreshold -> {
-            val beepMs = (500L - (climbrate * 45f).toLong()).coerceIn(60L, 500L)
+            // Exponential pitch curve: one octave every ~5 m/s → sounds natural to the ear.
+            val frequencyHz = (700f * 2f.pow(climbrate / 5f)).coerceIn(700f, 2800f)
+
+            // Asymmetric duty cycle:
+            //   slow climb → short beep, long pause (calm, watchful)
+            //   fast climb → long beep, short pause (urgent)
+            val totalPeriodMs = (600L - (climbrate * 35f).toLong()).coerceIn(120L, 600L)
+            val dutyCycle = (0.35f + climbrate * 0.04f).coerceIn(0.35f, 0.70f)
+            val beepMs = (totalPeriodMs * dutyCycle).toLong()
+            val pauseMs = totalPeriodMs - beepMs
+
             VarioToneState.Climb(
-                frequencyHz = (700f + climbrate * 150f).coerceIn(700f, 2200f),
-                beepMs      = beepMs,
-                pauseMs     = beepMs, // 50 % duty-cycle
+                frequencyHz = frequencyHz,
+                beepMs = beepMs,
+                pauseMs = pauseMs,
             )
         }
+
         climbrate < sinkThreshold -> VarioToneState.Sink(
             // climbrate is negative here, so frequency decreases as sink worsens.
             frequencyHz = (500f + climbrate * 30f).coerceIn(220f, 500f),
         )
+
         else -> VarioToneState.Silence
     }
 
@@ -172,8 +192,8 @@ class VarioToneUseCase @Inject constructor(
      */
     private fun VarioToneState.isSameZoneAs(other: VarioToneState): Boolean = when {
         this is VarioToneState.Silence && other is VarioToneState.Silence -> true
-        this is VarioToneState.Climb   && other is VarioToneState.Climb   -> true
-        this is VarioToneState.Sink    && other is VarioToneState.Sink    -> true
+        this is VarioToneState.Climb && other is VarioToneState.Climb -> true
+        this is VarioToneState.Sink && other is VarioToneState.Sink -> true
         else -> false
     }
 }
