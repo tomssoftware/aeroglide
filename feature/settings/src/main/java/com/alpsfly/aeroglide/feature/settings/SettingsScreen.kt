@@ -16,12 +16,12 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import java.text.DecimalFormat
 
@@ -95,15 +95,15 @@ fun SettingsScreen(
     navController: NavController,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    // Collect state from ViewModel
-    val autoStartSpeed by viewModel.autoStartSpeed.collectAsState()
-    val autoStartClimbRate by viewModel.autoStartClimbRate.collectAsState()
-    val varioClimbThreshold by viewModel.varioClimbThreshold.collectAsState()
-    val varioSinkThreshold by viewModel.varioSinkThreshold.collectAsState()
+    // Collect all state lifecycle-aware (avoids leaks when screen is in background).
+    val autoStartEnabled    by viewModel.autoStartEnabled.collectAsStateWithLifecycle()
+    val autoStartSpeed      by viewModel.autoStartSpeed.collectAsStateWithLifecycle()
+    val autoStartClimbRate  by viewModel.autoStartClimbRate.collectAsStateWithLifecycle()
+    val varioClimbThreshold by viewModel.varioClimbThreshold.collectAsStateWithLifecycle()
+    val varioSinkThreshold  by viewModel.varioSinkThreshold.collectAsStateWithLifecycle()
 
-    // Formatters for summary text
     val speedFormat = DecimalFormat("#,##0")
-    val rateFormat = DecimalFormat("0.0")
+    val rateFormat  = DecimalFormat("0.0")
 
     Scaffold(
         topBar = {
@@ -115,63 +115,62 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .padding(all = 8.dp)
         ) {
-            item {
-                PreferenceSwitch(
-                    title = "Auto-Start",
-                    summary = if (viewModel.autoStartEnabled.collectAsState().value) "Enabled" else "Disabled",
-                    isChecked = viewModel.autoStartEnabled.collectAsState().value,
-                    onCheckedChange = { viewModel.onAutoStartEnabled(it) },
-                    isEnabled = true
-                )
-            }
+            // --- Variometer tone thresholds (top of settings, most relevant during flight) ---
             item {
                 PreferenceSlider(
-                    title = "Auto-Start Speed",
-                    summary = "${speedFormat.format(autoStartSpeed)} km/h",
-                    value = autoStartSpeed,
-                    onValueChange = { viewModel.onAutoStartSpeedChange(it) },
-                    valueRange = 0f..50f // Assuming a range
-                )
-            }
-            item {
-                PreferenceSlider(
-                    title = "Auto-Start Climb Rate",
-                    summary = "${rateFormat.format(autoStartClimbRate)} m/s",
-                    value = autoStartClimbRate,
-                    onValueChange = { viewModel.onAutoStartClimbRateChange(it) },
-                    valueRange = 0.1f..5f // The UI sees the real value
-                )
-            }
-            item {
-                HorizontalDivider(
-                    modifier = Modifier.padding(
-                        horizontal = 8.dp,
-                        vertical = 8.dp
-                    ),
-                    thickness = DividerDefaults.Thickness,
-                    color = DividerDefaults.color
-                )
-            }
-            item {
-                PreferenceSlider(
-                    title = "Vario Climb Tone Threshold",
+                    title   = "Vario Climb Tone Threshold",
                     summary = "${rateFormat.format(varioClimbThreshold)} m/s",
-                    value = varioClimbThreshold,
+                    value   = varioClimbThreshold,
                     onValueChange = { viewModel.onVarioClimbThresholdChange(it) },
                     valueRange = 0.1f..2.0f
                 )
             }
             item {
                 PreferenceSlider(
-                    title = "Vario Sink Tone Threshold",
+                    title   = "Vario Sink Tone Threshold",
                     summary = "${rateFormat.format(varioSinkThreshold)} m/s",
-                    value = varioSinkThreshold,
+                    value   = varioSinkThreshold,
                     onValueChange = { viewModel.onVarioSinkThresholdChange(it) },
                     valueRange = -5f..-0.1f
                 )
             }
-            // Add other preference items here...
-            // e.g., PreferenceSwitch for accel sensor, etc.
+
+            item {
+                HorizontalDivider(
+                    modifier  = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color     = DividerDefaults.color
+                )
+            }
+
+            // --- Auto-Start ---
+            item {
+                PreferenceSwitch(
+                    title    = "Auto-Start",
+                    summary  = if (autoStartEnabled) "Enabled" else "Disabled",
+                    isChecked = autoStartEnabled,
+                    onCheckedChange = { viewModel.onAutoStartEnabled(it) },
+                    isEnabled = true
+                )
+            }
+            item {
+                PreferenceSlider(
+                    title   = "Auto-Start Speed",
+                    summary = "${speedFormat.format(autoStartSpeed)} km/h",
+                    value   = autoStartSpeed,
+                    onValueChange = { viewModel.onAutoStartSpeedChange(it) },
+                    valueRange = 0f..50f
+                )
+            }
+            item {
+                PreferenceSlider(
+                    title   = "Auto-Start Climb Rate",
+                    summary = "${rateFormat.format(autoStartClimbRate)} m/s",
+                    value   = autoStartClimbRate,
+                    onValueChange = { viewModel.onAutoStartClimbRateChange(it) },
+                    valueRange = 0.1f..5f
+                )
+            }
         }
     }
 }

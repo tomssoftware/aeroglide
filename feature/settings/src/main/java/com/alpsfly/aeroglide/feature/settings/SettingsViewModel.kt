@@ -17,32 +17,46 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// Helper extension function for SharedPreferences
-fun SharedPreferences.getFloat(key: String, defaultValue: Float): Float {
-    return getString(key, defaultValue.toString())?.toFloatOrNull() ?: defaultValue
-}
-
+/**
+ * Manages user-configurable settings for auto-start detection and variometer tone thresholds,
+ * and handles Google Sign-In via [AuthRepository].
+ *
+ * Settings are persisted to [SharedPreferences] on every change and reloaded on construction
+ * so the UI always reflects the last saved values without a repository layer.
+ *
+ * @see AuthRepository
+ * @see AppStateManager
+ */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val appStateManager: AppStateManager,
-    private val prefs: SharedPreferences // Inject SharedPreferences via Hilt
+    // SharedPreferences is provided as a Hilt binding so the key namespace
+    // is controlled at the injection site rather than hardcoded here.
+    private val prefs: SharedPreferences,
 ) : ViewModel() {
 
-    // Auto-Start Settings
+    // --- Auto-Start Settings ---
+
+    /** Whether automatic take-off and landing detection is active. */
     private val _autoStartEnabled = MutableStateFlow(false)
     val autoStartEnabled = _autoStartEnabled.asStateFlow()
 
+    /** Minimum ground speed in km/h required to consider the pilot airborne. */
     private val _autoStartSpeed = MutableStateFlow(0f)
     val autoStartSpeed = _autoStartSpeed.asStateFlow()
 
+    /** Minimum climb rate in m/s required to confirm a take-off. */
     private val _autoStartClimbRate = MutableStateFlow(0f)
     val autoStartClimbRate = _autoStartClimbRate.asStateFlow()
 
-    // Vario Tone Thresholds
+    // --- Variometer Settings ---
+
+    /** Climb rate in m/s above which the variometer emits a climb tone. */
     private val _varioClimbThreshold = MutableStateFlow(0f)
     val varioClimbThreshold = _varioClimbThreshold.asStateFlow()
 
+    /** Sink rate in m/s (negative) below which the variometer emits a sink tone. */
     private val _varioSinkThreshold = MutableStateFlow(0f)
     val varioSinkThreshold = _varioSinkThreshold.asStateFlow()
 
@@ -50,69 +64,90 @@ class SettingsViewModel @Inject constructor(
         loadSettings()
     }
 
+    // --- Internal Helpers ---
+
+    /** Populates all [MutableStateFlow]s from persisted [SharedPreferences] values. */
     private fun loadSettings() {
         viewModelScope.launch {
-            // Load initial values from SharedPreferences
             _autoStartEnabled.value = prefs.getBoolean("spk_auto_start_enabled", false)
-            _autoStartSpeed.value = prefs.getInt("spk_auto_start_speed", 20).toFloat()
-            _autoStartClimbRate.value = prefs.getInt("spk_auto_start_climbrate", 5).toFloat() / 10f
-            _varioClimbThreshold.value =
-                prefs.getInt("spk_vario_tone_threshold_climb", 2).toFloat() / 10f
-            _varioSinkThreshold.value =
-                prefs.getInt("spk_vario_tone_threshold_sink", -30).toFloat() / -10f
-
-            // Load other settings...
+            // Speed stored as km/h (Float); AutoStartSettingsProviderImpl converts to m/s on read.
+            _autoStartSpeed.value = prefs.getFloat("spk_auto_start_speed", 20f)
+            _autoStartClimbRate.value = prefs.getFloat("spk_auto_start_climbrate", 0.5f)
+            _varioClimbThreshold.value = prefs.getFloat("spk_vario_tone_threshold_climb", 0.2f)
+            _varioSinkThreshold.value = prefs.getFloat("spk_vario_tone_threshold_sink", -0.3f)
         }
     }
 
+    // --- Public API ---
+
+    /**
+     * Enables or disables auto-start detection and persists the choice.
+     *
+     * Also notifies [AppStateManager] so the app-level state machine can transition
+     * to [com.alpsfly.aeroglide.core.domain.usecase.state.AppState.AutoStart] or back
+     * to [com.alpsfly.aeroglide.core.domain.usecase.state.AppState.Ready] immediately.
+     */
     fun onAutoStartEnabled(enabled: Boolean) {
         _autoStartEnabled.value = enabled
-        prefs.edit {
-            putBoolean("spk_auto_start_enabled", enabled)
-        }
+        prefs.edit { putBoolean("spk_auto_start_enabled", enabled) }
         appStateManager.onAutoStartEnabled(enabled)
     }
 
+    /**
+     * Updates the auto-start ground-speed threshold and persists it.
+     *
+     * @param newValue Speed in km/h as shown in the UI.
+     *                 `AutoStartSettingsProviderImpl` converts to m/s on read via `/ 3.6f`.
+     */
     fun onAutoStartSpeedChange(newValue: Float) {
         _autoStartSpeed.value = newValue
-        prefs.edit {
-            // SeekBarPreference stored an Int, so we convert back
-            putInt("spk_auto_start_speed", newValue.toInt())
-        }
+        prefs.edit { putFloat("spk_auto_start_speed", newValue) }
     }
 
+    /**
+     * Updates the auto-start climb-rate threshold and persists it.
+     *
+     * @param newValue Climb rate in m/s as shown in the UI (e.g. `0.5`).
+     *                 Stored and read as Float directly – no scaling required.
+     */
     fun onAutoStartClimbRateChange(newValue: Float) {
-        // The value is stored as an Int (e.g., 5 for 0.5 m/s)
-        val storedValue = (newValue * 10).toInt()
-        _autoStartClimbRate.value = storedValue / 10f
-        prefs.edit {
-            putInt("spk_auto_start_climbrate", storedValue)
-        }
+        _autoStartClimbRate.value = newValue
+        prefs.edit { putFloat("spk_auto_start_climbrate", newValue) }
     }
 
+    /** Updates the variometer climb-tone threshold and persists it. */
     fun onVarioClimbThresholdChange(newValue: Float) {
-        val storedValue = (newValue * 10).toInt()
-        _varioClimbThreshold.value = storedValue / 10f
-        prefs.edit {
-            putInt("spk_vario_tone_threshold_climb", storedValue)
-        }
+        _varioClimbThreshold.value = newValue
+        prefs.edit { putFloat("spk_vario_tone_threshold_climb", newValue) }
     }
 
+    /**
+     * Updates the variometer sink-tone threshold and persists it.
+     *
+     * @param newValue Negative float in m/s (e.g. `-0.5` for 0.5 m/s sink).
+     */
     fun onVarioSinkThresholdChange(newValue: Float) {
-        // Handle negative value storage
-        val storedValue = (newValue * -10).toInt()
-        _varioSinkThreshold.value = storedValue / -10f
-        prefs.edit {
-            putInt("spk_vario_tone_threshold_sink", storedValue)
-        }
+        _varioSinkThreshold.value = newValue
+        prefs.edit { putFloat("spk_vario_tone_threshold_sink", newValue) }
     }
 
+    // --- Authentication ---
+
+    /**
+     * Launches a Google Sign-In flow using [CredentialManager] and forwards the resulting
+     * ID token to [AuthRepository.signInWithGoogle].
+     *
+     * @param context Activity context required by [CredentialManager] to present the
+     *                account-picker bottom sheet.
+     */
     fun signInWithGoogle(context: Context) {
         viewModelScope.launch {
             val credentialManager = CredentialManager.create(context)
 
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
+                // TODO: Replace hardcoded stub with the actual Web Client ID from
+                //       google-services.json / Firebase Console (issue #?).
                 .setServerClientId("YOUR_WEB_CLIENT_ID_FROM_FIREBASE_CONSOLE")
                 .setAutoSelectEnabled(true)
                 .build()
@@ -125,13 +160,15 @@ class SettingsViewModel @Inject constructor(
                 val result = credentialManager.getCredential(context, request)
                 val credential = result.credential
 
-                if (credential is androidx.credentials.CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                if (credential is androidx.credentials.CustomCredential &&
+                    credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                ) {
                     val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                    // Call Repository to sign in with Firebase
                     authRepository.signInWithGoogle(googleIdTokenCredential.idToken)
                 }
-            } catch (e: Exception) {
-                // Handle error
+            } catch (_: Exception) {
+                // TODO: Surface sign-in errors to the UI via a dedicated error state
+                //       instead of silently swallowing the exception (issue #?).
             }
         }
     }

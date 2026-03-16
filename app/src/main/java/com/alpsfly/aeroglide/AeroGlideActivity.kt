@@ -38,7 +38,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.alpsfly.aeroglide.core.common.audio.BeepGeneratorImpl
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.presentation.AeroGlideTopAppBar
 import com.alpsfly.aeroglide.core.ui.R
@@ -51,7 +50,6 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AeroGlideActivity : ComponentActivity() {
     private val aeroGlideViewModel: AeroGlideViewModel by viewModels()
-    private lateinit var beepGenerator: BeepGeneratorImpl
 
     @Inject
     lateinit var prefs: SharedPreferences
@@ -83,7 +81,6 @@ class AeroGlideActivity : ComponentActivity() {
             }
         }
 
-        beepGenerator = BeepGeneratorImpl()
 
         // Enable edge-to-edge display. This MUST be called before setContent.
         enableEdgeToEdge()
@@ -147,6 +144,7 @@ fun AeroGlideScreen(
         val coroutineScope = rememberCoroutineScope()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val appState by aeroGlideViewModel.appState.collectAsStateWithLifecycle(initialValue = AppState.Idle())
+        val isToneEnabled by aeroGlideViewModel.isToneEnabled.collectAsStateWithLifecycle()
 
         Scaffold(
             modifier = Modifier,
@@ -202,10 +200,14 @@ fun AeroGlideScreen(
                                 contentDescription = "Re-calibrate"
                             )
                         }
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { aeroGlideViewModel.onToggleTone() }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.volume_off_24px),
-                                contentDescription = "Volume off"
+                                painter = painterResource(
+                                    id = if (isToneEnabled) R.drawable.volume_up_24px
+                                         else R.drawable.volume_off_24px
+                                ),
+                                contentDescription = if (isToneEnabled) "Vario-Ton deaktivieren"
+                                                     else "Vario-Ton aktivieren"
                             )
                         }
                     },

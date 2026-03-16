@@ -1,6 +1,8 @@
 package com.alpsfly.aeroglide.core.domain.usecase.di
 
 import android.content.Context
+import android.content.SharedPreferences
+import com.alpsfly.aeroglide.core.common.audio.VarioTone
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
 import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
@@ -14,6 +16,7 @@ import com.alpsfly.aeroglide.core.domain.usecase.DownloadElevationUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.FlightSessionCoordinatorUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.PurchaseUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordingUseCase
+import com.alpsfly.aeroglide.core.domain.usecase.VarioToneUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.location.ServiceStarter
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import dagger.Module
@@ -142,4 +145,20 @@ object DomainModule {
     fun providePurchaseUseCase(billingRepository: BillingRepository): PurchaseUseCase {
         return PurchaseUseCase(billingRepository)
     }
+
+    /**
+     * Provides the [VarioToneUseCase] singleton that maps climb rate to audio tone parameters
+     * and controls [VarioTone] playback.
+     *
+     * Requires the [SharedPreferences] singleton (provided by `SettingsModule`) to read the
+     * user-configured climb and sink thresholds without creating a separate settings provider.
+     */
+    @Provides
+    @Singleton
+    fun provideVarioToneUseCase(
+        sensorRepository: SensorRepository,
+        varioTone: VarioTone,
+        prefs: SharedPreferences,
+        @ApplicationScope applicationScope: CoroutineScope,
+    ): VarioToneUseCase = VarioToneUseCase(sensorRepository, varioTone, prefs, applicationScope)
 }

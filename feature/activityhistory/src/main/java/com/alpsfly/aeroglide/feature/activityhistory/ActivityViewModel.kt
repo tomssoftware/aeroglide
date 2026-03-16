@@ -5,10 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
-import com.alpsfly.aeroglide.core.model.hardware.Altitude
-import com.alpsfly.aeroglide.core.model.hardware.Climbrate
-import com.patrykandpatrick.vico.core.cartesian.CartesianMeasuringContext
-import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
@@ -71,6 +67,9 @@ class ActivityViewModel @Inject constructor(
 
     val altitudeModelProducer = CartesianChartModelProducer()
     val climbrateModelProducer = CartesianChartModelProducer()
+
+    // Placeholder data to prevent Vico from crashing on empty series
+    private val emptySeriesData = listOf(0L to 0f)
 
     // 1. Reactive Altitude State
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -139,7 +138,7 @@ class ActivityViewModel @Inject constructor(
                 if (list.isEmpty()) {
                     HistoryChartUiState.NoData
                 } else {
-                    val startTime = list.firstOrNull()?.let { (it as? Any).getTimestamp() } ?: activity.begin
+                    val startTime = list.firstOrNull()?.let { extractTimestamp(it) } ?: activity.begin
                     val points = list.map { item ->
                         val timestamp = extractTimestamp(item)
                         val timeDeltaSeconds = (timestamp - startTime) / 1000
@@ -156,15 +155,6 @@ class ActivityViewModel @Inject constructor(
         }
     }
 
-    // This is a helper to generically get a timestamp if the object has one.
-    // A more robust solution would be a shared interface like `interface Timestamped { val timestamp: Long }`
-    private fun Any?.getTimestamp(): Long {
-        return when (this) {
-            is Altitude -> this.timestamp
-            is Climbrate -> this.timestamp
-            else -> 0L
-        }
-    }
 
     private suspend fun updateProducer(
         producer: CartesianChartModelProducer,
@@ -181,7 +171,15 @@ class ActivityViewModel @Inject constructor(
                     }
                 }
 
-                else -> lineSeries { series(x = emptyList(), y = emptyList()) }
+                else -> {
+                    // Use placeholder data instead of empty lists to avoid "Series can't be empty" crash
+                    lineSeries {
+                        series(
+                            x = emptySeriesData.map { it.first },
+                            y = emptySeriesData.map { it.second }
+                        )
+                    }
+                }
             }
         }
     }
@@ -190,14 +188,14 @@ class ActivityViewModel @Inject constructor(
     val altitudeRangeProvider = object : CartesianLayerRangeProvider {
         override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = altitudeUiState.value) {
-                is HistoryChartUiState.Success -> (state.minValue - 10.0).toDouble()
+                is HistoryChartUiState.Success -> (state.minValue - 10.0)
                 else -> 0.0
             }
         }
 
         override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = altitudeUiState.value) {
-                is HistoryChartUiState.Success -> (state.maxValue + 10.0).toDouble()
+                is HistoryChartUiState.Success -> (state.maxValue + 10.0)
                 else -> 100.0
             }
         }
@@ -206,14 +204,14 @@ class ActivityViewModel @Inject constructor(
     val climbrateRangeProvider = object : CartesianLayerRangeProvider {
         override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = climbrateUiState.value) {
-                is HistoryChartUiState.Success -> (state.minValue - 0.5).toDouble()
+                is HistoryChartUiState.Success -> (state.minValue - 0.5)
                 else -> -2.0
             }
         }
 
         override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = climbrateUiState.value) {
-                is HistoryChartUiState.Success -> (state.maxValue + 0.5).toDouble()
+                is HistoryChartUiState.Success -> (state.maxValue + 0.5)
                 else -> 2.0
             }
         }
@@ -221,35 +219,21 @@ class ActivityViewModel @Inject constructor(
 
     // --- Formatters ---
 
-    val yAxisLabelFormatter = object : CartesianValueFormatter {
-        override fun format(
-            context: CartesianMeasuringContext,
-            value: Double,
-            verticalAxisPosition: Axis.Position.Vertical?
-        ): CharSequence {
-            return "${value.toInt()} m"
-        }
-    }
+    val yAxisLabelFormatter = CartesianValueFormatter { context, value, verticalAxisPosition -> "${value.toInt()} m" }
 
     val yAxisLabelFormatterClimbrate = CartesianValueFormatter { _, value, _ ->
         "%.1f m/s".format(value)
     }
 
-    val xAxisLabelFormatter = object : CartesianValueFormatter {
-        override fun format(
-            context: CartesianMeasuringContext,
-            value: Double,
-            verticalAxisPosition: Axis.Position.Vertical?
-        ): CharSequence {
-            val totalSeconds = value.toLong()
-            val hours = totalSeconds / 3600
-            val minutes = (totalSeconds % 3600) / 60
-            val seconds = totalSeconds % 60
+    val xAxisLabelFormatter = CartesianValueFormatter { context, value, verticalAxisPosition ->
+        val totalSeconds = value.toLong()
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        val seconds = totalSeconds % 60
 
-            return when {
-                hours > 0 -> "%02d:%02d".format(hours, minutes)
-                else -> "%02d:%02d".format(minutes, seconds)
-            }
+        when {
+            hours > 0 -> "%02d:%02d".format(hours, minutes)
+            else -> "%02d:%02d".format(minutes, seconds)
         }
     }
 }

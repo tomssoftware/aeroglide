@@ -8,6 +8,8 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
@@ -19,6 +21,11 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LocationService : Service() {
 
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+    }
+
     override fun onBind(p0: Intent?): IBinder? {
         return null
     }
@@ -26,24 +33,47 @@ class LocationService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
-                startForeground(LOCATION_NOTIFICATION_ID, buildNotification())
+                startServiceAsForeground()
             }
 
             ACTION_STOP -> {
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
+
+            else -> {
+                // If the system restarts the service (intent is null), we must still call startForeground
+                // to avoid ForegroundServiceDidNotStartInTimeException
+                startServiceAsForeground()
+            }
         }
         return START_STICKY
     }
 
-    private fun buildNotification(): Notification {
+    private fun startServiceAsForeground() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                LOCATION_NOTIFICATION_ID,
+                buildNotification(),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            )
+        } else {
+            startForeground(LOCATION_NOTIFICATION_ID, buildNotification())
+        }
+    }
+
+    private fun createNotificationChannel() {
         val channelId = AEROGLIDE_CHANNEL_ID
         val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(
-            NotificationChannel(channelId, "Recording", NotificationManager.IMPORTANCE_LOW)
-        )
-        return NotificationCompat.Builder(this, channelId)
+        if (manager.getNotificationChannel(channelId) == null) {
+            manager.createNotificationChannel(
+                NotificationChannel(channelId, "Recording", NotificationManager.IMPORTANCE_LOW)
+            )
+        }
+    }
+
+    private fun buildNotification(): Notification {
+        return NotificationCompat.Builder(this, AEROGLIDE_CHANNEL_ID)
             .setContentTitle("AeroGlide Recording")
             .setContentText("Tracking flight data ...")
             .setSmallIcon(com.alpsfly.aeroglide.core.domain.R.drawable.ic_launcher_foreground)

@@ -1,0 +1,53 @@
+# .editorconfig — Einheitliche Formatierung für Android Studio (und alle anderen IDEs)
+# Android Studio liest diese Datei automatisch – kein Plugin nötig.
+# ktlint liest sie ebenfalls und respektiert alle kt/kts-Regeln.
+root = true
+
+# ── Globale Defaults ──────────────────────────────────────────────────────────
+[*]
+charset                  = utf-8
+end_of_line              = lf
+indent_style             = space
+indent_size              = 4
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# ── Kotlin (Google Android Kotlin Style Guide) ────────────────────────────────
+[*.{kt,kts}]
+max_line_length          = 120
+
+# ktlint-spezifische Regeln (werden vom ktlint-gradle-Plugin ausgewertet)
+ktlint_code_style        = android_studio   # folgt dem offiziellen Android Kotlin Style Guide
+
+# Trailing comma in Funktionsparametern & Collections erlaubt (Kotlin 1.4+)
+ij_kotlin_allow_trailing_comma         = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+
+# Imports nicht mit Wildcards zusammenfassen
+ij_kotlin_name_count_to_use_star_import            = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
+
+# Keine Leerzeile vor dem ersten member, eine Leerzeile zwischen Membern
+ij_kotlin_blank_lines_after_class_header = 0
+
+# ── XML (Layout, Manifest, etc.) ──────────────────────────────────────────────
+[*.xml]
+indent_size              = 4
+max_line_length          = 120
+
+# ── Gradle Build Scripts ──────────────────────────────────────────────────────
+[*.gradle.kts]
+max_line_length          = 120
+
+# ── JSON ──────────────────────────────────────────────────────────────────────
+[*.json]
+indent_size              = 2
+
+# ── TOML (libs.versions.toml) ─────────────────────────────────────────────────
+[*.toml]
+indent_size              = 4
+
+# ── Markdown ─────────────────────────────────────────────────────────────────
+[*.md]
+trim_trailing_whitespace = false
+
