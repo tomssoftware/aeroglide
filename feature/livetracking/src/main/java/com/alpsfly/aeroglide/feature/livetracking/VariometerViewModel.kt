@@ -1,4 +1,4 @@
-package com.alpsfly.aeroglide.feature.variometer.viewmodel
+package com.alpsfly.aeroglide.feature.livetracking
 
 import androidx.lifecycle.ViewModel
 import com.alpsfly.aeroglide.core.data.SensorRepository

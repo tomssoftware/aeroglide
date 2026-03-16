@@ -33,7 +33,7 @@ class SettingsViewModel @Inject constructor(
     private val appStateManager: AppStateManager,
     // SharedPreferences is provided as a Hilt binding so the key namespace
     // is controlled at the injection site rather than hardcoded here.
-    private val prefs: SharedPreferences
+    private val prefs: SharedPreferences,
 ) : ViewModel() {
 
     // --- Auto-Start Settings ---
