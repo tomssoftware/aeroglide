@@ -75,6 +75,23 @@ class VarioToneUseCaseUnitTest {
     }
 
     @Test
+    fun `disable() stops collector so later emissions cannot trigger tones`() = runTest {
+        createUseCase()
+        useCase.enable()
+        emitClimbrate(1.0f)
+
+        useCase.disable()
+        advanceUntilIdle()
+
+        emitClimbrate(-2.0f)
+        emitClimbrate(2.0f)
+
+        verify(exactly = 1) { varioTone.startClimbTone(any(), any(), any()) }
+        verify(exactly = 0) { varioTone.startSinkTone(any()) }
+        verify(exactly = 1) { varioTone.shutdown() }
+    }
+
+    @Test
     fun `first climb sample above threshold starts climb tone with computed parameters`() = runTest {
         createUseCase()
         val frequencySlot = slot<Float>()
@@ -127,17 +144,27 @@ class VarioToneUseCaseUnitTest {
     }
 
     @Test
-    fun `samples within same climb zone do not restart climb tone`() = runTest {
+    fun `samples within same climb zone update climb tone parameters immediately`() = runTest {
         createUseCase()
+        val frequencies = mutableListOf<Float>()
+        val beeps = mutableListOf<Long>()
+        val pauses = mutableListOf<Long>()
         useCase.enable()
 
         emitClimbrate(0.5f)
         emitClimbrate(1.0f)
         emitClimbrate(2.5f)
 
-        verify(exactly = 1) { varioTone.startClimbTone(any(), any(), any()) }
+        verify(exactly = 3) {
+            varioTone.startClimbTone(capture(frequencies), capture(beeps), capture(pauses))
+        }
         verify(exactly = 0) { varioTone.startSinkTone(any()) }
         verify(exactly = 0) { varioTone.stop() }
+
+        val expectedLast = expectedClimbState(2.5f)
+        assertTrue(kotlin.math.abs(frequencies.last() - expectedLast.frequencyHz) < 0.001f)
+        assertTrue(beeps.last() == expectedLast.beepMs)
+        assertTrue(pauses.last() == expectedLast.pauseMs)
     }
 
     @Test
