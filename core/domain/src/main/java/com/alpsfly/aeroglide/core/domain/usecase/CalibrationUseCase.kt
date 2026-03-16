@@ -26,15 +26,8 @@ class CalibrationUseCase @Inject constructor(
             // It is executed by the processor when its job is done.
             Timber.i("CalibrationUseCase: Received finish signal from processor.")
 
-            // Now, the UseCase can decide whether to stop the hardware.
-            // Check if a recording is in progress. If not, shut down the sensors.
-            if (appStateManager.appState.value is AppState.Recording) {
-                Timber.i("Recording is active, leaving service running.")
-            } else {
-                Timber.i("No recording active, commanding service to stop.")
-                appStateManager.onCalibrationFinished()
-                serviceStarter.stopRecordingService()
-            }
+            // 4. Tell the app to enter the 'Ready' state
+            appStateManager.onCalibrationFinished()
         }
     }
 }
