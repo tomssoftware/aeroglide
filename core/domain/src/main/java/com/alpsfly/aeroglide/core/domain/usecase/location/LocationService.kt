@@ -104,6 +104,7 @@ class ServiceStarter @Inject constructor(
             val intent = Intent(appContext, LocationService::class.java).apply {
                 action = LocationService.ACTION_START
             }
+            Timber.i("ServiceStarter: Starting ForegroundService.")
             appContext.startForegroundService(intent)
         }
     }
@@ -113,6 +114,7 @@ class ServiceStarter @Inject constructor(
         val intent = Intent(appContext, LocationService::class.java).apply {
             action = LocationService.ACTION_STOP
         }
+        Timber.i("ServiceStarter: Stopping ForegroundService.")
         appContext.startService(intent)
     }
 }
