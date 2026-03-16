@@ -139,6 +139,13 @@ interface VarioTone {
  */
 class VarioToneImpl(private val scope: CoroutineScope) : VarioTone {
 
+    private class ToneState {
+        var phase = 0.0
+        var beepRemaining = 0L
+        var pauseRemaining = 0L
+        var samplesFromBeepStart = 0L
+    }
+
     // --- Legacy state ---
     private var legacyFrequency = 440f
     private var legacyDurationMs = 1000L
@@ -236,12 +243,8 @@ class VarioToneImpl(private val scope: CoroutineScope) : VarioTone {
             track.play()
 
             val buf = ShortArray(CHUNK_SAMPLES)
-            var phase = 0.0
-
             // ── Climb tone state machine (local to this coroutine) ──────────────
-            var beepRemaining = 0L
-            var pauseRemaining = 0L
-            var samplesFromBeepStart = 0L
+            val toneState = ToneState()
 
             // Detect mode transitions so we can reset the state machine on CLIMB entry.
             var lastMode = StreamMode.SILENCE
@@ -255,9 +258,9 @@ class VarioToneImpl(private val scope: CoroutineScope) : VarioTone {
                 // Reset the climb state machine whenever we (re-)enter CLIMB mode so
                 // leftover counters from a previous cycle never cause a spurious pause.
                 if (mode == StreamMode.CLIMB && lastMode != StreamMode.CLIMB) {
-                    beepRemaining = 0L
-                    pauseRemaining = 0L
-                    samplesFromBeepStart = 0L
+                    toneState.beepRemaining = 0L
+                    toneState.pauseRemaining = 0L
+                    toneState.samplesFromBeepStart = 0L
                 }
                 lastMode = mode
 
@@ -265,78 +268,15 @@ class VarioToneImpl(private val scope: CoroutineScope) : VarioTone {
                     val sample: Short = when (mode) {
 
                         // ── Continuous sink tone ──────────────────────────────────
-                        StreamMode.SINK -> (sin(phase) * AMPLITUDE).toInt().toShort()
+                        StreamMode.SINK -> nextSinkSample(toneState)
 
                         // ── Pulsed climb tone ─────────────────────────────────────
-                        StreamMode.CLIMB -> {
-                            if (beepRemaining <= 0L && pauseRemaining <= 0L) {
-                                // Start a new beep cycle.
-                                // Phase reset → sin(0) = 0 gives a naturally silent start.
-                                phase = 0.0
-                                beepRemaining = beepSamples
-                                samplesFromBeepStart = 0L
-                            }
-
-                            if (beepRemaining > 0L) {
-                                beepRemaining--
-                                samplesFromBeepStart++
-
-                                val envelope: Float = when {
-                                    beepSamples <= 2L * FADE_SAMPLES -> 1f
-                                    samplesFromBeepStart <= FADE_SAMPLES -> samplesFromBeepStart.toFloat() / FADE_SAMPLES
-                                    beepRemaining < FADE_SAMPLES -> beepRemaining.toFloat() / FADE_SAMPLES
-                                    else -> 1f
-                                }
-
-                                if (beepRemaining == 0L) pauseRemaining = pauseSamples
-
-                                // Half-rectified sine: only the positive half-cycle produces
-                                // sound – this gives the characteristic "blip" of a real vario.
-                                val raw = sin(phase)
-                                (maxOf(0.0, raw) * AMPLITUDE * envelope).toInt().toShort()
-                            } else {
-                                if (pauseRemaining > 0L) pauseRemaining--
-                                0
-                            }
-                        }
+                        StreamMode.CLIMB -> nextClimbSample(toneState)
 
                         // ── Graceful stop ─────────────────────────────────────────
                         // Finish the current beep with its fade-out, then switch to
-                        // SILENCE.  The stream keeps running – no break, no cancel.
-                        StreamMode.STOPPING -> {
-                            if (beepRemaining > 0L) {
-                                beepRemaining--
-                                samplesFromBeepStart++
-
-                                val envelope: Float = when {
-                                    beepSamples <= 2L * FADE_SAMPLES -> 1f
-                                    samplesFromBeepStart <= FADE_SAMPLES ->
-                                        samplesFromBeepStart.toFloat() / FADE_SAMPLES
-
-                                    beepRemaining < FADE_SAMPLES ->
-                                        beepRemaining.toFloat() / FADE_SAMPLES
-
-                                    else -> 1f
-                                }
-
-                                if (beepRemaining == 0L) {
-                                    // Beep finished: skip the pause and go silent.
-                                    // Reset counters so the next CLIMB entry starts clean.
-                                    pauseRemaining = 0L
-                                    streamMode = StreamMode.SILENCE
-                                }
-
-                                // Half-rectified sine: consistent with CLIMB mode.
-                                val raw = sin(phase)
-                                (maxOf(0.0, raw) * AMPLITUDE * envelope).toInt().toShort()
-                            } else {
-                                // In pause or idle: go silent immediately.
-                                beepRemaining = 0L
-                                pauseRemaining = 0L
-                                streamMode = StreamMode.SILENCE
-                                0
-                            }
-                        }
+                        // SILENCE. The stream keeps running – no break, no cancel.
+                        StreamMode.STOPPING -> nextStoppingSample(toneState)
 
                         // ── Silence ───────────────────────────────────────────────
                         // Buffer filled with zeros: stream stays alive, DAC stays warm.
@@ -347,8 +287,8 @@ class VarioToneImpl(private val scope: CoroutineScope) : VarioTone {
 
                     // Phase always advances – including during silence and pause –
                     // so there is never a phase discontinuity when a tone resumes.
-                    phase += phaseInc
-                    if (phase >= TWO_PI) phase -= TWO_PI
+                    toneState.phase += phaseInc
+                    if (toneState.phase >= TWO_PI) toneState.phase -= TWO_PI
                 }
 
                 // Always write – even when the buffer contains only zeros.
@@ -362,6 +302,64 @@ class VarioToneImpl(private val scope: CoroutineScope) : VarioTone {
     }
 
     // --- Private helpers ---
+
+    private fun nextClimbSample(state: ToneState): Short {
+        if (state.beepRemaining <= 0L && state.pauseRemaining <= 0L) {
+            // Start a new beep cycle with a clean phase so the beep starts at zero crossing.
+            state.phase = 0.0
+            state.beepRemaining = beepSamples
+            state.samplesFromBeepStart = 0L
+        }
+
+        if (state.beepRemaining > 0L) {
+            state.beepRemaining--
+            state.samplesFromBeepStart++
+
+            val envelope = computeEnvelope(state.samplesFromBeepStart, state.beepRemaining)
+            if (state.beepRemaining == 0L) state.pauseRemaining = pauseSamples
+
+            // Half-rectified sine gives the characteristic vario "blip".
+            val raw = sin(state.phase)
+            return (maxOf(0.0, raw) * AMPLITUDE * envelope).toInt().toShort()
+        }
+
+        if (state.pauseRemaining > 0L) state.pauseRemaining--
+        return 0
+    }
+
+    private fun nextStoppingSample(state: ToneState): Short {
+        if (state.beepRemaining > 0L) {
+            state.beepRemaining--
+            state.samplesFromBeepStart++
+
+            val envelope = computeEnvelope(state.samplesFromBeepStart, state.beepRemaining)
+            if (state.beepRemaining == 0L) {
+                // Beep finished: skip pause and switch to silence immediately.
+                state.pauseRemaining = 0L
+                streamMode = StreamMode.SILENCE
+            }
+
+            val raw = sin(state.phase)
+            return (maxOf(0.0, raw) * AMPLITUDE * envelope).toInt().toShort()
+        }
+
+        // In pause or idle: go silent immediately.
+        state.beepRemaining = 0L
+        state.pauseRemaining = 0L
+        streamMode = StreamMode.SILENCE
+        return 0
+    }
+
+    private fun nextSinkSample(state: ToneState): Short {
+        return (sin(state.phase) * AMPLITUDE).toInt().toShort()
+    }
+
+    private fun computeEnvelope(samplesFromBeepStart: Long, beepRemaining: Long): Float = when {
+        beepSamples <= 2L * FADE_SAMPLES -> 1f
+        samplesFromBeepStart <= FADE_SAMPLES -> samplesFromBeepStart.toFloat() / FADE_SAMPLES
+        beepRemaining < FADE_SAMPLES -> beepRemaining.toFloat() / FADE_SAMPLES
+        else -> 1f
+    }
 
     private fun buildAudioAttributes(): AudioAttributes =
         AudioAttributes.Builder()
