@@ -87,10 +87,10 @@ class AppStateManager @Inject constructor() {
                     transitionTo(AppState.Calibrating)
                 }
                 on<Event.OnAutoStartEnabled> {
-                    transitionTo(AppState.Ready(autostart = true))
+                    transitionTo(AppState.Ready(autostart = true, previousActivityId = this.previousActivityId))
                 }
                 on<Event.OnAutoStartDisabled> {
-                    transitionTo(AppState.Ready(autostart = false))
+                    transitionTo(AppState.Ready(autostart = false, previousActivityId = this.previousActivityId))
                 }
             }
 

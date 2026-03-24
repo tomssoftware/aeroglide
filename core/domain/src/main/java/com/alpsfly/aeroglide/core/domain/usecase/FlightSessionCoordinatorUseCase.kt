@@ -89,12 +89,23 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
                             val isAutoStartEnabled = autoStartSettingsProvider.isAutoStartEnabled.first()
                             if (isAutoStartEnabled) autoStartUseCase.enable()
                             else autoStartUseCase.disable()
+                            // Ensure Ready state's autostart flag mirrors the persisted setting
+                            // so AutoStartUseCase can gate on Ready.autostart == true correctly.
+                            appStateManager.onAutoStartEnabled(isAutoStartEnabled)
                         }
 
                         is AppState.Recording -> {
                             // Covers both manual stop and auto-landing. stopRecording() is
                             // idempotent – it exits early when no recording jobs are active.
                             recordingUseCase.stopRecording()
+                            // Recording → Ready: re-apply autostart setting from current Ready state.
+                            // stopRecording() stops the foreground service and disables sensor
+                            // listeners; without this, AutoStartProcessor would run without data
+                            // and auto-start would never trigger for the next flight.
+                            if (current.autostart)
+                                autoStartUseCase.enable()
+                            else
+                                autoStartUseCase.disable()
                         }
 
                         is AppState.Ready -> {
@@ -134,7 +145,7 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
      */
     fun toggleRecording() {
         val currentState = appStateManager.appState.value
-        Timber.i("Coordinator: onToggleRecording called from state: $currentState")
+        Timber.i("Coordinator: toggleRecording called from state: $currentState")
 
         when (currentState) {
             is AppState.Recording -> {

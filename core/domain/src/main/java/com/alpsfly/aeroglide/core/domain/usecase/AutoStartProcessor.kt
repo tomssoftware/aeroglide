@@ -268,8 +268,14 @@ class AutoStartDetector(
      * Processes the latest sensor readings and advances the state machine if guard
      * conditions are satisfied.
      *
-     * Should be called on every sensor tick. Returns immediately if either
-     * [climbrate] or [velocity] has not yet been set (still at [Float.MIN_VALUE]).
+     * This method calculates the time elapsed since the last call to drive time-based
+     * state transitions. It should be called on every sensor tick.
+     *
+     * To ensure accuracy and prevent jumps:
+     * 1. It returns immediately if [climbrate] or [velocity] are at [Float.MIN_VALUE].
+     * 2. The first valid call only anchors [lastUpdateTime] and does not advance the machine.
+     * 3. Elapsed time is capped at 2 seconds to prevent massive state jumps if the
+     *    app was paused or sensors dropped out.
      */
     fun detect() {
         if (climbrate == Float.MIN_VALUE || velocity == Float.MIN_VALUE) {
@@ -285,7 +291,8 @@ class AutoStartDetector(
         }
 
         val maxElapsedTime = 2.seconds
-        val elapsedTime = minOf((currentTime - lastUpdateTime).milliseconds, maxElapsedTime)
+        val deltaMillis = (currentTime - lastUpdateTime).coerceAtLeast(0L)
+        val elapsedTime = minOf(deltaMillis.milliseconds, maxElapsedTime)
         lastUpdateTime = currentTime
 
         stateMachine.transition(Event.OnUpdate(elapsedTime))

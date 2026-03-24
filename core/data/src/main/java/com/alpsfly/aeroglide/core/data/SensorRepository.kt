@@ -102,12 +102,12 @@ class SensorRepositoryImpl @Inject constructor(
 
     private val isSensorListenerEnabled = MutableStateFlow(false)
     override fun enableSensorListeners() {
-        Timber.i("ENABLE ALL RECORDING LISTENERS")
+        Timber.i("ENABLE ALL SENSOR LISTENERS")
         isSensorListenerEnabled.value = true
     }
 
     override fun disableSensorListeners() {
-        Timber.i("DISABLE ALL RECORDING LISTENERS")
+        Timber.i("DISABLE ALL SENSOR LISTENERS")
         isSensorListenerEnabled.value = false
     }
 
