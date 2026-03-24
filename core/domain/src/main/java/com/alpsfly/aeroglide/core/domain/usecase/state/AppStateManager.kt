@@ -8,52 +8,55 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
-enum class FromState {
-    Initial,
-    Idle,
-    Calibrating,
-    Ready,
-    Recording,
-    AutoStart
-}
-
-// The AppState sealed class is already perfectly defined with its 'fromState' property.
 sealed class AppState {
-    abstract val fromState: FromState
-
-    data class Idle(override val fromState: FromState = FromState.Initial) : AppState()
-    data class Calibrating(override val fromState: FromState) : AppState()
-    data class Ready(override val fromState: FromState) : AppState()
-    data class AutoStart(override val fromState: FromState) : AppState()
-    data class Recording(val activityId: Long, override val fromState: FromState) : AppState()
+    data object Idle : AppState()
+    data object Calibrating : AppState()
+    data class Ready(
+        val autostart: Boolean = false,
+        /** ID der zuletzt abgeschlossenen Aufnahme – gesetzt beim Übergang Recording → Ready. */
+        val previousActivityId: Long? = null
+    ) : AppState()
+    data class Recording(
+        val activityId: Long,
+        /**
+         * Mirrors the [Ready.autostart] flag that was active when recording began.
+         * Carried through the Recording phase so that [Ready.autostart] can be restored
+         * on every Recording → Ready transition (manual stop, auto-landing, etc.) without
+         * losing the user's autostart preference.
+         */
+        val autostart: Boolean = false,
+    ) : AppState()
 }
 
 @Singleton
 class AppStateManager @Inject constructor() {
 
-    private val _appState = MutableStateFlow<AppState>(AppState.Idle(FromState.Initial))
+    private val _appState = MutableStateFlow<AppState>(AppState.Idle)
     val appState: StateFlow<AppState> = _appState.asStateFlow()
 
     private val stateMachine = createStateMachine()
 
     // --- Public Commands are unchanged ---
-    fun onToggleRecording(recordId: Long) = stateMachine.transition(Event.OnToggleRecording(recordId))
+    fun toggleRecording(recordId: Long) = stateMachine.transition(Event.OnToggleRecording(recordId))
     fun onCalibrationStarted() = stateMachine.transition(Event.OnCalibrationStarted)
     fun onCalibrationFinished() = stateMachine.transition(Event.OnCalibrationFinished)
+
     fun onAutoStartEnabled(enable: Boolean) {
-        if (enable) stateMachine.transition(Event.OnAutoStartEnabled)
-        else stateMachine.transition(Event.OnAutoStartDisabled)
+        if (enable)
+            stateMachine.transition(Event.OnAutoStartEnabled)
+        else
+            stateMachine.transition(Event.OnAutoStartDisabled)
     }
 
-    fun onPermissionRequest() = stateMachine.transition(Event.OnPermissionRequest)
-    fun onPermissionGranted() = stateMachine.transition(Event.OnPermissionGranted)
-    fun onPermissionDenied() = stateMachine.transition(Event.OnPermissionDenied)
+    fun permissionRequest() = stateMachine.transition(Event.OnPermissionRequest)
+    fun permissionGranted() = stateMachine.transition(Event.OnPermissionGranted)
+    fun permissionDenied() = stateMachine.transition(Event.OnPermissionDenied)
 
     // --- Private Helpers ---
 
     private fun createStateMachine(): StateMachine<AppState, Event, Unit> {
         return StateMachine.create {
-            initialState(AppState.Idle(FromState.Initial))
+            initialState(AppState.Idle)
 
             // The onTransition block is correct. It logs and updates the public state.
             onTransition {
@@ -63,49 +66,40 @@ class AppStateManager @Inject constructor() {
             }
 
             state<AppState.Idle> {
-                on<Event.OnPermissionRequest> {
-                    transitionTo(AppState.Idle(fromState = FromState.Idle))
-                }
-                on<Event.OnPermissionGranted> {
-                    transitionTo(AppState.Calibrating(fromState = FromState.Idle))
-                }
-                on<Event.OnPermissionDenied> {
-                    transitionTo(AppState.Idle(fromState = FromState.Idle))
-                }
+                on<Event.OnPermissionRequest> { transitionTo(AppState.Idle) }
+                on<Event.OnPermissionGranted> { transitionTo(AppState.Calibrating) }
+                on<Event.OnPermissionDenied>  { transitionTo(AppState.Idle) }
             }
 
             state<AppState.Calibrating> {
                 on<Event.OnCalibrationFinished> {
-                    transitionTo(AppState.Ready(fromState = FromState.Calibrating))
+                    transitionTo(AppState.Ready())
                 }
             }
 
             state<AppState.Ready> {
                 on<Event.OnToggleRecording> { event ->
-                    transitionTo(AppState.Recording(event.recordId, fromState = FromState.Ready))
+                    // `this` ist AppState.Ready → autostart direkt verfügbar, kein Cast nötig.
+                    // Das Flag wird in Recording mitgeführt und bei Recording → Ready zurückgespiegelt.
+                    transitionTo(AppState.Recording(activityId = event.recordId, autostart = this.autostart))
                 }
                 on<Event.OnCalibrationStarted> {
-                    transitionTo(AppState.Calibrating(fromState = FromState.Ready))
+                    transitionTo(AppState.Calibrating)
                 }
                 on<Event.OnAutoStartEnabled> {
-                    transitionTo(AppState.AutoStart(fromState = FromState.Ready))
-                }
-            }
-
-            state<AppState.AutoStart> {
-                on<Event.OnToggleRecording> { event ->
-                    transitionTo(AppState.Recording(event.recordId, fromState = FromState.AutoStart))
+                    transitionTo(AppState.Ready(autostart = true, previousActivityId = this.previousActivityId))
                 }
                 on<Event.OnAutoStartDisabled> {
-                    transitionTo(AppState.Ready(fromState = FromState.AutoStart))
+                    transitionTo(AppState.Ready(autostart = false, previousActivityId = this.previousActivityId))
                 }
             }
 
             state<AppState.Recording> {
                 on<Event.OnToggleRecording> {
-                    // `this` is the `AppState.Recording` instance, which contains the activityId.
-                    // The new `Ready` state now correctly knows its predecessor.
-                    transitionTo(AppState.Ready(fromState = FromState.Recording))
+                    // `this` ist AppState.Recording → activityId und autostart direkt verfügbar.
+                    // autostart wird zurückgespiegelt, damit der Ready-State das Flag korrekt trägt
+                    // und AutoStart nach der Landung weiterhin aktiv bleibt.
+                    transitionTo(AppState.Ready(autostart = this.autostart, previousActivityId = this.activityId))
                 }
             }
         }

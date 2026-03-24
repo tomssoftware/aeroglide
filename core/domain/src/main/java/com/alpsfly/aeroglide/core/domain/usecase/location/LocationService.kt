@@ -94,13 +94,13 @@ class LocationService : Service() {
     }
 }
 
-class ServiceStarter @Inject constructor(
+class LocationServiceStarter @Inject constructor(
     private val appContext: Context,
     private val sensorRepository: SensorRepository
 ) {
-    fun startRecordingService() {
+    fun startForegroundService() {
         if (checkSelfPermission(appContext, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            sensorRepository.enableRecordingListeners()
+            sensorRepository.enableSensorListeners()
             val intent = Intent(appContext, LocationService::class.java).apply {
                 action = LocationService.ACTION_START
             }
@@ -109,8 +109,8 @@ class ServiceStarter @Inject constructor(
         }
     }
 
-    fun stopRecordingService() {
-        sensorRepository.disableRecordingListeners()
+    fun stopForegroundService() {
+        sensorRepository.disableSensorListeners()
         val intent = Intent(appContext, LocationService::class.java).apply {
             action = LocationService.ACTION_STOP
         }

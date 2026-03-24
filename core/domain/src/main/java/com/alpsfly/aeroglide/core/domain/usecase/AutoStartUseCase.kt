@@ -1,6 +1,6 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
-import com.alpsfly.aeroglide.core.domain.usecase.location.ServiceStarter
+import com.alpsfly.aeroglide.core.domain.usecase.location.LocationServiceStarter
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import timber.log.Timber
@@ -15,20 +15,25 @@ import javax.inject.Singleton
 class AutoStartUseCase @Inject constructor(
     private val appStateManager: AppStateManager,
     private val autoStartProcessor: AutoStartProcessor,
-    private val serviceStarter: ServiceStarter
+    private val locationServiceStarter: LocationServiceStarter
 ) {
     init {
         autoStartProcessor.onTakeOffDetected = {
-            if (appStateManager.appState.value is AppState.AutoStart) {
+            val state = appStateManager.appState.value
+            if (state is AppState.Ready && state.autostart) {
                 val newActivityId = System.currentTimeMillis()
                 Timber.i("AutoStartUseCase: Take-off detected, starting recording with id=$newActivityId")
-                appStateManager.onToggleRecording(newActivityId)
+                appStateManager.toggleRecording(newActivityId)
             }
         }
         autoStartProcessor.onLandingDetected = {
-            if (appStateManager.appState.value is AppState.Recording) {
+            val state = appStateManager.appState.value
+            // Only stop recordings that were started (or are supervised) by AutoStart.
+            // Recording.autostart is true whenever autostart was active when recording began,
+            // preventing AutoStart from interfering with purely manual recordings.
+            if (state is AppState.Recording && state.autostart) {
                 Timber.i("AutoStartUseCase: Landing detected, stopping recording.")
-                appStateManager.onToggleRecording(0L) // ID ignored when stopping
+                appStateManager.toggleRecording(0L) // ID ignored when stopping
             }
         }
     }
@@ -38,7 +43,7 @@ class AutoStartUseCase @Inject constructor(
      */
     fun enable() {
         Timber.i("AutoStartUseCase: Commanding START.")
-        serviceStarter.startRecordingService()
+        locationServiceStarter.startForegroundService()
         autoStartProcessor.start()
     }
 
@@ -48,6 +53,6 @@ class AutoStartUseCase @Inject constructor(
     fun disable() {
         Timber.i("AutoStartUseCase: Commanding STOP.")
         autoStartProcessor.stop()
-        serviceStarter.stopRecordingService()
+        locationServiceStarter.stopForegroundService()
     }
 }

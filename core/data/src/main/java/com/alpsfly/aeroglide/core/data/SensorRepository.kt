@@ -86,8 +86,8 @@ interface SensorRepository {
     fun resetCalibration()
 
     // ONE MASTER SWITCH
-    fun enableRecordingListeners()
-    fun disableRecordingListeners()
+    fun enableSensorListeners()
+    fun disableSensorListeners()
 }
 
 @Singleton
@@ -100,15 +100,15 @@ class SensorRepositoryImpl @Inject constructor(
     @param:SystemTime private val timeProvider: TimeProvider
 ) : SensorRepository, SensorEventCallback() {
 
-    private val isRecordingListenerEnabled = MutableStateFlow(false)
-    override fun enableRecordingListeners() {
-        Timber.i("ENABLE ALL RECORDING LISTENERS")
-        isRecordingListenerEnabled.value = true
+    private val isSensorListenerEnabled = MutableStateFlow(false)
+    override fun enableSensorListeners() {
+        Timber.i("ENABLE ALL SENSOR LISTENERS")
+        isSensorListenerEnabled.value = true
     }
 
-    override fun disableRecordingListeners() {
-        Timber.i("DISABLE ALL RECORDING LISTENERS")
-        isRecordingListenerEnabled.value = false
+    override fun disableSensorListeners() {
+        Timber.i("DISABLE ALL SENSOR LISTENERS")
+        isSensorListenerEnabled.value = false
     }
 
     /**
@@ -116,14 +116,14 @@ class SensorRepositoryImpl @Inject constructor(
      */
     override val locationDataSource = fusedLocationProviderClient.locationDataFlow(
         context = context,
-        enable = isRecordingListenerEnabled,
+        enable = isSensorListenerEnabled,
         interval = 1000
     ).shareSensorData()
 
     @OptIn(FlowPreview::class)
     override val geoidCorrectionDataSource = locationManager.geoidCorrectionFlow(
         context = context,
-        enable = isRecordingListenerEnabled,
+        enable = isSensorListenerEnabled,
         interval = 1000
     ).shareSensorData().sample(1000.milliseconds)
 
@@ -156,7 +156,7 @@ class SensorRepositoryImpl @Inject constructor(
      * pressure state flow
      */
     override val pressureDataSource = sensorManager.pressureSensorDataFlow(
-        enable = isRecordingListenerEnabled
+        enable = isSensorListenerEnabled
     ).logDeviation(
         predicate = { Limits.checkPressure(it.values[0]) },
         onDeviation = { Timber.w("Pressure out of range: ${it.values[0]}") }
@@ -166,14 +166,14 @@ class SensorRepositoryImpl @Inject constructor(
      * Linear acceleration shared flow
      */
     private val linearAccelerationDataSource = sensorManager.linearAccelerationSensorDataFlow(
-        enable = isRecordingListenerEnabled
+        enable = isSensorListenerEnabled
     )
 
     /**
      * Rotation vector shared flow
      */
     private val rotationVectorDataSource = sensorManager.rotationVectorSensorDataFlow(
-        enable = isRecordingListenerEnabled
+        enable = isSensorListenerEnabled
     )
 
     /**

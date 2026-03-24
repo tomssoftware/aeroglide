@@ -188,6 +188,36 @@ class AutoStartDetectorTest {
     }
 
     @Test
+    fun `taxiing after landing does not prevent reset to WaitForTakeOff`() = runTest {
+        // GIVEN: Full flight and landing cycle
+        takeOff()
+        flying()
+        landing()
+        landed()
+        assertTrue("onLanded should have been called", landedCalled)
+
+        // WHEN: Pilot taxis at speed above velocityLanded – the old condition-based
+        // accumulator would have reset timeInResetCondition on every tick, making
+        // it impossible to ever return to WaitForTakeOff while rolling.
+        autoStartDetector.velocity = autoStartDetector.velocityLanded + 5f  // fast taxi / rollout
+        autoStartDetector.climbrate = 0f
+        autoStartDetector.simulateTimePassing(autoStartDetector.resetDuration + 500.milliseconds)
+
+        // THEN: The wall-clock based reset timer must not care about sensor values.
+        // The machine must have returned to WaitForTakeOff and must be able to detect
+        // a brand-new take-off.
+        takeOffCalled = false
+        autoStartDetector.velocity = autoStartDetector.velocityFlying + 1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
+
+        assertTrue(
+            "A new take-off must be detectable after taxiing through the reset period",
+            takeOffCalled
+        )
+    }
+
+    @Test
     fun `landing detection returns to Flying state when flying conditions are restored`() = runTest {
         // GIVEN: Detector is in Flying state
         autoStartDetector.velocity = autoStartDetector.velocityFlying + 1f

@@ -84,8 +84,8 @@ class SettingsViewModel @Inject constructor(
      * Enables or disables auto-start detection and persists the choice.
      *
      * Also notifies [AppStateManager] so the app-level state machine can transition
-     * to [com.alpsfly.aeroglide.core.domain.usecase.state.AppState.AutoStart] or back
-     * to [com.alpsfly.aeroglide.core.domain.usecase.state.AppState.Ready] immediately.
+     * to [com.alpsfly.aeroglide.core.domain.usecase.state.AppState.Ready] with
+     * [com.alpsfly.aeroglide.core.domain.usecase.state.AppState.Ready.autostart] set accordingly.
      */
     fun onAutoStartEnabled(enabled: Boolean) {
         _autoStartEnabled.value = enabled
