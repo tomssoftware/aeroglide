@@ -5,7 +5,6 @@ import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
-import com.alpsfly.aeroglide.core.domain.usecase.state.FromState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
@@ -51,160 +50,102 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
     /**
      * Subscribes to [AppStateManager.appState] and dispatches work to the appropriate use cases.
      *
-     * This is the core of the coordinator pattern: business decisions live here rather than
-     * being scattered across individual use cases or ViewModels.
+     * Tracks the previous state via a local `prevState` variable so each transition can be
+     * handled based on both old and new state – without any runtime casts or embedded history
+     * in [AppState].
      * Launched in [applicationScope] – the subscription never drops due to a lifecycle event.
      */
     private fun listenToAppState() {
+        var prevState: AppState = appStateManager.appState.value
+
         appStateManager.appState
-            .onEach { state ->
-                Timber.i("Coordinator observes AppState: $state")
-                when (state) {
-                    is AppState.Idle -> {
-                        Timber.d("Coordinator: App is Idle.")
-                    }
+            .onEach { current ->
+                val prev = prevState
+                prevState = current
+                Timber.i("Coordinator: $prev -> $current")
+
+                when (current) {
+                    is AppState.Idle -> Timber.d("Coordinator: App is Idle.")
 
                     is AppState.Calibrating -> {
                         Timber.d("Coordinator: App is Calibrating, commanding calibration to start.")
-                        onStartCalibration()
+                        startCalibration()
                     }
 
-                    is AppState.Ready -> {
-                        // Split by fromState so each re-entry to Ready has the right side effects.
-                        when (state.fromState) {
-                            FromState.Calibrating -> {
-                                // Pre-fetch elevation data for the current position so offline
-                                // terrain is available immediately.
-                                // Launched in a separate coroutine so this onEach handler returns
-                                // immediately and keeps processing AppState emissions – collecting
-                                // the download flow directly here would suspend the entire state
-                                // observer until the download completes.
-                                applicationScope.launch {
-                                    val currentLocation = sensorRepository.locationFlowUi.first()
-                                    Timber.d("Coordinator: App is Ready. Triggering DEM download for $currentLocation")
-                                    downloadElevationUseCase(
-                                        currentLocation.latitude.toDouble(),
-                                        currentLocation.longitude.toDouble()
-                                    ).collect { downloadState ->
-                                        Timber.d("Coordinator: DEM download state: $downloadState")
-                                    }
+                    is AppState.Ready -> when (prev) {
+                        is AppState.Calibrating -> {
+                            // Pre-fetch elevation data for the current position so offline
+                            // terrain is available immediately.
+                            applicationScope.launch {
+                                val currentLocation = sensorRepository.locationFlowUi.first()
+                                Timber.d("Coordinator: Triggering DEM download for $currentLocation")
+                                downloadElevationUseCase(
+                                    currentLocation.latitude.toDouble(),
+                                    currentLocation.longitude.toDouble()
+                                ).collect { downloadState ->
+                                    Timber.d("Coordinator: DEM download state: $downloadState")
                                 }
-                                // enableAutoStartIfConfigured() does not depend on the DEM download
-                                // completing, so it runs immediately without waiting for it.
-                                enableAutoStartIfConfigured()
                             }
-
-                            FromState.Recording -> {
-                                // Covers both manual stop and auto-landing. Calling stopRecording()
-                                // here is safe because RecordingProcessor.stop() is idempotent –
-                                // it exits early when no recording jobs are active.
-                                recordingUseCase.stopRecording()
-                                enableAutoStartIfConfigured()
-                            }
-
-                            else -> {
-                                Timber.d("Coordinator: App is Ready from ${state.fromState}. Waiting for user action.")
-                            }
+                            val isAutoStartEnabled = autoStartSettingsProvider.isAutoStartEnabled.first()
+                            if (isAutoStartEnabled) autoStartUseCase.enable()
+                            else autoStartUseCase.disable()
                         }
-                    }
 
-                    is AppState.AutoStart -> {
-                        Timber.d("Coordinator: AutoStart mode active.")
+                        is AppState.Recording -> {
+                            // Covers both manual stop and auto-landing. stopRecording() is
+                            // idempotent – it exits early when no recording jobs are active.
+                            recordingUseCase.stopRecording()
+                        }
+
+                        is AppState.Ready -> {
+                            // Ready → Ready: autostart was toggled in Settings
+                            if (current.autostart)
+                                autoStartUseCase.enable()
+                            else
+                                autoStartUseCase.disable()
+                        }
+
+                        else -> Timber.d("Coordinator: App is Ready from $prev. Waiting for user action.")
                     }
 
                     is AppState.Recording -> {
-                        if (state.fromState == FromState.AutoStart) {
-                            // Auto-start triggered this recording via AutoStartUseCase, which only
-                            // transitions the state machine. The coordinator must also kick off the
-                            // actual data collection. The processor intentionally keeps running
-                            // so it can detect the landing and stop recording automatically.
-                            Timber.i("Coordinator: Auto-start triggered recording id=${state.activityId}")
-                            recordingUseCase.startRecording(state.activityId)
+                        if (prev is AppState.Ready) {
+                            // Handles BOTH manual start and autostart uniformly.
+                            // startRecording() is always triggered here, never duplicated.
+                            Timber.i("Coordinator: Recording started id=${current.activityId}")
+                            recordingUseCase.startRecording(current.activityId)
                         }
                     }
                 }
             }.launchIn(applicationScope)
     }
 
-    /**
-     * Reads [AutoStartSettingsProvider.isAutoStartEnabled] and enables or disables auto-start.
-     *
-     * **Enabled:** transitions the state machine to [AppState.AutoStart] and starts the
-     * [AutoStartUseCase] (processor + foreground service).
-     *
-     * **Disabled:** calls [AutoStartUseCase.disable] to stop the processor and foreground
-     * service (both are idempotent, so this is safe even when auto-start was never started).
-     * Additionally, transitions the state machine out of [AppState.AutoStart] via
-     * [AppStateManager.onAutoStartEnabled] only when the current state is actually
-     * [AppState.AutoStart] – `Event.OnAutoStartDisabled` is only a valid transition from
-     * that state and would be silently ignored or crash otherwise.
-     *
-     * Called after calibration completes and after each recording stops so the pilot is
-     * always in the correct state for the next flight without manual interaction.
-     */
-    private suspend fun enableAutoStartIfConfigured() {
-        val shouldAutoStart = autoStartSettingsProvider.isAutoStartEnabled.first()
-        Timber.d("Coordinator: shouldAutoStart=$shouldAutoStart")
-        if (shouldAutoStart) {
-            appStateManager.onAutoStartEnabled(true)
-            autoStartUseCase.enable()
-        } else {
-            // Guard: OnAutoStartDisabled is only a valid state-machine event from AutoStart.
-            // When coming from Ready (e.g. after calibration or recording), the state is
-            // already correct and transitioning is neither needed nor safe.
-            if (appStateManager.appState.value is AppState.AutoStart) {
-                Timber.i("Coordinator: Auto-start disabled while in AutoStart state, transitioning to Ready.")
-                appStateManager.onAutoStartEnabled(false)
-            }
-            // Always stop the processor and foreground service to release sensor/battery
-            // resources. AutoStartProcessor.stop() and ServiceStarter.stopRecordingService()
-            // are both idempotent, so this is safe even when nothing is running.
-            autoStartUseCase.disable()
-        }
-    }
 
     // --- Public API ---
 
     /**
      * Toggles the active recording from the UI.
      *
-     * - **Recording → stop:** stops the current session and transitions to [AppState.Ready].
-     * - **Ready → start:** generates a new unique activity ID, calls [RecordingUseCase.startRecording]
-     *   directly, and transitions to [AppState.Recording].
-     * - **AutoStart → start:** generates a new unique activity ID and transitions to
-     *   [AppState.Recording]. **Does not** call [RecordingUseCase.startRecording] here because
-     *   [listenToAppState] exclusively handles the `Recording(fromState=AutoStart)` branch and
-     *   would otherwise start the same recording twice.
+     * - **Recording → stop:** transitions to [AppState.Ready]; the reactive observer calls
+     *   [RecordingUseCase.stopRecording] automatically.
+     * - **Ready → start:** generates a unique activity ID and transitions to [AppState.Recording];
+     *   the reactive observer calls [RecordingUseCase.startRecording] automatically.
      * - All other states are ignored with a warning log.
      */
-    fun onToggleRecording() {
+    fun toggleRecording() {
         val currentState = appStateManager.appState.value
         Timber.i("Coordinator: onToggleRecording called from state: $currentState")
 
         when (currentState) {
             is AppState.Recording -> {
-                // Also triggered reactively by listenToAppState() when the state reaches
-                // Ready(fromState=Recording), so this second call is a safe no-op because
-                // RecordingProcessor.stop() is idempotent.
-                recordingUseCase.stopRecording()
-                appStateManager.onToggleRecording(0L) // ID is unused when stopping
+                // ID is unused when stopping; the observer handles stopRecording().
+                appStateManager.toggleRecording(0L)
             }
 
             is AppState.Ready -> {
-                // Use wall-clock millis as the activity ID: unique, monotonic, and directly
-                // usable as a creation timestamp without an extra database round-trip.
+                // Wall-clock millis as activity ID: unique, monotonic, usable as creation timestamp.
                 val newActivityId = System.currentTimeMillis()
-                recordingUseCase.startRecording(newActivityId)
-                appStateManager.onToggleRecording(newActivityId)
-            }
-
-            is AppState.AutoStart -> {
-                // Only transition the state machine. listenToAppState() observes
-                // Recording(fromState=AutoStart) and calls startRecording() from there,
-                // which is the single call site for auto-start-triggered recordings.
-                // Calling startRecording() here as well would duplicate it.
-                val newActivityId = System.currentTimeMillis()
-                appStateManager.onToggleRecording(newActivityId)
+                appStateManager.toggleRecording(newActivityId)
             }
 
             else -> Timber.w("Coordinator: Ignoring toggle recording request from state $currentState.")
@@ -215,34 +156,32 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
      * Triggers the calibration sequence via [CalibrationUseCase].
      * Called automatically when the state machine enters [AppState.Calibrating].
      */
-    fun onStartCalibration() {
+    fun startCalibration() {
         calibrationUseCase()
     }
 
     /**
      * Forwards a runtime permission request to [AppStateManager].
-     * @see AppStateManager.onPermissionRequest
+     * @see AppStateManager.permissionRequest
      */
-    fun onPermissionRequest() {
-        appStateManager.onPermissionRequest()
+    fun permissionRequest() {
+        appStateManager.permissionRequest()
     }
 
     /**
      * Forwards a granted permission result to [AppStateManager], advancing the app flow.
-     * @see AppStateManager.onPermissionGranted
+     * @see AppStateManager.permissionGranted
      */
-    fun onPermissionGranted() {
-        appStateManager.onPermissionGranted()
+    fun permissionGranted() {
+        appStateManager.permissionGranted()
     }
 
     /**
      * Forwards a denied permission result to [AppStateManager].
-     * @see AppStateManager.onPermissionDenied
+     * @see AppStateManager.permissionDenied
      */
-    fun onPermissionDenied() {
-        appStateManager.onPermissionDenied()
+    fun permissionDenied() {
+        appStateManager.permissionDenied()
     }
 }
-
-
 

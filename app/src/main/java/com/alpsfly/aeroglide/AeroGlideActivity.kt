@@ -63,10 +63,10 @@ class AeroGlideActivity : ComponentActivity() {
         val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         if (permission) {
             Timber.i("ACCESS_FINE_LOCATION PERMISSION GRANTED")
-            aeroGlideViewModel.onPermissionGranted()
+            aeroGlideViewModel.permissionGranted()
         } else {
             Timber.i("REQUEST ACCESS_FINE_LOCATION PERMISSION")
-            aeroGlideViewModel.onPermissionRequest()
+            aeroGlideViewModel.permissionRequest()
             val permissions = arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION)
             requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
         }
@@ -106,10 +106,10 @@ class AeroGlideActivity : ComponentActivity() {
             val permission = (checkSelfPermission(ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
             if (permission) {
                 Timber.i("REQUESTED ACCESS_FINE_LOCATION PERMISSION GRANTED")
-                aeroGlideViewModel.onPermissionGranted()
+                aeroGlideViewModel.permissionGranted()
             } else {
                 Timber.i("REQUESTED ACCESS_FINE_LOCATION PERMISSION DENIED")
-                aeroGlideViewModel.onPermissionDenied()
+                aeroGlideViewModel.permissionDenied()
             }
         }
     }
@@ -143,7 +143,7 @@ fun AeroGlideScreen(
         val drawerState = rememberDrawerState(DrawerValue.Closed)
         val coroutineScope = rememberCoroutineScope()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val appState by aeroGlideViewModel.appState.collectAsStateWithLifecycle(initialValue = AppState.Idle())
+        val appState by aeroGlideViewModel.appState.collectAsStateWithLifecycle(initialValue = AppState.Idle)
         val isToneEnabled by aeroGlideViewModel.isToneEnabled.collectAsStateWithLifecycle()
 
         Scaffold(
@@ -177,7 +177,7 @@ fun AeroGlideScreen(
                     actions = {
                         IconButton(
                             enabled = appState is AppState.Ready || appState is AppState.Recording,
-                            onClick = { aeroGlideViewModel.onToggleRecording() }
+                            onClick = { aeroGlideViewModel.toggleRecording() }
                         ) {
                             if (appState is AppState.Recording) {
                                 Icon(
@@ -193,14 +193,14 @@ fun AeroGlideScreen(
                         }
                         IconButton(
                             enabled = appState is AppState.Ready,
-                            onClick = { aeroGlideViewModel.onReCalibrate() }
+                            onClick = { aeroGlideViewModel.calibrate() }
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.replay_24px),
                                 contentDescription = "Re-calibrate"
                             )
                         }
-                        IconButton(onClick = { aeroGlideViewModel.onToggleTone() }) {
+                        IconButton(onClick = { aeroGlideViewModel.toggleTone() }) {
                             Icon(
                                 painter = painterResource(
                                     id = if (isToneEnabled) R.drawable.volume_up_24px

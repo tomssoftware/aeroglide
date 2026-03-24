@@ -17,7 +17,7 @@ import com.alpsfly.aeroglide.core.domain.usecase.FlightSessionCoordinatorUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.PurchaseUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.RecordingUseCase
 import com.alpsfly.aeroglide.core.domain.usecase.VarioToneUseCase
-import com.alpsfly.aeroglide.core.domain.usecase.location.ServiceStarter
+import com.alpsfly.aeroglide.core.domain.usecase.location.LocationServiceStarter
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import dagger.Module
 import dagger.Provides
@@ -40,8 +40,8 @@ object DomainModule {
     fun provideServiceStarter(
         @ApplicationContext context: Context,
         sensorRepository: SensorRepository
-    ): ServiceStarter {
-        return ServiceStarter(context, sensorRepository)
+    ): LocationServiceStarter {
+        return LocationServiceStarter(context, sensorRepository)
     }
 
     /**
@@ -68,12 +68,12 @@ object DomainModule {
     fun provideCalibrationUseCase(
         appStateManager: AppStateManager,
         calibrationProcessor: CalibrationProcessor,
-        serviceStarter: ServiceStarter
+        locationServiceStarter: LocationServiceStarter
     ): CalibrationUseCase {
         return CalibrationUseCase(
             appStateManager,
             calibrationProcessor,
-            serviceStarter
+            locationServiceStarter
         )
     }
 
@@ -132,12 +132,12 @@ object DomainModule {
     fun provideAutoStartUseCase(
         appStateManager: AppStateManager,
         autoStartProcessor: AutoStartProcessor,
-        serviceStarter: ServiceStarter
+        locationServiceStarter: LocationServiceStarter
     ): AutoStartUseCase {
         return AutoStartUseCase(
             appStateManager,
             autoStartProcessor,
-            serviceStarter
+            locationServiceStarter
         )
     }
 
