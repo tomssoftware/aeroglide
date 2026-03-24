@@ -20,11 +20,11 @@ class AeroGlideViewModel @Inject constructor(
     private val varioToneUseCase: VarioToneUseCase,
 ) : ViewModel() {
 
-    fun onToggleRecording() = flightCoordinator.onToggleRecording()
-    fun onReCalibrate() = flightCoordinator.onStartCalibration()
-    fun onPermissionRequest() = flightCoordinator.onPermissionRequest()
-    fun onPermissionGranted() = flightCoordinator.onPermissionGranted()
-    fun onPermissionDenied() = flightCoordinator.onPermissionDenied()
+    fun toggleRecording() = flightCoordinator.toggleRecording()
+    fun calibrate() = flightCoordinator.startCalibration()
+    fun permissionRequest() = flightCoordinator.permissionRequest()
+    fun permissionGranted() = flightCoordinator.permissionGranted()
+    fun permissionDenied() = flightCoordinator.permissionDenied()
 
     // Forward the flow.
     // Using stateIn ensures it's a hot flow that replays the latest value
@@ -33,7 +33,7 @@ class AeroGlideViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = AppState.Idle(), // Or appStateManager.value if available
+            initialValue = AppState.Idle, // Or appStateManager.value if available
         )
 
     // --- Vario tone ---
@@ -55,7 +55,7 @@ class AeroGlideViewModel @Inject constructor(
      * Toggles the variometer tone engine on or off.
      * Delegates to [VarioToneUseCase.enable] / [VarioToneUseCase.disable].
      */
-    fun onToggleTone() {
+    fun toggleTone() {
         if (isToneEnabled.value) varioToneUseCase.disable()
         else varioToneUseCase.enable()
     }

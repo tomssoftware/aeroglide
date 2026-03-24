@@ -84,6 +84,10 @@ class AutoStartProcessor @Inject constructor(
         if (collectorJob?.isActive == true) return
         Timber.i("AutoStartProcessor: Starting.")
 
+        // Clear previous subscriptions if job was aborted without stop
+        settingsJobs.forEach { it.cancel() }
+        settingsJobs.clear()
+
         // Mirror every settings change into the detector immediately so thresholds
         // are always in sync without requiring a restart.
         settingsJobs += settingsProvider.velocityLimitTakeOff
@@ -231,13 +235,30 @@ class AutoStartDetector(
     private var timeInFlyingCondition = Duration.ZERO
     private var timeInLandingCondition = Duration.ZERO
     private var timeInLandedCondition = Duration.ZERO
-    private var timeInResetCondition = Duration.ZERO
+
+    /**
+     * Absolute wall-clock timestamp (from [timeProvider]) recorded the moment the machine
+     * enters [Companion.State.Landed]. Reset to 0 on any other state transition.
+     *
+     * Used by [doReset] to check elapsed time unconditionally, so the reset timer runs
+     * independently of what the pilot does on the ground (taxi, walk, etc.).
+     * This replaces the old condition-based `timeInResetCondition` accumulator that was
+     * erroneously zeroed whenever `isLandedCondition()` broke (e.g. during taxiing).
+     */
+    private var landedAtTime: Long = 0L
 
     private fun doTakeOff() = timeInTakeOffCondition >= takeOffDuration
     private fun doFlying() = timeInFlyingCondition >= flyingDuration
     private fun doLanding() = timeInLandingCondition >= landingDuration
     private fun doLanded() = timeInLandedCondition >= landedDuration
-    private fun doReset() = timeInResetCondition >= resetDuration
+
+    /**
+     * Returns true when [resetDuration] has elapsed since the machine entered [Companion.State.Landed].
+     *
+     * Intentionally does **not** check any sensor condition so taxiing, walking, or any
+     * other ground movement cannot block the transition back to [Companion.State.WaitForTakeOff].
+     */
+    private fun doReset() = landedAtTime != 0L && (timeProvider() - landedAtTime).milliseconds >= resetDuration
 
     private var lastUpdateTime: Long = 0
 
@@ -247,8 +268,14 @@ class AutoStartDetector(
      * Processes the latest sensor readings and advances the state machine if guard
      * conditions are satisfied.
      *
-     * Should be called on every sensor tick. Returns immediately if either
-     * [climbrate] or [velocity] has not yet been set (still at [Float.MIN_VALUE]).
+     * This method calculates the time elapsed since the last call to drive time-based
+     * state transitions. It should be called on every sensor tick.
+     *
+     * To ensure accuracy and prevent jumps:
+     * 1. It returns immediately if [climbrate] or [velocity] are at [Float.MIN_VALUE].
+     * 2. The first valid call only anchors [lastUpdateTime] and does not advance the machine.
+     * 3. Elapsed time is capped at 2 seconds to prevent massive state jumps if the
+     *    app was paused or sensors dropped out.
      */
     fun detect() {
         if (climbrate == Float.MIN_VALUE || velocity == Float.MIN_VALUE) {
@@ -263,7 +290,9 @@ class AutoStartDetector(
             return
         }
 
-        val elapsedTime = (currentTime - lastUpdateTime).milliseconds
+        val maxElapsedTime = 2.seconds
+        val deltaMillis = (currentTime - lastUpdateTime).coerceAtLeast(0L)
+        val elapsedTime = minOf(deltaMillis.milliseconds, maxElapsedTime)
         lastUpdateTime = currentTime
 
         stateMachine.transition(Event.OnUpdate(elapsedTime))
@@ -275,6 +304,7 @@ class AutoStartDetector(
         timeInFlyingCondition = Duration.ZERO
         timeInLandingCondition = Duration.ZERO
         timeInLandedCondition = Duration.ZERO
+        landedAtTime = 0L
         lastUpdateTime = 0L
         stateMachine.transition(Event.OnReset)
     }
@@ -363,7 +393,9 @@ class AutoStartDetector(
                 timeInFlyingCondition = Duration.ZERO
                 timeInLandingCondition = Duration.ZERO
                 timeInLandedCondition = Duration.ZERO
-                timeInResetCondition = Duration.ZERO
+                // Anchor the wall-clock when entering Landed; clear it on any other transition
+                // so doReset() cannot fire outside of the Landed state.
+                landedAtTime = if (validTransition.toState == State.Landed) timeProvider() else 0L
             }
 
             when (val sideEffect = validTransition.sideEffect) {
@@ -412,13 +444,10 @@ class AutoStartDetector(
                             }
                         }
 
-                        State.Landed -> {
-                            if (isLandedCondition()) {
-                                timeInResetCondition += sideEffect.elapsedTime
-                            } else {
-                                timeInResetCondition = Duration.ZERO
-                            }
-                        }
+                        // State.Landed: reset timer is wall-clock based (landedAtTime).
+                        // doReset() compares timeProvider() against landedAtTime directly,
+                        // so no accumulator needs to be updated here regardless of sensor values.
+                        State.Landed -> Unit
                     }
                 }
 

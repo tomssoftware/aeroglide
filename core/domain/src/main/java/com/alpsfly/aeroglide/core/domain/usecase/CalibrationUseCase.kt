@@ -1,7 +1,6 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
-import com.alpsfly.aeroglide.core.domain.usecase.location.ServiceStarter
-import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
+import com.alpsfly.aeroglide.core.domain.usecase.location.LocationServiceStarter
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import timber.log.Timber
 import javax.inject.Inject
@@ -9,7 +8,7 @@ import javax.inject.Inject
 class CalibrationUseCase @Inject constructor(
     private val appStateManager: AppStateManager,
     private val calibrationProcessor: CalibrationProcessor, // Inject the "worker buddy"
-    private val serviceStarter: ServiceStarter // Inject the service manager
+    private val locationServiceStarter: LocationServiceStarter // Inject the service manager
 ) {
     operator fun invoke() {
         Timber.i("CalibrationUseCase: Commanding START.")
@@ -18,7 +17,7 @@ class CalibrationUseCase @Inject constructor(
         appStateManager.onCalibrationStarted()
 
         // 2. Tell the service to keep the hardware awake
-        serviceStarter.startRecordingService()
+        locationServiceStarter.startForegroundService()
 
         // 3. Tell the processor to start the calibration work
         calibrationProcessor.start {

@@ -69,11 +69,10 @@ abstract class ChartProfileViewModel<T>(
                     }
 
                     is AppState.Ready -> {
-                        if (state.fromState is AppState.Recording) {
-                            createHistoryData(state.fromState as AppState.Recording)
-                        } else {
-                            flowOf(ChartProfileUiState.Initial(INITIAL_POINTS))
-                        }
+                        // previousActivityId ist gesetzt wenn wir von Recording kommen
+                        val prevId = state.previousActivityId
+                        if (prevId != null) createHistoryData(prevId)
+                        else flowOf(ChartProfileUiState.Initial(INITIAL_POINTS))
                     }
 
                     else -> flowOf(ChartProfileUiState.Initial(INITIAL_POINTS))
@@ -107,10 +106,9 @@ abstract class ChartProfileViewModel<T>(
         }
     }
 
-    private fun createHistoryData(state: AppState.Recording): Flow<ChartProfileUiState> {
-        val previousState = state
-        Timber.i("load historic data for ${previousState.activityId}")
-        return loadHistoricData(previousState.activityId)
+    private fun createHistoryData(activityId: Long): Flow<ChartProfileUiState> {
+        Timber.i("load historic data for $activityId")
+        return loadHistoricData(activityId)
             .map { points ->
                 if (points.isEmpty()) {
                     ChartProfileUiState.Initial(INITIAL_POINTS)
@@ -136,7 +134,7 @@ abstract class ChartProfileViewModel<T>(
             .flatMapConcat { historyPoints ->
 
                 // 2. Prepare the index counter.
-                // If we have history, the next index should be size + 1. 
+                // If we have history, the next index should be size + 1.
                 // We map history to a continuous 0..N index to match the live chart style.
                 var index = 0L
 
