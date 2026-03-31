@@ -20,7 +20,7 @@ class AutoStartUseCase @Inject constructor(
     init {
         autoStartProcessor.onTakeOffDetected = {
             val state = appStateManager.appState.value
-            if (state is AppState.Ready && state.autostart) {
+            if (state is AppState.Ready) {
                 val newActivityId = System.currentTimeMillis()
                 Timber.i("AutoStartUseCase: Take-off detected, starting recording with id=$newActivityId")
                 appStateManager.toggleRecording(newActivityId)
@@ -28,10 +28,7 @@ class AutoStartUseCase @Inject constructor(
         }
         autoStartProcessor.onLandingDetected = {
             val state = appStateManager.appState.value
-            // Only stop recordings that were started (or are supervised) by AutoStart.
-            // Recording.autostart is true whenever autostart was active when recording began,
-            // preventing AutoStart from interfering with purely manual recordings.
-            if (state is AppState.Recording && state.autostart) {
+            if (state is AppState.Recording) {
                 Timber.i("AutoStartUseCase: Landing detected, stopping recording.")
                 appStateManager.toggleRecording(0L) // ID ignored when stopping
             }
@@ -54,5 +51,29 @@ class AutoStartUseCase @Inject constructor(
         Timber.i("AutoStartUseCase: Commanding STOP.")
         autoStartProcessor.stop()
         locationServiceStarter.stopForegroundService()
+    }
+
+    /**
+     * Manually starts a recording without waiting for the automatic take-off detection timer.
+     *
+     * Fires [AutoStartProcessor.onTakeOffDetected] immediately, which transitions
+     * [AppState] to [AppState.Recording] via [AppStateManager.toggleRecording].
+     * Only effective while the service is running (after [enable]).
+     */
+    fun manualStart() {
+        Timber.i("AutoStartUseCase: Manual start.")
+        autoStartProcessor.manualStart()
+    }
+
+    /**
+     * Manually stops the current recording without waiting for the automatic landing detection timer.
+     *
+     * Fires [AutoStartProcessor.onLandingDetected] immediately, which transitions
+     * [AppState] back to [AppState.Ready] via [AppStateManager.toggleRecording].
+     * Only effective while recording is active.
+     */
+    fun manualStop() {
+        Timber.i("AutoStartUseCase: Manual stop.")
+        autoStartProcessor.manualStop()
     }
 }

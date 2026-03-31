@@ -40,7 +40,7 @@ class ElevationTile(
         val col = lonRel.toInt().coerceIn(0, samplesPerSide - 1)
 
         val index = row * samplesPerSide + col
-        Timber.d("Elevation at $latitude, $longitude is ${data.getOrNull(index)}")
+        Timber.v("Elevation at $latitude, $longitude is ${data.getOrNull(index)}")
         return data.getOrNull(index)
     }
 
