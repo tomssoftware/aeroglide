@@ -13,7 +13,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-class AutoStartDetectorTest {
+class AutoStartDetectorUnitTest {
 
     private lateinit var autoStartDetector: AutoStartDetector
 
@@ -313,6 +313,42 @@ class AutoStartDetectorTest {
 
         // THEN: >= is inclusive, so exactly-at-threshold must trigger
         assertTrue("onTakeOff should fire when velocity is exactly at the threshold", takeOffCalled)
+    }
+
+    @Test
+    fun `Flying transitions directly to Landed when velocity drops to zero`() = runTest {
+        // GIVEN: The detector is in Flying state via manual start
+        autoStartDetector.velocity = autoStartDetector.velocityFlying + 1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
+        autoStartDetector.simulateTimePassing(autoStartDetector.flyingDuration + 100.milliseconds)
+        assertTrue("onTakeOff should have fired", takeOffCalled)
+
+        // WHEN: Velocity drops to 0 and climbrate is near-zero (simulator scenario)
+        // without passing through a classic landing approach (fast + sinking)
+        autoStartDetector.velocity = 0f
+        autoStartDetector.climbrate = 0.004f
+        autoStartDetector.simulateTimePassing(autoStartDetector.landedDuration + 500.milliseconds)
+
+        // THEN: The detector should transition directly Flying → Landed
+        assertTrue("onLanded should fire via direct Flying→Landed path", landedCalled)
+    }
+
+    @Test
+    fun `Flying does not transition to Landed before landedDuration elapsed`() = runTest {
+        // GIVEN: In flying state
+        autoStartDetector.velocity = autoStartDetector.velocityFlying + 1f
+        autoStartDetector.climbrate = autoStartDetector.climbrateTakeOff + 0.5f
+        autoStartDetector.simulateTimePassing(autoStartDetector.takeOffDuration + 200.milliseconds)
+        autoStartDetector.simulateTimePassing(autoStartDetector.flyingDuration + 100.milliseconds)
+
+        // WHEN: Landed conditions but NOT for the full duration
+        autoStartDetector.velocity = 0f
+        autoStartDetector.climbrate = 0f
+        autoStartDetector.simulateTimePassing(autoStartDetector.landedDuration - 1.seconds)
+
+        // THEN: Should still be in Flying (not yet landed)
+        assertFalse("onLanded should not fire before landedDuration", landedCalled)
     }
 
     // -------------------------------------------------------------------------

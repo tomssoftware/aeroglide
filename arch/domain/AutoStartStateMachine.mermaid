@@ -1,0 +1,57 @@
+stateDiagram-v2
+    direction TB
+
+    [*] --> WaitForTakeOff
+
+    %% --- Automatische Übergänge (Sensordaten) ---
+    WaitForTakeOff --> TakeOff     : v >= 2.76 m/s AND climb >= 0.5 m/s seit 5s\n→ onTakeOff()
+    TakeOff        --> Flying      : v >= 2.76 m/s seit 3s
+    Flying         --> Landing     : v >= 2.76 m/s AND climb <= -0.5 m/s seit 3s
+    Flying         --> Landed      : v <= 2.76 m/s AND -0.5 <= climb <= 0.5 seit 5s\n→ onLanded() (Direktlandung)
+    Landing        --> Flying      : v >= 2.76 m/s seit 3s (Priorität)
+    Landing        --> Landed      : v <= 2.76 m/s AND -0.5 <= climb <= 0.5 seit 5s\n→ onLanded()
+    Landed         --> WaitForTakeOff : nach 30s (wall-clock, unabhängig von Sensoren)
+
+    %% --- Manueller Start (Start/Stop-Button) ---
+    WaitForTakeOff --> Flying      : OnManualStart → onTakeOff()
+    TakeOff        --> Flying      : OnManualStart\n(onTakeOff bereits gefeuert)
+
+    %% --- Manueller Stop (Start/Stop-Button) ---
+    Flying         --> Landed      : OnManualStop → onLanded()
+    Landing        --> Landed      : OnManualStop → onLanded()
+
+    %% --- Reset (aus allen Zuständen) ---
+    WaitForTakeOff --> WaitForTakeOff : OnReset
+    TakeOff        --> WaitForTakeOff : OnReset
+    Flying         --> WaitForTakeOff : OnReset
+    Landing        --> WaitForTakeOff : OnReset
+    Landed         --> WaitForTakeOff : OnReset
+
+    note right of WaitForTakeOff
+        Initialzustand
+        Wartet auf Startlauf
+    end note
+    note right of TakeOff
+        Abhebbedingung erfüllt
+        onTakeOff() wird beim
+        Eintritt in diesen Zustand gefeuert
+    end note
+    note right of Flying
+        In der Luft
+        Beobachtet Landeansatz UND Landebedingung parallel
+        Direktlandung moeglich wenn v sofort abfaellt
+        (z.B. Simulator, abrupter Stopp)
+        Manueller Stop möglich
+    end note
+    note right of Landing
+        Landeansatz erkannt
+        Flying-Timer hat Priorität
+        (beide Timer laufen parallel)
+        Manueller Stop möglich
+    end note
+    note right of Landed
+        Landung bestätigt
+        onLanded() beim Eintritt gefeuert
+        Reset nach 30s unabhängig
+        von Sensorwerten (kein Taxiing-Bug)
+    end note

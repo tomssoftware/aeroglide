@@ -1,0 +1,35 @@
+stateDiagram-v2
+    direction TB
+
+    [*] --> Idle
+
+    Idle --> Idle          : OnPermissionRequest
+    Idle --> Idle          : OnPermissionDenied
+    Idle --> Calibrating   : OnPermissionGranted / CalibrationStarted
+
+    Calibrating --> Ready  : OnCalibrationFinished / CalibrationCompleted
+
+    Ready --> Calibrating  : OnCalibrationStarted / CalibrationStarted
+    Ready --> Recording    : OnToggleRecording / RecordingStarted(activityId)
+
+    Recording --> Ready    : OnToggleRecording / RecordingStopped(previousActivityId)
+
+    note right of Idle
+        Initialzustand
+        Wartet auf Permission-Flow
+    end note
+    note right of Calibrating
+        SideEffect CalibrationStarted
+        loest startCalibration() im Coordinator aus
+    end note
+    note right of Ready
+        SideEffect CalibrationCompleted
+        loest DEM-Download aus
+        AutoStart via listenToAutoStartSetting()
+        previousActivityId: Long? (letzte Aufnahme)
+    end note
+    note right of Recording
+        SideEffect RecordingStarted loest startRecording() aus
+        SideEffect RecordingStopped loest stopRecording() aus
+        activityId: Long (wall-clock ms)
+    end note

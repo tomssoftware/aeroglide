@@ -90,7 +90,6 @@ class SettingsViewModel @Inject constructor(
     fun onAutoStartEnabled(enabled: Boolean) {
         _autoStartEnabled.value = enabled
         prefs.edit { putBoolean("spk_auto_start_enabled", enabled) }
-        appStateManager.onAutoStartEnabled(enabled)
     }
 
     /**

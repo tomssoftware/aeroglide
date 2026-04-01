@@ -1,0 +1,62 @@
+sequenceDiagram
+    participant Sensors as GPS / Variometer
+    participant Detector as AutoStartDetector
+    participant Processor as AutoStartProcessor
+    participant UseCase as AutoStartUseCase
+    participant AppSM as AppStateManager
+    participant Coord as FlightSessionCoordinatorUseCase
+    participant RecUC as RecordingUseCase
+    participant LocSvc as LocationServiceStarter
+
+    Note over AppSM: Idle → Calibrating → Ready
+    Note over Coord: listenToAutoStartSetting()
+    Note over Coord: isAutoStartEnabled (SharedPrefs-Flow) emittiert true<br/>waehrend AppState.Ready → enable() wird aufgerufen
+    Coord->>UseCase: enable()
+    UseCase->>LocSvc: startForegroundService()
+    UseCase->>Processor: start()
+    Note over Detector: Zustand: WaitForTakeOff
+
+    rect rgb(23, 87, 23)
+        Note over Sensors,Detector: Startlauf: v >= vTakeOff (default 20 km/h) AND climb >= 0.5 m/s fuer 5s
+        loop jeder Sensor-Tick
+            Sensors->>Processor: locationFlowUi + climbrateFlowUi
+            Processor->>Detector: detect()
+        end
+        Note over Detector: WaitForTakeOff → TakeOff (SideEffect.TakeOff → onTakeOff())
+        Detector->>Processor: onTakeOff()
+        Processor->>UseCase: onTakeOffDetected()
+        UseCase->>UseCase: state is AppState.Ready?
+        UseCase->>AppSM: toggleRecording(newActivityId)
+        Note over AppSM: Ready → Recording(activityId)
+        AppSM-->>Coord: sideEffect: RecordingStarted(activityId)
+        Coord->>RecUC: startRecording(activityId)
+        Coord->>UseCase: manualStart() (Detector → Flying)
+    end
+
+    rect rgb(210, 220, 245)
+        Note over Detector: TakeOff → Flying (v >= vTakeOff fuer 3s)
+        Note over Detector: Flying (Flug laeuft...)
+        Note over Detector: Flying → Landing (v >= vTakeOff AND climb <= -0.5 m/s fuer 3s)
+        Note over Detector: Landing → Flying (v >= vTakeOff fuer 3s – Abbruch der Landeerkennung)
+    end
+
+    rect rgb(31, 72, 207)
+        Note over Sensors,Detector: Landung: v <= vLanded (default 20 km/h) AND -0.5 <= climb <= 0.5 fuer 5s
+        Note over Detector: Landing → Landed (SideEffect.Landed → onLanded())
+        Detector->>Processor: onLanded()
+        Processor->>UseCase: onLandingDetected()
+        UseCase->>UseCase: state is AppState.Recording?
+        UseCase->>AppSM: toggleRecording(0L)
+        Note over AppSM: Recording → Ready(previousActivityId)
+        AppSM-->>Coord: sideEffect: RecordingStopped(previousActivityId)
+        Coord->>RecUC: stopRecording()
+        Coord->>UseCase: disable()
+        Note over Coord: isAutoStartEnabled.first() == true?
+        Coord->>UseCase: enable()
+        UseCase->>LocSvc: startForegroundService()
+        UseCase->>Processor: start() [idempotent, laeuft noch]
+        Note over Detector: Landed → WaitForTakeOff (nach 30s wall-clock, unabhaengig von Sensordaten)
+    end
+
+    Note over Detector: Zustand: WaitForTakeOff (bereit fuer naechsten Flug)
+

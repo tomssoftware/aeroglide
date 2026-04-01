@@ -6,10 +6,12 @@ import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.tinder.StateMachine
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.sample
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -80,6 +82,7 @@ class AutoStartProcessor @Inject constructor(
      *
      * Idempotent: calling [start] while already running has no effect.
      */
+    @OptIn(FlowPreview::class)
     fun start() {
         if (collectorJob?.isActive == true) return
         Timber.i("AutoStartProcessor: Starting.")
@@ -113,7 +116,31 @@ class AutoStartProcessor @Inject constructor(
             autoStartDetector.velocity = location.speed
             autoStartDetector.climbrate = climbrate.climbrate
             autoStartDetector.detect()
-        }.launchIn(applicationScope)
+        }.sample(1.seconds).launchIn(applicationScope)
+    }
+
+    /**
+     * Manually triggers a take-off without waiting for the automatic detection timer.
+     *
+     * Delegates to [AutoStartDetector.start]. The [onTakeOffDetected] callback fires
+     * exactly as it would for an automatically detected take-off, so recording starts
+     * normally. Only effective when sensor collection is active (after [start]).
+     */
+    fun manualStart() {
+        Timber.i("AutoStartProcessor: Manual start requested.")
+        autoStartDetector.start()
+    }
+
+    /**
+     * Manually triggers a landing without waiting for the automatic detection timer.
+     *
+     * Delegates to [AutoStartDetector.stop]. The [onLandingDetected] callback fires
+     * exactly as it would for an automatically detected landing, so recording stops
+     * normally. Only effective when sensor collection is active (after [start]).
+     */
+    fun manualStop() {
+        Timber.i("AutoStartProcessor: Manual stop requested.")
+        autoStartDetector.stop()
     }
 
     /**
@@ -196,10 +223,10 @@ class AutoStartDetector(
 
     // >= is intentional: a value exactly at the threshold still qualifies (inclusive boundary).
     private fun isTakeOffCondition() = velocity >= velocityFlying && climbrate >= climbrateTakeOff
+    private fun isAscentCondition() = isTakeOffCondition() // Take-off and ascent share the same condition
     private fun isFlyingCondition() = velocity >= velocityFlying
     private fun isLandingCondition() = velocity >= velocityFlying && climbrate <= climbrateLanding
-    private fun isLandedCondition() =
-        velocity <= velocityLanded && (climbrate in climbrateLanding..climbrateTakeOff)
+    private fun isLandedCondition() =  velocity <= velocityLanded && (climbrate in climbrateLanding..climbrateTakeOff)
 
     // --- Time-Based Guard Durations ---
 
@@ -295,6 +322,7 @@ class AutoStartDetector(
         val elapsedTime = minOf(deltaMillis.milliseconds, maxElapsedTime)
         lastUpdateTime = currentTime
 
+        Timber.v("AutoStartDetector: Elapsed time: $elapsedTime, climbrate: $climbrate, velocity: $velocity")
         stateMachine.transition(Event.OnUpdate(elapsedTime))
     }
 
@@ -309,10 +337,41 @@ class AutoStartDetector(
         stateMachine.transition(Event.OnReset)
     }
 
+    /**
+     * Manually triggers a take-off, skipping the automatic detection timer.
+     *
+     * - From [Companion.State.WaitForTakeOff]: transitions directly to [Companion.State.Flying]
+     *   and fires [onTakeOff] via [Companion.SideEffect.TakeOff].
+     * - From [Companion.State.TakeOff]: transitions to [Companion.State.Flying]
+     *   ([onTakeOff] was already fired when entering [Companion.State.TakeOff]).
+     * - All other states: no effect.
+     */
+    fun start() {
+        stateMachine.transition(Event.OnManualStart)
+    }
+
+    /**
+     * Manually triggers a landing, skipping the automatic detection timer.
+     *
+     * - From [Companion.State.Flying] or [Companion.State.Landing]: transitions directly to
+     *   [Companion.State.Landed] and fires [onLanded] via [Companion.SideEffect.Landed].
+     * - All other states: no effect.
+     */
+    fun stop() {
+        stateMachine.transition(Event.OnManualStop)
+    }
+
     // --- State Machine ---
 
     private val stateMachine = StateMachine.create<State, Event, SideEffect> {
         initialState(State.WaitForTakeOff)
+
+        onTransition {
+            val valid = it as? StateMachine.Transition.Valid ?: return@onTransition
+            if (valid.fromState != valid.toState) {
+                Timber.i("onTransition: ${valid.fromState::class.simpleName} -> ${valid.toState::class.simpleName}")
+            }
+        }
 
         state<State.WaitForTakeOff> {
             on<Event.OnUpdate> { event ->
@@ -321,6 +380,10 @@ class AutoStartDetector(
                 } else {
                     dontTransition(sideEffect = SideEffect.Monitor(event.elapsedTime))
                 }
+            }
+            on<Event.OnManualStart> {
+                // Pilot starts manually: fire TakeOff callback and go straight to Flying.
+                transitionTo(State.Flying, SideEffect.TakeOff)
             }
             on<Event.OnReset> {
                 transitionTo(State.WaitForTakeOff)
@@ -335,6 +398,10 @@ class AutoStartDetector(
                     dontTransition(sideEffect = SideEffect.Monitor(event.elapsedTime))
                 }
             }
+            on<Event.OnManualStart> {
+                // TakeOff callback was already fired when entering this state; just advance to Flying.
+                transitionTo(State.Flying)
+            }
             on<Event.OnReset> {
                 transitionTo(State.WaitForTakeOff)
             }
@@ -344,9 +411,17 @@ class AutoStartDetector(
             on<Event.OnUpdate> { event ->
                 if (doLanding()) {
                     transitionTo(State.Landing)
+                } else if (doLanded()) {
+                    // Direct transition when velocity drops to zero without a
+                    // classic landing approach (e.g. simulator, abrupt stop).
+                    transitionTo(State.Landed, SideEffect.Landed)
                 } else {
                     dontTransition(sideEffect = SideEffect.Monitor(event.elapsedTime))
                 }
+            }
+            on<Event.OnManualStop> {
+                // Pilot stops manually: fire Landed callback and jump straight to Landed.
+                transitionTo(State.Landed, SideEffect.Landed)
             }
             on<Event.OnReset> {
                 transitionTo(State.WaitForTakeOff)
@@ -364,6 +439,10 @@ class AutoStartDetector(
                 } else {
                     dontTransition(sideEffect = SideEffect.Monitor(event.elapsedTime))
                 }
+            }
+            on<Event.OnManualStop> {
+                // Pilot stops manually: fire Landed callback and jump straight to Landed.
+                transitionTo(State.Landed, SideEffect.Landed)
             }
             on<Event.OnReset> {
                 transitionTo(State.WaitForTakeOff)
@@ -429,6 +508,14 @@ class AutoStartDetector(
                             } else {
                                 timeInLandingCondition = Duration.ZERO
                             }
+                            // Also track landed condition so Flying can transition
+                            // directly to Landed when velocity drops without a
+                            // classic landing approach (fast + sinking).
+                            if (isLandedCondition()) {
+                                timeInLandedCondition += sideEffect.elapsedTime
+                            } else {
+                                timeInLandedCondition = Duration.ZERO
+                            }
                         }
 
                         State.Landing -> {
@@ -436,7 +523,7 @@ class AutoStartDetector(
                             // since the machine must choose between two exit transitions.
                             if (isLandedCondition()) {
                                 timeInLandedCondition += sideEffect.elapsedTime
-                            } else if (isFlyingCondition()) {
+                            } else if (isAscentCondition()) {
                                 timeInFlyingCondition += sideEffect.elapsedTime
                             } else {
                                 timeInLandedCondition = Duration.ZERO
@@ -500,6 +587,18 @@ class AutoStartDetector(
 
             /** Forces an immediate reset to [State.WaitForTakeOff] and clears all accumulators. */
             data object OnReset : Event()
+
+            /**
+             * Manually skips automatic take-off detection and jumps to [State.Flying].
+             * Valid in [State.WaitForTakeOff] (fires [SideEffect.TakeOff]) and [State.TakeOff].
+             */
+            data object OnManualStart : Event()
+
+            /**
+             * Manually skips automatic landing detection and jumps to [State.Landed].
+             * Valid in [State.Flying] and [State.Landing] (fires [SideEffect.Landed]).
+             */
+            data object OnManualStop : Event()
         }
 
         /**
