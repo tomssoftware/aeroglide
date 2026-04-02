@@ -42,7 +42,7 @@ class CalibrationProcessor @Inject constructor(
             val pressure = p.pressure
             val altitude = l.altitude
 
-            Timber.d("CalibrationProcessor running: $pressure, $altitude")
+            Timber.v("CalibrationProcessor running: $pressure, $altitude")
             calibration = Calibration(
                 timestamp = startOfCalibration,
                 isCalibrated = false,

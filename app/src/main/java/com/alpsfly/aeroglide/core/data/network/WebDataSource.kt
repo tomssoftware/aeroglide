@@ -25,7 +25,7 @@ interface IWebDataSource {
 
 @Singleton
 class WebDataSource @Inject constructor(
-    @ApplicationContext private val context: Context,
+//    @ApplicationContext private val context: Context,
 //    private val cloudStorage: CloudStorage,
 //    private val cloudFunctions: CloudFunctions,
 //    private val mapStorage: MapStorage

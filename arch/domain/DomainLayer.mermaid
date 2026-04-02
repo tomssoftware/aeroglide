@@ -1,0 +1,91 @@
+graph TB
+    %% Top (UI) -> Domain (Coordinators) -> Domain (Managers/UseCases) -> Domain (Workers/Processors) -> Data & Service Layer (bottom)
+
+    subgraph "UI Layer (Top)"
+        direction TB
+        A[AeroGlideViewModel]
+    end
+
+    subgraph "Domain Layer - Coordinators"
+        direction TB
+        B(FlightSessionCoordinatorUseCase)
+    end
+
+    subgraph "Domain Layer - Managers (UseCases)"
+        direction TB
+        C[RecordingUseCase]
+        D[CalibrationUseCase]
+        E[AutoStartUseCase]
+        DEU[DownloadElevationUseCase]
+        V[VarioToneUseCase]
+        M[AppStateManager]
+    end
+
+    subgraph "Domain Layer - Workers (Processors)"
+        direction TB
+        C_P[RecordingProcessor]
+        D_P[CalibrationProcessor]
+        E_P[AutoStartProcessor]
+    end
+
+    subgraph "Data & Service Layer (Bottom)"
+        direction TB
+        F[AppRepository]
+        G[SensorRepository]
+        H[DataRepository]
+        ER[ElevationRepository]
+        ASP[AutoStartSettingsProvider]
+        I[LocationServiceStarter]
+    end
+
+    %% UI Layer → Coordinator (einziger Gateway in die Domain)
+    A --> B
+
+    %% Coordinator → UseCases + AppStateManager + VarioToneUseCase + SensorRepository (locationFlowUi.first())
+    B --> C
+    B --> D
+    B --> E
+    B --> DEU
+    B --> V
+    B --> M
+    B --> G
+    B --> ASP
+
+    %% UseCases delegate to Processors and AppStateManager
+    C --> C_P
+    D --> D_P
+    D --> M
+    E --> E_P
+    E --> M
+
+    %% UseCases → LocationServiceStarter (start/stop ForegroundService)
+    C --> I
+    D --> I
+    E --> I
+
+    %% Processors → Repositories
+    C_P --> F
+    C_P --> G
+    C_P --> H
+    D_P --> G
+    E_P --> G
+
+    %% AutoStartProcessor → AutoStartSettingsProvider (threshold settings)
+    E_P --> ASP
+
+    %% DownloadElevationUseCase → ElevationRepository
+    DEU --> ER
+
+    %% VarioToneUseCase → SensorRepository (climbrateFlowUi)
+    V --> G
+
+    %% LocationServiceStarter → SensorRepository (enableSensorListeners / disableSensorListeners)
+    I --> G
+
+    %% Unsichtbare Layout-Hints: erzwingen die vertikale Subgraph-Reihenfolge
+    %% Managers (bottom) → Workers (top)
+    M ~~~ C_P
+    %% Workers (bottom) → Data & Service Layer (top)
+    E_P ~~~ F
+
+

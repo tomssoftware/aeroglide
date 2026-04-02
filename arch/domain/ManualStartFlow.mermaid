@@ -1,0 +1,73 @@
+sequenceDiagram
+    participant UI as AeroGlideScreen (Compose)
+    participant Activity as AeroGlideActivity
+    participant VM as AeroGlideViewModel
+    participant Coord as FlightSessionCoordinatorUseCase
+    participant AppSM as AppStateManager
+    participant RecUC as RecordingUseCase
+    participant Proc as RecordingProcessor
+    participant LocSvc as LocationServiceStarter
+    participant AutoUC as AutoStartUseCase
+
+    Note over Activity: onCreate()
+    Activity->>VM: aeroGlideViewModel (by viewModels())
+    VM-->>UI: appState: StateFlow<AppState>
+    Note over UI: collectAsStateWithLifecycle()
+
+    rect rgb(11, 87, 11)
+        Note over UI,LocSvc: Manueller Start (AppState.Ready)
+        UI->>UI: User tippt Play-Button
+        Note over UI: enabled nur wenn AppState.Ready oder Recording
+        UI->>VM: toggleRecording()
+        VM->>Coord: toggleRecording()
+        Note over Coord: currentState is AppState.Ready
+        Coord->>Coord: newActivityId = System.currentTimeMillis()
+        Coord->>AppSM: toggleRecording(newActivityId)
+        AppSM->>AppSM: Event.OnToggleRecording(newActivityId)
+        Note over AppSM: Ready → Recording(activityId)
+        AppSM-->>AppSM: _appState.value = Recording(activityId)
+        AppSM-->>AppSM: _sideEffects.tryEmit(RecordingStarted(activityId))
+
+        AppSM-->>VM: appState = Recording(activityId)
+        VM-->>UI: appState = Recording(activityId)
+        Note over UI: Play-Icon → Stop-Icon
+        Note over Activity: FLAG_KEEP_SCREEN_ON gesetzt
+
+        AppSM-->>Coord: sideEffect: RecordingStarted(activityId)
+        Coord->>RecUC: startRecording(activityId)
+        RecUC->>Proc: start(activityId)
+        RecUC->>LocSvc: startForegroundService()
+        Note over LocSvc: ForegroundService hält GPS aktiv
+
+        Note over Coord: isAutoStartEnabled?
+        Coord->>AutoUC: manualStart() (falls AutoStart aktiv)
+        Note over AutoUC: Detector → Flying (Landeerkennung sofort aktiv)
+    end
+
+    rect rgb(43, 9, 167)
+        Note over UI,LocSvc: Manueller Stopp (AppState.Recording)
+        UI->>UI: User tippt Stop-Button
+        UI->>VM: toggleRecording()
+        VM->>Coord: toggleRecording()
+        Note over Coord: currentState is AppState.Recording
+        Coord->>AppSM: toggleRecording(0L)
+        AppSM->>AppSM: Event.OnToggleRecording(0L)
+        Note over AppSM: Recording → Ready(previousActivityId)
+        AppSM-->>AppSM: _appState.value = Ready(previousActivityId)
+        AppSM-->>AppSM: _sideEffects.tryEmit(RecordingStopped(activityId))
+
+        AppSM-->>VM: appState = Ready(previousActivityId)
+        VM-->>UI: appState = Ready(previousActivityId)
+        Note over UI: Stop-Icon → Play-Icon
+        Note over Activity: FLAG_KEEP_SCREEN_ON entfernt
+
+        AppSM-->>Coord: sideEffect: RecordingStopped(activityId)
+        Coord->>RecUC: stopRecording()
+        RecUC->>Proc: stop()
+        RecUC->>LocSvc: stopForegroundService()
+        Coord->>AutoUC: disable()
+        Note over Coord: isAutoStartEnabled?
+        Coord->>AutoUC: enable() (falls AutoStart aktiv)
+        Note over AutoUC: Detector zurueck in WaitForTakeOff
+    end
+

@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.kotlin.android)
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -26,13 +32,18 @@ android {
 
     defaultConfig {
         minSdk = 26
+        buildConfigField(
+            "String",
+            "MAPBOX_ACCESS_TOKEN",
+            "\"${localProperties.getProperty("MAPBOX_ACCESS_TOKEN", "")}\""
+        )
     }
 
     buildFeatures {
         aidl = false
-        buildConfig = false
+        buildConfig = true
         compose = true
-        renderScript = false
+
         shaders = false
     }
 

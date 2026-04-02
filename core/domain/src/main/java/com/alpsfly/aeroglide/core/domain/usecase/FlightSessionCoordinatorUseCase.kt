@@ -3,9 +3,11 @@ package com.alpsfly.aeroglide.core.domain.usecase
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
 import com.alpsfly.aeroglide.core.data.SensorRepository
+import com.alpsfly.aeroglide.core.domain.usecase.state.AppSideEffect
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppState
 import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -36,97 +38,114 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
     private val recordingUseCase: RecordingUseCase,
     private val autoStartUseCase: AutoStartUseCase,
     private val downloadElevationUseCase: DownloadElevationUseCase,
+    private val varioToneUseCase: VarioToneUseCase,
     private val sensorRepository: SensorRepository,
     private val autoStartSettingsProvider: AutoStartSettingsProvider,
     @param:ApplicationScope private val applicationScope: CoroutineScope
 ) {
 
+    // --- Public State ---
+
+    /**
+     * The current [AppState] as a [StateFlow]. Forwarded from [AppStateManager] so that
+     * the UI only needs a single entry point into the domain layer.
+     */
+    val appState: StateFlow<AppState> = appStateManager.appState
+
+    /**
+     * Whether the variometer tone engine is currently active.
+     * Forwarded from [VarioToneUseCase] so that the UI only needs a single entry point.
+     */
+    val isToneEnabled: StateFlow<Boolean> = varioToneUseCase.isToneEnabled
+
     init {
-        listenToAppState()
+        listenToSideEffects()
+        listenToAutoStartSetting()
     }
 
     // --- State Observation ---
 
     /**
-     * Subscribes to [AppStateManager.appState] and dispatches work to the appropriate use cases.
+     * Reagiert auf [AppSideEffect]-Ereignisse aus dem [AppStateManager].
      *
-     * Tracks the previous state via a local `prevState` variable so each transition can be
-     * handled based on both old and new state – without any runtime casts or embedded history
-     * in [AppState].
-     * Launched in [applicationScope] – the subscription never drops due to a lifecycle event.
+     * Jede SideEffect kodiert exakt einen Übergang, dadurch wird kein prevState-Tracking
+     * mehr benötigt. Die Logik ist flach und ohne verschachtelte when-Ausdrücke.
      */
-    private fun listenToAppState() {
-        var prevState: AppState = appStateManager.appState.value
-
-        appStateManager.appState
-            .onEach { current ->
-                val prev = prevState
-                prevState = current
-                Timber.i("Coordinator: $prev -> $current")
-
-                when (current) {
-                    is AppState.Idle -> Timber.d("Coordinator: App is Idle.")
-
-                    is AppState.Calibrating -> {
-                        Timber.d("Coordinator: App is Calibrating, commanding calibration to start.")
+    private fun listenToSideEffects() {
+        appStateManager.sideEffects
+            .onEach { effect ->
+                Timber.i("Coordinator: SideEffect -> $effect")
+                when (effect) {
+                    is AppSideEffect.CalibrationStarted -> {
                         startCalibration()
                     }
-
-                    is AppState.Ready -> when (prev) {
-                        is AppState.Calibrating -> {
-                            // Pre-fetch elevation data for the current position so offline
-                            // terrain is available immediately.
-                            applicationScope.launch {
-                                val currentLocation = sensorRepository.locationFlowUi.first()
-                                Timber.d("Coordinator: Triggering DEM download for $currentLocation")
-                                downloadElevationUseCase(
-                                    currentLocation.latitude.toDouble(),
-                                    currentLocation.longitude.toDouble()
-                                ).collect { downloadState ->
-                                    Timber.d("Coordinator: DEM download state: $downloadState")
-                                }
-                            }
+                    is AppSideEffect.CalibrationCompleted -> {
+                        applicationScope.launch {
+                            // Apply AutoStart setting that was already stored before the app
+                            // reached Ready state. The settings Flow emits its initial value
+                            // during Calibrating, so the guard in listenToAutoStartSetting()
+                            // suppresses it. We re-check here once we are actually Ready.
                             val isAutoStartEnabled = autoStartSettingsProvider.isAutoStartEnabled.first()
-                            if (isAutoStartEnabled) autoStartUseCase.enable()
-                            else autoStartUseCase.disable()
-                            // Ensure Ready state's autostart flag mirrors the persisted setting
-                            // so AutoStartUseCase can gate on Ready.autostart == true correctly.
-                            appStateManager.onAutoStartEnabled(isAutoStartEnabled)
-                        }
-
-                        is AppState.Recording -> {
-                            // Covers both manual stop and auto-landing. stopRecording() is
-                            // idempotent – it exits early when no recording jobs are active.
-                            recordingUseCase.stopRecording()
-                            // Recording → Ready: re-apply autostart setting from current Ready state.
-                            // stopRecording() stops the foreground service and disables sensor
-                            // listeners; without this, AutoStartProcessor would run without data
-                            // and auto-start would never trigger for the next flight.
-                            if (current.autostart)
+                            if (isAutoStartEnabled)
                                 autoStartUseCase.enable()
-                            else
-                                autoStartUseCase.disable()
-                        }
 
-                        is AppState.Ready -> {
-                            // Ready → Ready: autostart was toggled in Settings
-                            if (current.autostart)
-                                autoStartUseCase.enable()
-                            else
-                                autoStartUseCase.disable()
-                        }
-
-                        else -> Timber.d("Coordinator: App is Ready from $prev. Waiting for user action.")
-                    }
-
-                    is AppState.Recording -> {
-                        if (prev is AppState.Ready) {
-                            // Handles BOTH manual start and autostart uniformly.
-                            // startRecording() is always triggered here, never duplicated.
-                            Timber.i("Coordinator: Recording started id=${current.activityId}")
-                            recordingUseCase.startRecording(current.activityId)
+                            val currentLocation = sensorRepository.locationFlowUi.first()
+                            Timber.d("Coordinator: Triggering DEM download")
+                            downloadElevationUseCase(
+                                currentLocation.latitude.toDouble(),
+                                currentLocation.longitude.toDouble()
+                            ).collect { downloadState ->
+                                Timber.d("Coordinator: DEM download state: $downloadState")
+                            }
                         }
                     }
+                    is AppSideEffect.RecordingStarted -> {
+                        Timber.i("Coordinator: Recording started id=${effect.activityId}")
+                        recordingUseCase.startRecording(effect.activityId)
+                        // Sync the AutoStartDetector: if AutoStart is active the detector
+                        // is in WaitForTakeOff. A manual recording start means "we are
+                        // flying now", so advance the detector to Flying so that the
+                        // automatic landing detection kicks in immediately.
+                        // manualStart() is safe to call even when AutoStart is disabled
+                        // (detector not running) – it simply has no effect.
+                        val isAutoStartEnabled = autoStartSettingsProvider.isAutoStartEnabled.first()
+                        if (isAutoStartEnabled) {
+                            autoStartUseCase.manualStart()
+                        }
+                    }
+                    is AppSideEffect.RecordingStopped -> {
+                        recordingUseCase.stopRecording()
+                        // Always clean up: reset the detector to WaitForTakeOff and
+                        // cancel all sensor/settings jobs regardless of the setting.
+                        autoStartUseCase.disable()
+                        val isAutoStartEnabled = autoStartSettingsProvider.isAutoStartEnabled.first()
+                        if (isAutoStartEnabled) {
+                            // Re-enable immediately: restarts ForegroundService + sensor
+                            // collection so the detector is back in WaitForTakeOff and
+                            // ready to detect the next take-off.
+                            autoStartUseCase.enable()
+                        }
+                    }
+                }
+            }.launchIn(applicationScope)
+    }
+
+    /**
+     * Observes [AutoStartSettingsProvider.isAutoStartEnabled] directly and enables/disables
+     * the AutoStart processor whenever the setting changes – only while in [AppState.Ready].
+     *
+     * Replaces the former Ready → Ready state-machine transition that carried the autostart
+     * flag through the state, which added complexity without adding clarity.
+     */
+    private fun listenToAutoStartSetting() {
+        autoStartSettingsProvider.isAutoStartEnabled
+            .onEach { enabled ->
+                if (appStateManager.appState.value is AppState.Ready) {
+                    Timber.d("Coordinator: AutoStart setting changed to $enabled while Ready.")
+                    if (enabled)
+                        autoStartUseCase.enable()
+                    else
+                        autoStartUseCase.disable()
                 }
             }.launchIn(applicationScope)
     }
@@ -193,6 +212,15 @@ class FlightSessionCoordinatorUseCase @Inject constructor(
      */
     fun permissionDenied() {
         appStateManager.permissionDenied()
+    }
+
+    /**
+     * Toggles the variometer tone engine on or off.
+     * Delegates to [VarioToneUseCase.enable] / [VarioToneUseCase.disable].
+     */
+    fun toggleTone() {
+        if (varioToneUseCase.isToneEnabled.value) varioToneUseCase.disable()
+        else varioToneUseCase.enable()
     }
 }
 

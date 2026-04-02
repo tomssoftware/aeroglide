@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.alpsfly.aeroglide.core.common.audio.VarioTone
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
-import com.alpsfly.aeroglide.core.data.AppRepository
 import com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider
 import com.alpsfly.aeroglide.core.data.BillingRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
@@ -51,10 +50,7 @@ object DomainModule {
     @Provides
     @Singleton
     fun provideCalibrationProcessor(
-        appRepository: AppRepository,
         sensorRepository: SensorRepository,
-        // Hilt will automatically provide the @ApplicationScope CoroutineScope
-        // assuming it's defined in another module (e.g., CommonModule or AppModule).
         @ApplicationScope applicationScope: CoroutineScope
     ): CalibrationProcessor {
         return CalibrationProcessor(sensorRepository, applicationScope)
@@ -89,6 +85,7 @@ object DomainModule {
         recordingUseCase: RecordingUseCase,
         autoStartUseCase: AutoStartUseCase,
         downloadElevationUseCase: DownloadElevationUseCase,
+        varioToneUseCase: VarioToneUseCase,
         sensorRepository: SensorRepository,
         autoStartSettingsProvider: AutoStartSettingsProvider,
         @ApplicationScope applicationScope: CoroutineScope
@@ -99,6 +96,7 @@ object DomainModule {
             recordingUseCase,
             autoStartUseCase,
             downloadElevationUseCase,
+            varioToneUseCase,
             sensorRepository,
             autoStartSettingsProvider,
             applicationScope

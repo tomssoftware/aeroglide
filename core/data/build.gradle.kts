@@ -17,7 +17,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.android)
+
 }
 
 android {
@@ -33,7 +33,6 @@ android {
     buildFeatures {
         aidl = false
         buildConfig = false
-        renderScript = false
         shaders = false
     }
 

@@ -16,7 +16,6 @@
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
@@ -34,7 +33,6 @@ android {
         compose = true
         aidl = false
         buildConfig = false
-        renderScript = false
         shaders = false
     }
 
