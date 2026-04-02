@@ -52,14 +52,14 @@ class ClimbrateProfileViewModel @Inject constructor(
     override val rangeProvider = object : CartesianLayerRangeProvider {
         override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = uiState.value) {
-                is ChartProfileUiState.HasData -> (state.minValue - 0.5).toDouble()
+                is ChartProfileUiState.HasData -> (state.minValue - 0.5)
                 is ChartProfileUiState.Initial -> -2.0
             }
         }
 
         override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
             return when (val state = uiState.value) {
-                is ChartProfileUiState.HasData -> (state.maxValue + 0.5).toDouble()
+                is ChartProfileUiState.HasData -> (state.maxValue + 0.5)
                 is ChartProfileUiState.Initial -> 2.0
             }
         }

@@ -28,7 +28,6 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.google.services)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
 }
 
@@ -79,7 +78,7 @@ android {
         compose = true
         aidl = false
         buildConfig = true
-        renderScript = false
+
         shaders = false
     }
 }

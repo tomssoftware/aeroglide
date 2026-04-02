@@ -142,7 +142,6 @@ fun LocationPathScreen(
             // Track-Daten-Update: SYNCHRONER Zugriff – kein getStyle { }-Callback,
             // kein Aufstau. Wenn style == null (Style lädt gerade), wird übersprungen;
             // setupTrackLayer() spielt die Daten beim StyleLoaded-Event nach.
-            @Suppress("MapboxMapComposable")
             when (val state = uiState) {
                 is LocationPathUiState.Loading -> { /* waiting for first track point */ }
                 is LocationPathUiState.Success -> {
