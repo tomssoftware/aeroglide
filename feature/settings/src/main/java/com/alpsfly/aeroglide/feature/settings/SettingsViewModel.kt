@@ -8,7 +8,6 @@ import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.AuthRepository
-import com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,13 +23,16 @@ import javax.inject.Inject
  * Settings are persisted to [SharedPreferences] on every change and reloaded on construction
  * so the UI always reflects the last saved values without a repository layer.
  *
+ * Auto-start activation is purely setting-driven: persisting the flag here is sufficient –
+ * [com.alpsfly.aeroglide.core.domain.usecase.FlightSessionCoordinatorUseCase] observes
+ * [com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider.isAutoStartEnabled] directly
+ * and enables/disables the auto-start processor whenever the value changes.
+ *
  * @see AuthRepository
- * @see AppStateManager
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val appStateManager: AppStateManager,
     // SharedPreferences is provided as a Hilt binding so the key namespace
     // is controlled at the injection site rather than hardcoded here.
     private val prefs: SharedPreferences,
@@ -81,11 +83,13 @@ class SettingsViewModel @Inject constructor(
     // --- Public API ---
 
     /**
-     * Enables or disables auto-start detection and persists the choice.
+     * Enables or disables auto-start detection and persists the choice to [SharedPreferences].
      *
-     * Also notifies [AppStateManager] so the app-level state machine can transition
-     * to [com.alpsfly.aeroglide.core.domain.usecase.state.AppState.Ready] with
-     * [com.alpsfly.aeroglide.core.domain.usecase.state.AppState.Ready.autostart] set accordingly.
+     * No direct state-machine interaction is needed here: [com.alpsfly.aeroglide.core.domain
+     * .usecase.FlightSessionCoordinatorUseCase] observes
+     * [com.alpsfly.aeroglide.core.data.AutoStartSettingsProvider.isAutoStartEnabled] and
+     * automatically enables or disables the auto-start processor whenever this value changes,
+     * as long as the app is in [com.alpsfly.aeroglide.core.domain.usecase.state.AppState.Ready].
      */
     fun onAutoStartEnabled(enabled: Boolean) {
         _autoStartEnabled.value = enabled
