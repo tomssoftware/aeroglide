@@ -1,76 +1,54 @@
 package com.alpsfly.aeroglide.feature.livetracking
 
-import androidx.compose.ui.graphics.Color
-import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alpsfly.aeroglide.core.data.SensorRepository
-import com.alpsfly.aeroglide.core.mapbox.data.MapBoxLocation
+import com.alpsfly.aeroglide.core.mapbox.data.mapToFeatureCollection
 import com.alpsfly.aeroglide.core.mapbox.data.zipMapBoxLocations
 import com.alpsfly.aeroglide.core.model.database.TrackPoint
-import com.mapbox.geojson.Point
+import com.mapbox.geojson.FeatureCollection
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
+
+/** Time window for the visible track segment (5 minutes). */
+private const val TRACK_WINDOW_MS = 5 * 60 * 1_000L
+
+sealed interface LocationPathUiState {
+    data object Loading : LocationPathUiState
+    data class Success(
+        val trackFeatureCollection: FeatureCollection,
+    ) : LocationPathUiState
+}
 
 @HiltViewModel
 class LocationPathViewModel @Inject constructor(
     private val sensorRepository: SensorRepository,
 ) : ViewModel() {
 
-    private val _mapboxPointCollection = MutableStateFlow<List<Point>>(emptyList())
-    val mapboxPointCollection: StateFlow<List<Point>> = _mapboxPointCollection
+    /** Sliding window of recent track points. */
+    private val trackPointWindow = mutableListOf<TrackPoint>()
 
-    private val _mapboxColorCollection = MutableStateFlow<List<Color>>(emptyList())
-    val mapboxColorCollection: StateFlow<List<Color>> = _mapboxColorCollection
+    val uiState: StateFlow<LocationPathUiState> =
+        sensorRepository.trackPointFlow
+            .map { trkPt ->
+                trackPointWindow.add(trkPt)
 
-    fun loadFeatureCollection() {
-        viewModelScope.launch {
-            getMapboxPointCollection().collect { pointCollection ->
-                _mapboxPointCollection.value = pointCollection
+                // Trim to the last 5 minutes based on timestamp
+                val cutoff = trkPt.timestamp - TRACK_WINDOW_MS
+                trackPointWindow.removeAll { it.timestamp < cutoff }
+
+                val locations = zipMapBoxLocations(trackPointWindow)
+                    .sortedBy { it.timestamp }
+
+                LocationPathUiState.Success(mapToFeatureCollection(locations))
             }
-        }
-        viewModelScope.launch {
-            getMapboxColorCollection().collect { colorCollection ->
-                _mapboxColorCollection.value = colorCollection
-            }
-        }
-    }
-
-    private fun getMapboxLocationCollection(): Flow<List<MapBoxLocation>> {
-        val trackFlow = sensorRepository.trackPointFlow
-        val trackPointPoints = mutableListOf<TrackPoint>()
-
-        trackPointPoints.clear()
-        return trackFlow.map { trkPt ->
-            trackPointPoints.add(trkPt)
-
-            if (trackPointPoints.size > 120) {
-                trackPointPoints.removeAt(0)
-            }
-
-            zipMapBoxLocations(trackPointPoints)
-                .sortedBy { it.timestamp }
-        }
-    }
-
-    private fun getMapboxPointCollection(): Flow<List<Point>> {
-        return getMapboxLocationCollection().map {
-            it.map { mapBoxLocation ->
-                mapBoxLocation.point
-            }
-        }
-    }
-
-    private fun getMapboxColorCollection(): Flow<List<Color>> {
-        return getMapboxLocationCollection().map {
-            it.map { mapBoxLocation ->
-                Color(mapBoxLocation.color.toColorInt())
-            }
-        }
-    }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = LocationPathUiState.Loading,
+            )
 }

@@ -26,7 +26,6 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialzation)
     alias(libs.plugins.ksp)
 }
