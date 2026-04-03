@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@ plugins {
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.sync.work"
+    namespace = "de.tomssoftware.aeroglide.sync.work"
     compileSdk = 36
 
     defaultConfig {
@@ -53,6 +53,7 @@ dependencies {
     // Firebase for Cloud Messaging/Sync triggers if needed
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+    implementation(libs.firebase.firestore)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

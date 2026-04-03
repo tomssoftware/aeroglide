@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ plugins {
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.feature.livetracking"
+    namespace = "de.tomssoftware.aeroglide.feature.livetracking"
     compileSdk = 36
 
     defaultConfig {

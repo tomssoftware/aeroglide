@@ -1,4 +1,4 @@
-# Add module specific ProGuard rules here.
+﻿# Add module specific ProGuard rules here.
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
 #
@@ -10,8 +10,8 @@
 -keep class com.tinder.StateMachine$* { *; }
 
 # Falls du eigene State/Events als sealed classes nutzt:
--keep class com.alpsfly.aeroglide.core.domain.usecase.state.AppState.** { *; }
--keep class com.alpsfly.aeroglide.core.domain.usecase.state.AppStateManager.** { *; }
+-keep class de.tomssoftware.aeroglide.core.domain.usecase.state.AppState.** { *; }
+-keep class de.tomssoftware.aeroglide.core.domain.usecase.state.AppStateManager.** { *; }
 
 # Wenn du Debugging/Logging nutzt:
 -keepattributes InnerClasses, EnclosingMethod
