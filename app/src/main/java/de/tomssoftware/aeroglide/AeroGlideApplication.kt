@@ -3,6 +3,7 @@
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.mapbox.common.MapboxOptions
 import de.tomssoftware.aeroglide.core.common.di.ApplicationScope
 import de.tomssoftware.aeroglide.firebase.CrashlyticsTree
 import de.tomssoftware.aeroglide.firebase.FirebaseInitializer
@@ -36,6 +37,7 @@ class AeroGlideApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        MapboxOptions.accessToken = BuildConfig.MAPBOX_ACCESS_TOKEN
         firebaseInitializer.initialize()
 
         if (BuildConfig.DEBUG) {
