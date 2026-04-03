@@ -1,6 +1,7 @@
 package com.alpsfly.aeroglide.core.firebase
 
 import com.alpsfly.aeroglide.core.model.common.Pilot
+import com.alpsfly.aeroglide.core.model.firebase.Activity as ActivityDto
 import com.alpsfly.aeroglide.core.model.firebase.Blacklist
 import com.alpsfly.aeroglide.core.model.firebase.Purchase
 import com.alpsfly.aeroglide.core.model.firebase.User
@@ -192,5 +193,46 @@ class CloudStorageFirebase @Inject constructor() : CloudStorage {
             .addOnFailureListener { e ->
                 crashlytics.recordException(Exception("Error update purchase document! ${e.message}"))
             }
+    }
+
+    // -------------------------------------------------------------------------
+    // Activity sync  –  /users/{userId}/activities/{activityId}
+    // -------------------------------------------------------------------------
+
+    override suspend fun writeActivity(userId: String, activity: ActivityDto): String {
+        val collection = firestore
+            .collection(CloudStorage.USERS)
+            .document(userId)
+            .collection(CloudStorage.ACTIVITIES)
+
+        return if (activity.id == null) {
+            // New activity – Firestore generates the document ID
+            val docRef = collection.add(activity).await()
+            docRef.id
+        } else {
+            // Existing activity – full overwrite
+            collection.document(activity.id).set(activity).await()
+            activity.id
+        }
+    }
+
+    override suspend fun readActivitiesForUser(userId: String): List<ActivityDto> {
+        val snapshot = firestore
+            .collection(CloudStorage.USERS)
+            .document(userId)
+            .collection(CloudStorage.ACTIVITIES)
+            .get()
+            .await()
+        return snapshot.documents.mapNotNull { it.toObject(ActivityDto::class.java) }
+    }
+
+    override suspend fun deleteActivity(userId: String, firestoreId: String) {
+        firestore
+            .collection(CloudStorage.USERS)
+            .document(userId)
+            .collection(CloudStorage.ACTIVITIES)
+            .document(firestoreId)
+            .delete()
+            .await()
     }
 }
