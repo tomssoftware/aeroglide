@@ -1,4 +1,4 @@
----
+﻿---
 mode: 'agent'
 description: 'Erstellt ein neues Feature-Modul (feature/*) nach AeroGlide Clean Architecture'
 ---
@@ -31,7 +31,7 @@ plugins {
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.feature.$FEATURE_NAME_LOWER"
+    namespace = "de.tomssoftware.aeroglide.feature.$FEATURE_NAME_LOWER"
     compileSdk = 36
     defaultConfig { minSdk = 26 }
     buildFeatures { compose = true }
@@ -57,7 +57,7 @@ dependencies {
 Pflichtmuster – `@HiltViewModel` + `StateFlow`:
 
 ```kotlin
-package com.alpsfly.aeroglide.feature.$FEATURE_NAME_LOWER
+package de.tomssoftware.aeroglide.feature.$FEATURE_NAME_LOWER
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

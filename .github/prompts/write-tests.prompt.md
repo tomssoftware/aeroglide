@@ -1,4 +1,4 @@
----
+﻿---
 mode: 'agent'
 description: 'Erstellt Unit-Tests für UseCases, Processors und ViewModels nach AeroGlide-Pattern'
 ---
@@ -22,7 +22,7 @@ Erstelle Unit-Tests für die angegebene Klasse nach dem AeroGlide-Testmuster.
 Orientiere dich an `AutoStartDetectorUnitTest.kt`:
 
 ```kotlin
-package com.alpsfly.aeroglide.core.domain.usecase
+package de.tomssoftware.aeroglide.core.domain.usecase
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceTimeBy

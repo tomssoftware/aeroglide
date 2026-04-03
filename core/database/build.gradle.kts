@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,13 +21,13 @@ plugins {
 }
 
 android {
-    namespace = "com.alpsfly.aeroglide.core.database"
+    namespace = "de.tomssoftware.aeroglide.core.database"
     compileSdk = 36
 
     defaultConfig {
         minSdk = 26
 
-        testInstrumentationRunner = "com.alpsfly.aeroglide.core.testing.HiltTestRunner"
+        testInstrumentationRunner = "de.tomssoftware.aeroglide.core.testing.HiltTestRunner"
         consumerProguardFiles("consumer-rules.pro")
 
         // The schemas directory contains a schema file for each version of the Room database.

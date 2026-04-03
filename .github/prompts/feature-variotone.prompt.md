@@ -1,4 +1,4 @@
----
+﻿---
 mode: 'agent'
 description: 'Feature: Vario-Ton – akustisches Steigungs- und Sinkratensignal wie LX Navigation Navia'
 ---
@@ -97,7 +97,7 @@ object AudioModule {
 
 ### 2a. `VarioToneState` – Sealed Interface
 
-Neue Datei `VarioToneState.kt` im Package `com.alpsfly.aeroglide.core.domain.usecase`:
+Neue Datei `VarioToneState.kt` im Package `de.tomssoftware.aeroglide.core.domain.usecase`:
 
 ```kotlin
 sealed interface VarioToneState {
