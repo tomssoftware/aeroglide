@@ -22,6 +22,7 @@ import com.alpsfly.aeroglide.core.database.TrackPointDao
 import com.alpsfly.aeroglide.core.database.UserDao
 import com.alpsfly.aeroglide.core.model.database.User
 import com.alpsfly.aeroglide.core.model.database.Activity
+import com.alpsfly.aeroglide.core.model.database.SyncState
 import com.alpsfly.aeroglide.core.model.database.TrackPoint
 import com.alpsfly.aeroglide.core.model.database.Calibration
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +36,16 @@ interface DataRepository {
     suspend fun addActivity(activity: Activity)
     suspend fun updateActivity(activity: Activity)
     suspend fun deleteActivity(activity: Activity)
+
+    // Sync
+    /** Returns all activities that still need to be uploaded (LOCAL + PENDING_UPLOAD). */
+    suspend fun getPendingActivities(): List<Activity>
+    /** Marks an activity as successfully uploaded; stores the Firestore document ID. */
+    suspend fun markActivitySynced(activityId: Long, firestoreId: String)
+    /** Marks an activity as picked up by the upload worker (prevents parallel processing). */
+    suspend fun markActivityPendingUpload(activityId: Long)
+    /** Marks an activity as failed; stores the error message for diagnostics. */
+    suspend fun markActivitySyncError(activityId: Long, error: String?)
 
     // Calibration
     suspend fun addCalibration(calibration: Calibration)
@@ -62,6 +73,20 @@ class LocalDataRepository @Inject constructor(
     override suspend fun addActivity(activity: Activity) = activityDao.addActivity(activity)
     override suspend fun updateActivity(activity: Activity) = activityDao.updateActivity(activity)
     override suspend fun deleteActivity(activity: Activity) = activityDao.deleteActivity(activity)
+
+    // Sync
+    override suspend fun getPendingActivities(): List<Activity> =
+        activityDao.getActivitiesBySyncState(SyncState.LOCAL) +
+        activityDao.getActivitiesBySyncState(SyncState.PENDING_UPLOAD)
+
+    override suspend fun markActivitySynced(activityId: Long, firestoreId: String) =
+        activityDao.updateSyncState(activityId, SyncState.SYNCED, firestoreId, System.currentTimeMillis())
+
+    override suspend fun markActivityPendingUpload(activityId: Long) =
+        activityDao.updateSyncStateOnly(activityId, SyncState.PENDING_UPLOAD)
+
+    override suspend fun markActivitySyncError(activityId: Long, error: String?) =
+        activityDao.setSyncError(activityId, SyncState.ERROR, error)
 
     // Calibration
     override suspend fun addCalibration(calibration: Calibration) = calibrationDao.addCalibration(calibration)

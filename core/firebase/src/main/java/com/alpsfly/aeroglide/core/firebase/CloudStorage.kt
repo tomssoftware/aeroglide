@@ -1,6 +1,7 @@
 package com.alpsfly.aeroglide.core.firebase
 
 import com.alpsfly.aeroglide.core.model.common.Pilot
+import com.alpsfly.aeroglide.core.model.firebase.Activity as ActivityDto
 import com.alpsfly.aeroglide.core.model.firebase.Blacklist
 import com.alpsfly.aeroglide.core.model.firebase.Purchase
 import com.alpsfly.aeroglide.core.model.firebase.User
@@ -20,6 +21,29 @@ interface CloudStorage {
     suspend fun incStatisticCounter(userId: String, documentName: String, fieldName: String)
     suspend fun updatePurchase(purchase: Purchase)
 
+    // -------------------------------------------------------------------------
+    // Activity sync  –  sub-collection: /users/{userId}/activities/{activityId}
+    // -------------------------------------------------------------------------
+
+    /**
+     * Creates or updates an activity document.
+     * - [activity.id] == null  →  Firestore auto-generates the document ID (new activity)
+     * - [activity.id] != null  →  full overwrite of the existing document (update)
+     *
+     * @return the Firestore document ID of the written activity
+     */
+    suspend fun writeActivity(userId: String, activity: ActivityDto): String
+
+    /**
+     * One-shot read of all activity documents for the given user.
+     */
+    suspend fun readActivitiesForUser(userId: String): List<ActivityDto>
+
+    /**
+     * Permanently deletes an activity document from Firestore.
+     */
+    suspend fun deleteActivity(userId: String, firestoreId: String)
+
     companion object {
 
         // root collection paths
@@ -28,6 +52,9 @@ interface CloudStorage {
         const val PURCHASES = "purchases"
         const val STATISTICS = "statistics"
         const val CONFIGS = "configs"
+
+        // sub-collections
+        const val ACTIVITIES = "activities"
 
         // documents
         const val REQUESTS = "requests"

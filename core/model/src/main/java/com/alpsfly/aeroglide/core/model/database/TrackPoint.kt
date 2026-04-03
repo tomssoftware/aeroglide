@@ -44,7 +44,12 @@ data class TrackPoint(
 )
 
 enum class SyncState {
-    LOCAL, // The data is only present locally
-    SYNCED, // The data is synchronized with Firebase
-    PENDING // The data is waiting to be synchronized
+    /** Data exists only locally, never uploaded. */
+    LOCAL,
+    /** Queued for upload – worker has picked it up. */
+    PENDING_UPLOAD,
+    /** Successfully synchronized with Firebase. */
+    SYNCED,
+    /** Last sync attempt failed; error message stored in syncError column. */
+    ERROR,
 }

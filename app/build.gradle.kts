@@ -104,6 +104,12 @@ dependencies {
     api(project(":feature:settings"))
     api(project(":feature:variometer"))
 
+    // Sync / WorkManager
+    implementation(project(":sync:work"))
+    implementation(libs.androidx.work.ktx)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
+
     // Core Android dependencies
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

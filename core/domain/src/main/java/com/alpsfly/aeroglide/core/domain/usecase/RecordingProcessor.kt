@@ -5,6 +5,7 @@ import android.os.PowerManager
 import androidx.core.content.ContextCompat
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
 import com.alpsfly.aeroglide.core.data.AppRepository
+import com.alpsfly.aeroglide.core.data.AuthRepository
 import com.alpsfly.aeroglide.core.data.DataRepository
 import com.alpsfly.aeroglide.core.data.SensorRepository
 import com.alpsfly.aeroglide.core.model.database.Activity
@@ -13,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
@@ -36,6 +38,7 @@ class RecordingProcessor @Inject constructor(
     private val appRepository: AppRepository,
     private val sensorRepository: SensorRepository,
     private val dataRepository: DataRepository,
+    private val authRepository: AuthRepository,
     @param:ApplicationScope private val applicationScope: CoroutineScope,
     @param:ApplicationContext private val context: Context
 ) {
@@ -166,9 +169,11 @@ class RecordingProcessor @Inject constructor(
 
     private suspend fun insertActivity(id: Long) {
         val now = System.currentTimeMillis()
+        val currentUid = authRepository.currentUser.first()?.uid ?: "anonymous"
+
         val activity = Activity(
             activityId = id,
-            userId = "user@example.com", // This should be dynamic
+            userId = currentUid,
             begin = now,
             end = now,
             distance = 0f

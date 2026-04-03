@@ -23,7 +23,7 @@ import androidx.work.WorkInfo.State
 import androidx.work.WorkManager
 import com.alpsfly.aeroglide.sync.initializers.SYNC_WORK_NAME
 import com.alpsfly.aeroglide.sync.workers.ActivityUploadWorker
-import com.google.samples.apps.nowinandroid.core.data.util.SyncManager
+import com.alpsfly.aeroglide.core.data.util.SyncManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.conflate

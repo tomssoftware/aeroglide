@@ -40,7 +40,7 @@ object DomainModule {
         @ApplicationContext context: Context,
         sensorRepository: SensorRepository
     ): LocationServiceStarter {
-        return LocationServiceStarter(context, sensorRepository)
+        return LocationServiceStarter(context)
     }
 
     /**

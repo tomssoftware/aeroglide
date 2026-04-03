@@ -1,16 +1,20 @@
 package com.alpsfly.aeroglide
 
 import android.app.Application
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.alpsfly.aeroglide.core.common.di.ApplicationScope
 import com.alpsfly.aeroglide.firebase.CrashlyticsTree
 import com.alpsfly.aeroglide.firebase.FirebaseInitializer
+import com.alpsfly.aeroglide.sync.initializers.Sync
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class AeroGlideApplication : Application() {
+class AeroGlideApplication : Application(), Configuration.Provider {
+
     @Inject
     @ApplicationScope
     lateinit var applicationScope: CoroutineScope
@@ -21,6 +25,15 @@ class AeroGlideApplication : Application() {
     @Inject
     lateinit var crashlyticsTree: CrashlyticsTree
 
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    /** Provides a custom WorkManager configuration that uses Hilt's worker factory. */
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
+
     override fun onCreate() {
         super.onCreate()
         firebaseInitializer.initialize()
@@ -29,6 +42,9 @@ class AeroGlideApplication : Application() {
             Timber.plant(Timber.DebugTree())
         }
         Timber.plant(crashlyticsTree)
+
+        // Start the upload worker once on app launch; WorkManager deduplicates via KEEP policy.
+        Sync.initialize(this)
     }
 }
 

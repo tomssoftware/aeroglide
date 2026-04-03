@@ -24,4 +24,7 @@ android {
 
 dependencies {
     api(project(":core:data"))
+    api(project(":sync:work"))
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.android.testing)
 }

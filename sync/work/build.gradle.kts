@@ -53,6 +53,7 @@ dependencies {
     // Firebase for Cloud Messaging/Sync triggers if needed
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+    implementation(libs.firebase.firestore)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
