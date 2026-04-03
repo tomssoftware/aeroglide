@@ -21,69 +21,96 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LocationService : Service() {
 
+    @Inject
+    lateinit var sensorRepository: SensorRepository
+
     override fun onCreate() {
         super.onCreate()
+        Timber.d("LocationService: onCreate")
         createNotificationChannel()
+
+        // Calling it here satisfies the system's requirement for startForegroundService
+        // as early as possible.
+        startServiceAsForeground()
     }
 
-    override fun onBind(p0: Intent?): IBinder? {
-        return null
-    }
+    override fun onBind(p0: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
+        val action = intent?.action
+        Timber.d("LocationService: onStartCommand action=$action startId=$startId")
+
+        // CRITICAL: Always call startForeground first to satisfy the system's promise,
+        // especially when rapid start/stop calls occur.
+        // This prevents ForegroundServiceDidNotStartInTimeException if a stop follows a start immediately.
+        startServiceAsForeground()
+
+        when (action) {
             ACTION_START -> {
-                startServiceAsForeground()
+                sensorRepository.enableSensorListeners()
             }
 
             ACTION_STOP -> {
+                Timber.d("LocationService: Processing ACTION_STOP")
+                sensorRepository.disableSensorListeners()
+                // Only stop if no newer start commands are pending.
+                // If we used stopSelf() here, and a new ACTION_START was already in the queue,
+                // the service would die before processing the start, causing the crash.
                 stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelf()
+                stopSelf(startId)
             }
 
             else -> {
-                // If the system restarts the service (intent is null), we must still call startForeground
-                // to avoid ForegroundServiceDidNotStartInTimeException
-                startServiceAsForeground()
+                // Handle sticky restarts (intent is null)
+                sensorRepository.enableSensorListeners()
             }
         }
         return START_STICKY
     }
 
     private fun startServiceAsForeground() {
+        val notification = buildNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
                 LOCATION_NOTIFICATION_ID,
-                buildNotification(),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
             )
         } else {
-            startForeground(LOCATION_NOTIFICATION_ID, buildNotification())
+            startForeground(LOCATION_NOTIFICATION_ID, notification)
         }
     }
 
     private fun createNotificationChannel() {
         val channelId = AEROGLIDE_CHANNEL_ID
         val manager = getSystemService(NotificationManager::class.java)
-        if (manager.getNotificationChannel(channelId) == null) {
-            manager.createNotificationChannel(
-                NotificationChannel(channelId, "Recording", NotificationManager.IMPORTANCE_LOW)
-            )
+        if (manager != null && manager.getNotificationChannel(channelId) == null) {
+            val channel = NotificationChannel(
+                channelId,
+                "Flight Recording",
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = "Keep AeroGlide running in the background during flight"
+            }
+            manager.createNotificationChannel(channel)
         }
     }
 
     private fun buildNotification(): Notification {
         return NotificationCompat.Builder(this, AEROGLIDE_CHANNEL_ID)
             .setContentTitle("AeroGlide Recording")
-            .setContentText("Tracking flight data ...")
+            .setContentText("Flight tracking is active")
             .setSmallIcon(com.alpsfly.aeroglide.core.domain.R.drawable.ic_launcher_foreground)
             .setOngoing(true)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
     }
 
     override fun onDestroy() {
+        Timber.d("LocationService: onDestroy")
+        sensorRepository.disableSensorListeners()
         super.onDestroy()
-        Timber.i("LocationService destroyed.")
     }
 
     companion object {
@@ -96,25 +123,24 @@ class LocationService : Service() {
 
 class LocationServiceStarter @Inject constructor(
     private val appContext: Context,
-    private val sensorRepository: SensorRepository
 ) {
     fun startForegroundService() {
         if (checkSelfPermission(appContext, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            sensorRepository.enableSensorListeners()
             val intent = Intent(appContext, LocationService::class.java).apply {
                 action = LocationService.ACTION_START
             }
-            Timber.i("ServiceStarter: Starting ForegroundService.")
+            Timber.i("ServiceStarter: Calling startForegroundService")
             appContext.startForegroundService(intent)
         }
     }
 
     fun stopForegroundService() {
-        sensorRepository.disableSensorListeners()
         val intent = Intent(appContext, LocationService::class.java).apply {
             action = LocationService.ACTION_STOP
         }
-        Timber.i("ServiceStarter: Stopping ForegroundService.")
+        Timber.i("ServiceStarter: Sending ACTION_STOP")
+        // We use startService (or startForegroundService) to deliver the intent.
+        // If the service is already running, this just calls onStartCommand.
         appContext.startService(intent)
     }
 }

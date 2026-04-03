@@ -1,5 +1,6 @@
 package com.alpsfly.aeroglide.core.domain.usecase
 
+import com.alpsfly.aeroglide.core.data.util.SyncManager
 import com.alpsfly.aeroglide.core.domain.usecase.location.LocationServiceStarter
 import timber.log.Timber
 import javax.inject.Inject
@@ -10,7 +11,8 @@ import javax.inject.Inject
  */
 class RecordingUseCase @Inject constructor(
     private val recordingProcessor: RecordingProcessor, // The "worker buddy"
-    private val locationServiceStarter: LocationServiceStarter      // The hardware manager
+    private val locationServiceStarter: LocationServiceStarter,  // The hardware manager
+    private val syncManager: SyncManager
 ) {
     fun startRecording(activityId: Long) {
         Timber.i("RecordingUseCase: Commanding START")
@@ -30,5 +32,8 @@ class RecordingUseCase @Inject constructor(
 
         // 2. Tell the hardware manager to let the sensors sleep.
         locationServiceStarter.stopForegroundService()
+
+        // 3. Tell the sync manager to sync.
+        syncManager.requestSync()
     }
 }
