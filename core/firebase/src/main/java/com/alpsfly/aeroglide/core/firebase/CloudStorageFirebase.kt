@@ -211,8 +211,9 @@ class CloudStorageFirebase @Inject constructor() : CloudStorage {
             docRef.id
         } else {
             // Existing activity – full overwrite
-            collection.document(activity.id).set(activity).await()
-            activity.id
+            val existingId = activity.id!!
+            collection.document(existingId).set(activity).await()
+            existingId
         }
     }
 
