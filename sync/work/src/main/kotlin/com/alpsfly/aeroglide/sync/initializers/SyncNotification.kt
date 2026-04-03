@@ -66,6 +66,9 @@ private fun Context.syncWorkNotification(): Notification {
     return NotificationCompat.Builder(
         this,
         SYNC_NOTIFICATION_CHANNEL_ID,
-    ) // todo: add params
+    )
+        .setContentTitle(getString(R.string.sync_work_notification_title))
+        .setSmallIcon(android.R.drawable.ic_popup_sync)
+        .setOngoing(true)
         .build()
 }
