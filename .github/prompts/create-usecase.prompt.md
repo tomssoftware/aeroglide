@@ -1,4 +1,4 @@
----
+﻿---
 mode: 'agent'
 description: 'Erstellt einen neuen UseCase in core/domain – NiA-Stil oder Service-Coordinator'
 ---
@@ -30,7 +30,7 @@ Erstelle einen neuen UseCase im Modul `core/domain`.
 ### Klassenstruktur
 
 ```kotlin
-package com.alpsfly.aeroglide.core.domain.usecase
+package de.tomssoftware.aeroglide.core.domain.usecase
 
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -70,7 +70,7 @@ Der Coordinator-Typ ist eine projektspezifische Erweiterung des NiA-Musters.
 ### Klassenstruktur
 
 ```kotlin
-package com.alpsfly.aeroglide.core.domain.usecase
+package de.tomssoftware.aeroglide.core.domain.usecase
 
 import timber.log.Timber
 import javax.inject.Inject

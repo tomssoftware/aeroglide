@@ -1,4 +1,4 @@
-# Prompt: Generate a Firebase TypeScript Backend for the Aeroglide Android App
+﻿# Prompt: Generate a Firebase TypeScript Backend for the Aeroglide Android App
 
 You are an expert in:
 
@@ -304,7 +304,7 @@ Generate:
 ## 5. TypeScript Types (must match Android DTOs exactly)
 
 ```typescript
-// Matches com.alpsfly.aeroglide.core.model.firebase.Activity
+// Matches de.tomssoftware.aeroglide.core.model.firebase.Activity
 interface ActivityDocument {
   user_id: string;
   begin: number;
@@ -332,7 +332,7 @@ interface ActivityDocument {
   server_updated_at?: FirebaseFirestore.Timestamp; // server-side only
 }
 
-// Matches com.alpsfly.aeroglide.core.model.firebase.User
+// Matches de.tomssoftware.aeroglide.core.model.firebase.User
 interface UserDocument {
   uid: string;
   email: string;
@@ -346,7 +346,7 @@ interface UserDocument {
   terms_accepted: boolean;
 }
 
-// Matches com.alpsfly.aeroglide.core.model.common.Pilot
+// Matches de.tomssoftware.aeroglide.core.model.common.Pilot
 interface PilotDocument {
   email: string;
   displayName: string;

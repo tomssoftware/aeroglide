@@ -1,4 +1,4 @@
-# Plan: Vario-Ton (VarioTone)
+﻿# Plan: Vario-Ton (VarioTone)
 
 Implementiere ein akustisches Variometer-Signal nach dem Vorbild des [LX Navigation Navia Vario-Indicators](https://lxnavigation.com/product/navia-vario-indicator/).
 Der Ton wird in 3 Schritten umgesetzt. Halte dabei alle Architekturprinzipien aus `@app-arch-goals.prompt.md` ein (SSOT, Separation of Concerns, KISS, kein Deprecated API).
@@ -92,7 +92,7 @@ object AudioModule {
 
 ### 2a. `VarioToneState` – Sealed Interface
 
-Neue Datei `VarioToneState.kt` im Package `com.alpsfly.aeroglide.core.domain.usecase`:
+Neue Datei `VarioToneState.kt` im Package `de.tomssoftware.aeroglide.core.domain.usecase`:
 
 ```kotlin
 sealed interface VarioToneState {
