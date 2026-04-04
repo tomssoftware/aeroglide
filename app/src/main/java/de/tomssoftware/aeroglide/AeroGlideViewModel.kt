@@ -2,19 +2,26 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import de.tomssoftware.aeroglide.core.domain.usecase.EnsureAuthenticatedUseCase
 import de.tomssoftware.aeroglide.core.domain.usecase.FlightSessionCoordinatorUseCase
 import de.tomssoftware.aeroglide.core.domain.usecase.state.AppState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AeroGlideViewModel @Inject constructor(
     private val flightCoordinator: FlightSessionCoordinatorUseCase,
+    private val ensureAuthenticated: EnsureAuthenticatedUseCase,
 ) : ViewModel() {
+
+    init {
+        viewModelScope.launch { ensureAuthenticated() }
+    }
 
     fun toggleRecording() = flightCoordinator.toggleRecording()
     fun calibrate() = flightCoordinator.startCalibration()

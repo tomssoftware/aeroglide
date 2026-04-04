@@ -87,6 +87,13 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun signInAnonymously(): Result<Unit> = try {
+        auth.signInAnonymously().await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
     private fun createNewUser(firebaseUser: FirebaseUser): User {
         return User(
             uid = firebaseUser.uid,

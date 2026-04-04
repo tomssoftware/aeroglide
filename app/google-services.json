@@ -1,13 +1,13 @@
-﻿{
+{
   "project_info": {
-    "project_number": "77943928945",
-    "project_id": "aeroglide-25123",
-    "storage_bucket": "aeroglide-25123.firebasestorage.app"
+    "project_number": "24379655040",
+    "project_id": "aeroglide-tomssoftware",
+    "storage_bucket": "aeroglide-tomssoftware.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:77943928945:android:878be5fdd6dcfddef643d0",
+        "mobilesdk_app_id": "1:24379655040:android:6a2a8dc9cbd37e36b83765",
         "android_client_info": {
           "package_name": "de.tomssoftware.aeroglide"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAxqdChr5bSTwmh2mXwCaLmv4ZEC0J1svY"
+          "current_key": "AIzaSyD9ktu81s1FYvs_KL0mO58hLjfjnrhZcc0"
         }
       ],
       "services": {
