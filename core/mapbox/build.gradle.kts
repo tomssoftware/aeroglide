@@ -76,7 +76,7 @@ dependencies {
     implementation(libs.okhttpLoggingInterceptor)
 
     // Mapbox
-    implementation(libs.mapbox.android)
+    api(libs.mapbox.android)
     implementation(libs.mapbox.compose)
 }
 

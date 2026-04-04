@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import java.util.Properties
+
 val gitVersionName = providers.exec {
     commandLine("git", "describe", "--tags", "--abbrev=0")
 }.standardOutput.asText.get().trim()
@@ -21,6 +23,12 @@ val gitVersionName = providers.exec {
 val gitVersionCode = providers.exec {
     commandLine("git", "tag", "--list")
 }.standardOutput.asText.get().split("\n").size
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) load(file.inputStream())
+}
+val mapboxAccessToken: String = localProperties.getProperty("MAPBOX_ACCESS_TOKEN", "")
 
 plugins {
     alias(libs.plugins.android.application)
@@ -46,6 +54,7 @@ android {
             useSupportLibrary = true
         }
 
+        buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"$mapboxAccessToken\"")
         buildConfigField("String", "FIREBASE_FUNCTIONS_URL", "\"https://us-central1-thermalscout.cloudfunctions.net/\"")
         buildConfigField("Integer", "FIREBASE_EMULATOR_PORT_AUTH", "9099")
         buildConfigField("String", "FIREBASE_EMULATOR_HOST_ADDRESS", "\"10.0.2.2\"")
@@ -160,6 +169,9 @@ dependencies {
     implementation(libs.retrofitConverterScalars)
     implementation(libs.okhttp)
     implementation(libs.okhttpLoggingInterceptor)
+
+    // Mapbox
+    implementation(libs.mapbox.android)
 
     // Vico chart library
     implementation(libs.vico.core)
