@@ -110,4 +110,16 @@ class AuthViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = false, error = "Unknown Credential Type") }
         }
     }
+
+    fun signInAnonymously() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            val result = authRepository.signInAnonymously()
+            if (result.isSuccess) {
+                _uiState.update { it.copy(isLoading = false) }
+            } else {
+                _uiState.update { it.copy(isLoading = false, error = result.exceptionOrNull()?.localizedMessage) }
+            }
+        }
+    }
 }
